@@ -1,6 +1,8 @@
-use super::Rectangle;
+use super::shapes::*;
+use minifb::{Window, WindowOptions};
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 
+#[derive(Debug)]
 pub struct ScreenBuffer {
 	pub width: usize,
 	pub height: usize,
@@ -31,6 +33,32 @@ impl ScreenBuffer {
 				self[(x, y)] = color;
 			}
 		}
+	}
+
+	// TODO: improve performance
+	pub fn fill_circle(&mut self, circle: Circle, color: u32) {
+		let start_x = ((circle.position.x - circle.radius).ceil() as usize).max(0);
+		let end_x = ((circle.position.x + circle.radius)as usize).min(self.width - 1);
+		let start_y = ((circle.position.y - circle.radius).ceil() as usize).max(0);
+		let end_y = ((circle.position.y + circle.radius) as usize).min(self.height - 1);
+
+		for y in start_y..=end_y {
+			for x in start_x..=end_x {
+				if (x as f32 - circle.position.x).hypot(y as f32 - circle.position.y)
+					<= circle.radius
+				{
+					self[(x, y)] = color;
+				}
+			}
+		}
+	}
+
+	pub fn new_window(&self, name: &str) -> Result<Window, minifb::Error> {
+		Window::new(name, self.width, self.height, WindowOptions::default())
+	}
+
+	pub fn update_window(&self, window: &mut Window) -> Result<(), minifb::Error> {
+		window.update_with_buffer(&self.buffer, self.width, self.height)
 	}
 }
 

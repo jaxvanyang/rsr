@@ -11,22 +11,26 @@ fn main() {
 	)
 	.unwrap();
 
-	let mut rect = Rectangle::new(0.0, 0.0, 50.0, 50.0);
-	let mut v = Vector2f::new(2.0, 1.0);
+	let mut circle = Circle::new(50.0, 50.0, 25.0);
+	let mut v = Vector2f::new(2.5, 1.5);
 
 	window.set_target_fps(60);
 
 	while window.is_open() && !window.is_key_down(Key::Escape) {
-		rect.position += v;
-		if rect.position.x + rect.width > buffer.width as f32 || rect.position.x < 0.0 {
+		circle.position += v;
+		if circle.position.x + circle.radius > buffer.width as f32
+			|| circle.position.x < circle.radius
+		{
 			v.x = -v.x;
 		}
-		if rect.position.y + rect.height > buffer.height as f32 || rect.position.y < 0.0 {
+		if circle.position.y + circle.radius > buffer.height as f32
+			|| circle.position.y < circle.radius
+		{
 			v.y = -v.y;
 		}
 
 		buffer.clear();
-		buffer.fill_rect(rect, GREEN);
+		buffer.fill_circle(circle, GREEN);
 
 		window
 			.update_with_buffer(&buffer, buffer.width, buffer.height)
