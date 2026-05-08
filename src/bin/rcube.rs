@@ -34,7 +34,7 @@ fn main() {
 	]);
 	let proj = proj_screen * proj_otho * proj_camera;
 
-	loop {
+	while window.is_open() {
 		let theta: f32 = 0.01;
 
 		let rotation = Matrix44f([
