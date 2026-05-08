@@ -38,7 +38,7 @@ impl ScreenBuffer {
 	// TODO: improve performance
 	pub fn fill_circle(&mut self, circle: Circle, color: u32) {
 		let start_x = ((circle.position.x - circle.radius).ceil() as usize).max(0);
-		let end_x = ((circle.position.x + circle.radius)as usize).min(self.width - 1);
+		let end_x = ((circle.position.x + circle.radius) as usize).min(self.width - 1);
 		let start_y = ((circle.position.y - circle.radius).ceil() as usize).max(0);
 		let end_y = ((circle.position.y + circle.radius) as usize).min(self.height - 1);
 
