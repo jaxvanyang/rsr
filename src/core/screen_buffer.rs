@@ -23,9 +23,9 @@ impl ScreenBuffer {
 	}
 
 	pub fn fill_rect(&mut self, rect: Rectangle, color: u32) {
-		let start_x = (rect.position.x as usize).max(0);
+		let start_x = rect.position.x as usize;
 		let end_x = ((rect.position.x + rect.width) as usize).min(self.width);
-		let start_y = (rect.position.y as usize).max(0);
+		let start_y = rect.position.y as usize;
 		let end_y = ((rect.position.y + rect.height) as usize).min(self.height);
 
 		for y in start_y..end_y {
@@ -37,9 +37,9 @@ impl ScreenBuffer {
 
 	// TODO: improve performance
 	pub fn fill_circle(&mut self, circle: Circle, color: u32) {
-		let start_x = ((circle.position.x - circle.radius).ceil() as usize).max(0);
+		let start_x = (circle.position.x - circle.radius).ceil() as usize;
 		let end_x = ((circle.position.x + circle.radius) as usize).min(self.width - 1);
-		let start_y = ((circle.position.y - circle.radius).ceil() as usize).max(0);
+		let start_y = (circle.position.y - circle.radius).ceil() as usize;
 		let end_y = ((circle.position.y + circle.radius) as usize).min(self.height - 1);
 
 		for y in start_y..=end_y {
