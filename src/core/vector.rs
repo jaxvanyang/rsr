@@ -518,3 +518,34 @@ impl<T: Neg<Output = T>> Neg for Vector3<T> {
 		}
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn test_indexing() {
+		let v = Vector2i::new(1, 2);
+		assert_eq!(v[0], 1);
+		assert_eq!(v[1], 2);
+
+		let v = Vector3i::new(1, 2, 3);
+		assert_eq!(v[0], 1);
+		assert_eq!(v[1], 2);
+		assert_eq!(v[2], 3);
+	}
+
+	#[test]
+	#[should_panic]
+	fn test_out_of_bounds_v2() {
+		let v = Vector2i::default();
+		v[2];
+	}
+
+	#[test]
+	#[should_panic]
+	fn test_out_of_bounds_v3() {
+		let v = Vector3i::default();
+		v[3];
+	}
+}
