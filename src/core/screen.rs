@@ -3,15 +3,15 @@ use minifb::{Window, WindowOptions};
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 
 #[derive(Debug)]
-pub struct ScreenBuffer {
+pub struct Screen {
 	pub width: usize,
 	pub height: usize,
 	pub buffer: Vec<u32>,
 }
 
-impl ScreenBuffer {
+impl Screen {
 	pub fn new(width: usize, height: usize) -> Self {
-		ScreenBuffer {
+		Screen {
 			width,
 			height,
 			buffer: vec![0; width * height],
@@ -62,7 +62,7 @@ impl ScreenBuffer {
 	}
 }
 
-impl Deref for ScreenBuffer {
+impl Deref for Screen {
 	type Target = Vec<u32>;
 
 	fn deref(&self) -> &Self::Target {
@@ -70,13 +70,13 @@ impl Deref for ScreenBuffer {
 	}
 }
 
-impl DerefMut for ScreenBuffer {
+impl DerefMut for Screen {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.buffer
 	}
 }
 
-impl Index<(usize, usize)> for ScreenBuffer {
+impl Index<(usize, usize)> for Screen {
 	type Output = u32;
 
 	fn index(&self, (x, y): (usize, usize)) -> &Self::Output {
@@ -84,7 +84,7 @@ impl Index<(usize, usize)> for ScreenBuffer {
 	}
 }
 
-impl IndexMut<(usize, usize)> for ScreenBuffer {
+impl IndexMut<(usize, usize)> for Screen {
 	fn index_mut(&mut self, (x, y): (usize, usize)) -> &mut Self::Output {
 		&mut self.buffer[y * self.width + x]
 	}
