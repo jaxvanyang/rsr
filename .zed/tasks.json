@@ -1,0 +1,22 @@
+[
+	{
+		"label": "default",
+		"command": "cargo run",
+	},
+	{
+		"label": "rcube",
+		"command": "just run rcube",
+	},
+	{
+		"label": "build",
+		"command": "just build",
+	},
+	{
+		"label": "check",
+		"command": "just check",
+	},
+	{
+		"label": "test",
+		"command": "cargo test",
+	},
+]
