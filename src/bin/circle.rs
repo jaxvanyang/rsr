@@ -12,12 +12,12 @@ fn main() {
 
 	while window.is_open() && !window.is_key_down(Key::Escape) {
 		circle.position += v;
-		if circle.position.x + circle.radius > screen.width as f32
+		if circle.position.x + circle.radius > screen.width as Float
 			|| circle.position.x < circle.radius
 		{
 			v.x = -v.x;
 		}
-		if circle.position.y + circle.radius > screen.height as f32
+		if circle.position.y + circle.radius > screen.height as Float
 			|| circle.position.y < circle.radius
 		{
 			v.y = -v.y;

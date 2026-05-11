@@ -1,8 +1,8 @@
-use super::Vector3f;
+use super::{Float, Vector3f};
 use std::ops::*;
 
 #[derive(Debug, Clone, Copy, Default)]
-pub struct Matrix44f(pub [[f32; 4]; 4]);
+pub struct Matrix44f(pub [[Float; 4]; 4]);
 
 impl Matrix44f {
 	pub fn has_nan(&self) -> bool {
@@ -43,15 +43,15 @@ impl Matrix44f {
 }
 
 impl Index<usize> for Matrix44f {
-	type Output = [f32; 4];
+	type Output = [Float; 4];
 
-	fn index(&self, index: usize) -> &[f32; 4] {
+	fn index(&self, index: usize) -> &[Float; 4] {
 		&self.0[index]
 	}
 }
 
 impl IndexMut<usize> for Matrix44f {
-	fn index_mut(&mut self, index: usize) -> &mut [f32; 4] {
+	fn index_mut(&mut self, index: usize) -> &mut [Float; 4] {
 		&mut self.0[index]
 	}
 }
@@ -129,10 +129,10 @@ impl MulAssign for Matrix44f {
 	}
 }
 
-impl Mul<f32> for Matrix44f {
+impl Mul<Float> for Matrix44f {
 	type Output = Self;
 
-	fn mul(self, other: f32) -> Self {
+	fn mul(self, other: Float) -> Self {
 		let mut ret = self;
 		for i in 0..4 {
 			for j in 0..4 {
@@ -144,8 +144,8 @@ impl Mul<f32> for Matrix44f {
 	}
 }
 
-impl MulAssign<f32> for Matrix44f {
-	fn mul_assign(&mut self, other: f32) {
+impl MulAssign<Float> for Matrix44f {
+	fn mul_assign(&mut self, other: Float) {
 		for i in 0..4 {
 			for j in 0..4 {
 				self[i][j] *= other;
@@ -169,18 +169,18 @@ impl Mul<Vector3f> for Matrix44f {
 	}
 }
 
-impl Div<f32> for Matrix44f {
+impl Div<Float> for Matrix44f {
 	type Output = Self;
 
-	fn div(self, rhs: f32) -> Self {
+	fn div(self, rhs: Float) -> Self {
 		let inv = 1.0 / rhs;
 
 		self * inv
 	}
 }
 
-impl DivAssign<f32> for Matrix44f {
-	fn div_assign(&mut self, rhs: f32) {
+impl DivAssign<Float> for Matrix44f {
+	fn div_assign(&mut self, rhs: Float) {
 		let inv = 1.0 / rhs;
 		*self *= inv;
 	}

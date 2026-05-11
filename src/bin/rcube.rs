@@ -13,7 +13,7 @@ fn main() {
 		Vector3f::new(-1.0, -1.0, -1.0),
 		Vector3f::new(-1.0, -1.0, 1.0),
 	];
-	let camera: f32 = 0.1;
+	let camera: Float = 0.1;
 	let proj_camera = Matrix44f([
 		[1.0, 0.0, 0.0, 0.0],
 		[0.0, camera.cos(), -camera.sin(), 0.0],
@@ -27,15 +27,15 @@ fn main() {
 		[0.0, 0.0, 0.0, 1.0],
 	]);
 	let proj_screen = Matrix44f([
-		[1.0, 0.0, 0.0, screen.width as f32 / 2.0],
-		[0.0, -1.0, 0.0, screen.height as f32 / 2.0],
+		[1.0, 0.0, 0.0, screen.width as Float / 2.0],
+		[0.0, -1.0, 0.0, screen.height as Float / 2.0],
 		[0.0, 0.0, 1.0, 0.0],
 		[0.0, 0.0, 0.0, 1.0],
 	]);
 	let proj = proj_screen * proj_otho * proj_camera;
 
 	while window.is_open() {
-		let theta: f32 = 0.01;
+		let theta: Float = 0.01;
 
 		let rotation = Matrix44f([
 			[theta.cos(), 0.0, -theta.sin(), 0.0],

@@ -11,3 +11,8 @@ pub use matrix::*;
 pub use screen::*;
 pub use shapes::*;
 pub use vector::*;
+
+#[cfg(feature = "use_f64")]
+pub type Float = f64;
+#[cfg(not(feature = "use_f64"))]
+pub type Float = f32;

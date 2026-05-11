@@ -1,4 +1,4 @@
-use super::shapes::*;
+use super::{Float, shapes::*};
 use minifb::{Window, WindowOptions};
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 
@@ -44,7 +44,7 @@ impl Screen {
 
 		for y in start_y..=end_y {
 			for x in start_x..=end_x {
-				if (x as f32 - circle.position.x).hypot(y as f32 - circle.position.y)
+				if (x as Float - circle.position.x).hypot(y as Float - circle.position.y)
 					<= circle.radius
 				{
 					self[(x, y)] = color;

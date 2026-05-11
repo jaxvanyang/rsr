@@ -6,3 +6,6 @@ default-run = "circle"
 
 [dependencies]
 minifb = "0.28"
+
+[features]
+use_f64 = []

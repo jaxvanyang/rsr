@@ -1,18 +1,28 @@
+use super::Float;
+use number::Number;
 use std::ops::*;
 
-pub trait Number {
-	fn abs(&self) -> Self;
-}
-
-impl Number for f32 {
-	fn abs(&self) -> Self {
-		f32::abs(*self)
+mod number {
+	pub trait Number {
+		fn abs(&self) -> Self;
 	}
-}
 
-impl Number for i32 {
-	fn abs(&self) -> Self {
-		i32::abs(*self)
+	impl Number for f32 {
+		fn abs(&self) -> Self {
+			f32::abs(*self)
+		}
+	}
+
+	impl Number for i32 {
+		fn abs(&self) -> Self {
+			i32::abs(*self)
+		}
+	}
+
+	impl Number for f64 {
+		fn abs(&self) -> Self {
+			f64::abs(*self)
+		}
 	}
 }
 
@@ -29,9 +39,9 @@ pub struct Vector3<T> {
 	pub z: T,
 }
 
-pub type Vector2f = Vector2<f32>;
+pub type Vector2f = Vector2<Float>;
 pub type Vector2i = Vector2<i32>;
-pub type Vector3f = Vector3<f32>;
+pub type Vector3f = Vector3<Float>;
 pub type Vector3i = Vector3<i32>;
 
 impl<T> Vector2<T> {
@@ -65,7 +75,7 @@ impl Vector2f {
 		self.x.is_nan() || self.y.is_nan()
 	}
 
-	pub fn new(x: f32, y: f32) -> Self {
+	pub fn new(x: Float, y: Float) -> Self {
 		let ret = Self { x, y };
 		debug_assert!(!ret.has_nan());
 		ret
@@ -179,7 +189,7 @@ impl Vector3f {
 		self.x.is_nan() || self.y.is_nan() || self.z.is_nan()
 	}
 
-	pub fn new(x: f32, y: f32, z: f32) -> Self {
+	pub fn new(x: Float, y: Float, z: Float) -> Self {
 		let ret = Self { x, y, z };
 		debug_assert!(!ret.has_nan());
 		ret
@@ -194,13 +204,13 @@ impl Vector3f {
 		let v2z = rhs.z as f64;
 
 		Self {
-			x: (v1y * v2z - v1z * v2y) as f32,
-			y: (v1z * v2x - v1x * v2z) as f32,
-			z: (v1x * v2y - v1y * v2x) as f32,
+			x: (v1y * v2z - v1z * v2y) as Float,
+			y: (v1z * v2x - v1x * v2z) as Float,
+			z: (v1x * v2y - v1y * v2x) as Float,
 		}
 	}
 
-	pub fn length(&self) -> f32 {
+	pub fn length(&self) -> Float {
 		self.length_squared().sqrt()
 	}
 
@@ -215,7 +225,7 @@ impl Vector3i {
 	}
 
 	pub fn length(&self) -> i32 {
-		(self.length_squared() as f32).sqrt() as i32
+		(self.length_squared() as Float).sqrt() as i32
 	}
 }
 
@@ -300,7 +310,7 @@ impl<T: MulAssign + Copy> MulAssign<T> for Vector2<T> {
 	}
 }
 
-impl Mul<Vector2f> for f32 {
+impl Mul<Vector2f> for Float {
 	type Output = Vector2f;
 	fn mul(self, rhs: Vector2f) -> Self::Output {
 		rhs * self
@@ -314,9 +324,9 @@ impl Mul<Vector2i> for i32 {
 	}
 }
 
-impl Div<f32> for Vector2f {
+impl Div<Float> for Vector2f {
 	type Output = Self;
-	fn div(self, rhs: f32) -> Self::Output {
+	fn div(self, rhs: Float) -> Self::Output {
 		let inv = 1.0 / rhs;
 		Self {
 			x: self.x * inv,
@@ -328,16 +338,16 @@ impl Div<f32> for Vector2f {
 impl Div<i32> for Vector2i {
 	type Output = Self;
 	fn div(self, rhs: i32) -> Self::Output {
-		let inv = 1.0 / rhs as f32;
+		let inv = 1.0 / rhs as Float;
 		Self {
-			x: (self.x as f32 * inv) as i32,
-			y: (self.y as f32 * inv) as i32,
+			x: (self.x as Float * inv) as i32,
+			y: (self.y as Float * inv) as i32,
 		}
 	}
 }
 
-impl DivAssign<f32> for Vector2f {
-	fn div_assign(&mut self, rhs: f32) {
+impl DivAssign<Float> for Vector2f {
+	fn div_assign(&mut self, rhs: Float) {
 		let inv = 1.0 / rhs;
 		self.x *= inv;
 		self.y *= inv;
@@ -346,9 +356,9 @@ impl DivAssign<f32> for Vector2f {
 
 impl DivAssign<i32> for Vector2i {
 	fn div_assign(&mut self, rhs: i32) {
-		let inv = 1.0 / rhs as f32;
-		self.x = (self.x as f32 * inv) as i32;
-		self.y = (self.y as f32 * inv) as i32;
+		let inv = 1.0 / rhs as Float;
+		self.x = (self.x as Float * inv) as i32;
+		self.y = (self.y as Float * inv) as i32;
 	}
 }
 
@@ -452,7 +462,7 @@ impl<T: MulAssign + Copy> MulAssign<T> for Vector3<T> {
 	}
 }
 
-impl Mul<Vector3f> for f32 {
+impl Mul<Vector3f> for Float {
 	type Output = Vector3f;
 	fn mul(self, rhs: Vector3f) -> Self::Output {
 		rhs * self
@@ -466,9 +476,9 @@ impl Mul<Vector3i> for i32 {
 	}
 }
 
-impl Div<f32> for Vector3f {
+impl Div<Float> for Vector3f {
 	type Output = Self;
-	fn div(self, rhs: f32) -> Self::Output {
+	fn div(self, rhs: Float) -> Self::Output {
 		let inv = 1.0 / rhs;
 		Self {
 			x: self.x * inv,
@@ -481,17 +491,17 @@ impl Div<f32> for Vector3f {
 impl Div<i32> for Vector3i {
 	type Output = Self;
 	fn div(self, rhs: i32) -> Self::Output {
-		let inv = 1.0 / rhs as f32;
+		let inv = 1.0 / rhs as Float;
 		Self {
-			x: (self.x as f32 * inv) as i32,
-			y: (self.y as f32 * inv) as i32,
-			z: (self.z as f32 * inv) as i32,
+			x: (self.x as Float * inv) as i32,
+			y: (self.y as Float * inv) as i32,
+			z: (self.z as Float * inv) as i32,
 		}
 	}
 }
 
-impl DivAssign<f32> for Vector3f {
-	fn div_assign(&mut self, rhs: f32) {
+impl DivAssign<Float> for Vector3f {
+	fn div_assign(&mut self, rhs: Float) {
 		let inv = 1.0 / rhs;
 		self.x *= inv;
 		self.y *= inv;
@@ -501,10 +511,10 @@ impl DivAssign<f32> for Vector3f {
 
 impl DivAssign<i32> for Vector3i {
 	fn div_assign(&mut self, rhs: i32) {
-		let inv = 1.0 / rhs as f32;
-		self.x = (self.x as f32 * inv) as i32;
-		self.y = (self.y as f32 * inv) as i32;
-		self.z = (self.z as f32 * inv) as i32;
+		let inv = 1.0 / rhs as Float;
+		self.x = (self.x as Float * inv) as i32;
+		self.y = (self.y as Float * inv) as i32;
+		self.z = (self.z as Float * inv) as i32;
 	}
 }
 

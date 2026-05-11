@@ -33,3 +33,5 @@ jobs:
       - name: Spell check
         if: matrix.os == 'ubuntu-latest'
         uses: crate-ci/typos@v1
+      - name: Test f64 build
+        run: cargo test --verbose --features use_f64 -- --no-capture
