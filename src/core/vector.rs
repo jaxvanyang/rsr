@@ -1,5 +1,6 @@
 use super::Float;
 use number::Number;
+use std::fmt::Display;
 use std::ops::*;
 
 mod number {
@@ -20,19 +21,10 @@ mod number {
 		fn abs(self) -> Self;
 		fn min(self, rhs: Self) -> Self;
 		fn max(self, rhs: Self) -> Self;
-	}
 
-	impl Number for f32 {
-		fn abs(self) -> Self {
-			f32::abs(self)
-		}
-
-		fn min(self, rhs: Self) -> Self {
-			f32::min(self, rhs)
-		}
-
-		fn max(self, rhs: Self) -> Self {
-			f32::max(self, rhs)
+		/// Check if two numbers are approximately equal with machine epsilon.
+		fn approx_eq(self, rhs: Self) -> bool {
+			self == rhs
 		}
 	}
 
@@ -50,6 +42,24 @@ mod number {
 		}
 	}
 
+	impl Number for f32 {
+		fn abs(self) -> Self {
+			f32::abs(self)
+		}
+
+		fn min(self, rhs: Self) -> Self {
+			f32::min(self, rhs)
+		}
+
+		fn max(self, rhs: Self) -> Self {
+			f32::max(self, rhs)
+		}
+
+		fn approx_eq(self, rhs: Self) -> bool {
+			(self - rhs).abs() < Self::EPSILON
+		}
+	}
+
 	impl Number for f64 {
 		fn abs(self) -> Self {
 			f64::abs(self)
@@ -61,6 +71,10 @@ mod number {
 
 		fn max(self, rhs: Self) -> Self {
 			f64::max(self, rhs)
+		}
+
+		fn approx_eq(self, rhs: Self) -> bool {
+			(self - rhs).abs() < Self::EPSILON
 		}
 	}
 }
@@ -159,14 +173,18 @@ impl<T: Number> Vector2<T> {
 }
 
 impl Vector2f {
-	pub fn has_nan(self) -> bool {
-		self.x.is_nan() || self.y.is_nan()
-	}
-
 	pub fn new(x: Float, y: Float) -> Self {
 		let ret = Self { x, y };
 		debug_assert!(!ret.has_nan());
 		ret
+	}
+
+	pub fn has_nan(self) -> bool {
+		self.x.is_nan() || self.y.is_nan()
+	}
+
+	pub fn approx_eq(self, rhs: Self) -> bool {
+		self.x.approx_eq(rhs.x) && self.y.approx_eq(rhs.y)
 	}
 
 	pub fn length(self) -> Float {
@@ -209,6 +227,12 @@ impl Vector2f {
 impl Vector2i {
 	pub fn new(x: i32, y: i32) -> Self {
 		Self { x, y }
+	}
+}
+
+impl<T: Display> Display for Vector2<T> {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "({}, {})", self.x, self.y)
 	}
 }
 
@@ -448,14 +472,18 @@ impl<T: Number> Vector3<T> {
 }
 
 impl Vector3f {
-	pub fn has_nan(self) -> bool {
-		self.x.is_nan() || self.y.is_nan() || self.z.is_nan()
-	}
-
 	pub fn new(x: Float, y: Float, z: Float) -> Self {
 		let ret = Self { x, y, z };
 		debug_assert!(!ret.has_nan());
 		ret
+	}
+
+	pub fn has_nan(self) -> bool {
+		self.x.is_nan() || self.y.is_nan() || self.z.is_nan()
+	}
+
+	pub fn approx_eq(self, rhs: Self) -> bool {
+		self.x.approx_eq(rhs.x) && self.y.approx_eq(rhs.y) && self.z.approx_eq(rhs.z)
 	}
 
 	pub fn length(self) -> Float {
@@ -512,15 +540,24 @@ impl Vector3f {
 		debug_assert!((0.0..=1.0).contains(&t));
 		(1.0 - t) * a + t * b
 	}
-}
 
-impl<T: Default> Default for Vector3<T> {
-	fn default() -> Self {
-		Self {
-			x: T::default(),
-			y: T::default(),
-			z: T::default(),
-		}
+	/// Construct a local coordinate system from a signdle normalized 3D vector.
+	pub fn coordinate_system(self, v2: &mut Self, v3: &mut Self) {
+		debug_assert!(self.length().approx_eq(1.0));
+
+		let sign = (1.0 as Float).copysign(self.z);
+		let a = -1.0 / (sign + self.z);
+		let b = self.x * self.y * a;
+		*v2 = Self {
+			x: 1.0 + sign * self.x * self.x * a,
+			y: sign * b,
+			z: -sign * self.x,
+		};
+		*v3 = Self {
+			x: b,
+			y: sign + self.y * self.y * a,
+			z: -self.y,
+		};
 	}
 }
 
@@ -531,6 +568,22 @@ impl Vector3i {
 
 	pub fn length(&self) -> i32 {
 		(self.length_squared() as Float).sqrt() as i32
+	}
+}
+
+impl<T: Display> Display for Vector3<T> {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "({}, {}, {})", self.x, self.y, self.z)
+	}
+}
+
+impl<T: Default> Default for Vector3<T> {
+	fn default() -> Self {
+		Self {
+			x: T::default(),
+			y: T::default(),
+			z: T::default(),
+		}
 	}
 }
 
@@ -763,5 +816,18 @@ mod tests {
 		let b = Vector3i::new(4, 5, 6);
 		let c = Vector3i::new(7, 8, 9);
 		assert_eq!(Vector3i::fma(a, b, c), Vector3i::new(11, 18, 27));
+	}
+
+	#[test]
+	fn test_coordinate_system() {
+		let v1 = Vector3f::new(1.0, 2.0, 3.0).normalized();
+		let mut v2 = Vector3f::default();
+		let mut v3 = Vector3f::default();
+		v1.coordinate_system(&mut v2, &mut v3);
+		let v1xv2 = v1.cross(v2);
+
+		assert!(v2.length().approx_eq(1.0));
+		assert!(v3.length().approx_eq(1.0));
+		assert!(v1xv2.approx_eq(v3));
 	}
 }
