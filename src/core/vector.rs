@@ -88,6 +88,149 @@ impl Vector2i {
 	}
 }
 
+impl<T: Default> Default for Vector2<T> {
+	fn default() -> Self {
+		Self {
+			x: T::default(),
+			y: T::default(),
+		}
+	}
+}
+
+impl<T> Index<usize> for Vector2<T> {
+	type Output = T;
+	fn index(&self, index: usize) -> &Self::Output {
+		match index {
+			0 => &self.x,
+			1 => &self.y,
+			_ => panic!("out of bound"),
+		}
+	}
+}
+
+impl<T> IndexMut<usize> for Vector2<T> {
+	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+		match index {
+			0 => &mut self.x,
+			1 => &mut self.y,
+			_ => panic!("out of bound"),
+		}
+	}
+}
+
+impl<T: Add<Output = T>> Add for Vector2<T> {
+	type Output = Self;
+	fn add(self, rhs: Self) -> Self::Output {
+		Self {
+			x: self.x + rhs.x,
+			y: self.y + rhs.y,
+		}
+	}
+}
+
+impl<T: AddAssign> AddAssign for Vector2<T> {
+	fn add_assign(&mut self, rhs: Self) {
+		self.x += rhs.x;
+		self.y += rhs.y;
+	}
+}
+
+impl<T: Sub<Output = T>> Sub for Vector2<T> {
+	type Output = Self;
+	fn sub(self, rhs: Self) -> Self::Output {
+		Self {
+			x: self.x - rhs.x,
+			y: self.y - rhs.y,
+		}
+	}
+}
+
+impl<T: SubAssign> SubAssign for Vector2<T> {
+	fn sub_assign(&mut self, rhs: Self) {
+		self.x -= rhs.x;
+		self.y -= rhs.y;
+	}
+}
+
+impl<T: Mul<Output = T> + Copy> Mul<T> for Vector2<T> {
+	type Output = Self;
+	fn mul(self, rhs: T) -> Self::Output {
+		Self {
+			x: self.x * rhs,
+			y: self.y * rhs,
+		}
+	}
+}
+
+impl<T: MulAssign + Copy> MulAssign<T> for Vector2<T> {
+	fn mul_assign(&mut self, rhs: T) {
+		self.x *= rhs;
+		self.y *= rhs;
+	}
+}
+
+impl Mul<Vector2f> for Float {
+	type Output = Vector2f;
+	fn mul(self, rhs: Vector2f) -> Self::Output {
+		rhs * self
+	}
+}
+
+impl Mul<Vector2i> for i32 {
+	type Output = Vector2i;
+	fn mul(self, rhs: Vector2i) -> Self::Output {
+		rhs * self
+	}
+}
+
+impl Div<Float> for Vector2f {
+	type Output = Self;
+	fn div(self, rhs: Float) -> Self::Output {
+		let inv = 1.0 / rhs;
+		Self {
+			x: self.x * inv,
+			y: self.y * inv,
+		}
+	}
+}
+
+impl Div<i32> for Vector2i {
+	type Output = Self;
+	fn div(self, rhs: i32) -> Self::Output {
+		let inv = 1.0 / rhs as Float;
+		Self {
+			x: (self.x as Float * inv) as i32,
+			y: (self.y as Float * inv) as i32,
+		}
+	}
+}
+
+impl DivAssign<Float> for Vector2f {
+	fn div_assign(&mut self, rhs: Float) {
+		let inv = 1.0 / rhs;
+		self.x *= inv;
+		self.y *= inv;
+	}
+}
+
+impl DivAssign<i32> for Vector2i {
+	fn div_assign(&mut self, rhs: i32) {
+		let inv = 1.0 / rhs as Float;
+		self.x = (self.x as Float * inv) as i32;
+		self.y = (self.y as Float * inv) as i32;
+	}
+}
+
+impl<T: Neg<Output = T>> Neg for Vector2<T> {
+	type Output = Self;
+	fn neg(self) -> Self::Output {
+		Self {
+			x: -self.x,
+			y: -self.y,
+		}
+	}
+}
+
 impl<T> Vector3<T> {
 	pub fn abs(&self) -> Self
 	where
@@ -219,6 +362,16 @@ impl Vector3f {
 	}
 }
 
+impl<T: Default> Default for Vector3<T> {
+	fn default() -> Self {
+		Self {
+			x: T::default(),
+			y: T::default(),
+			z: T::default(),
+		}
+	}
+}
+
 impl Vector3i {
 	pub fn new(x: i32, y: i32, z: i32) -> Self {
 		Self { x, y, z }
@@ -226,149 +379,6 @@ impl Vector3i {
 
 	pub fn length(&self) -> i32 {
 		(self.length_squared() as Float).sqrt() as i32
-	}
-}
-
-impl<T> Index<usize> for Vector2<T> {
-	type Output = T;
-	fn index(&self, index: usize) -> &Self::Output {
-		match index {
-			0 => &self.x,
-			1 => &self.y,
-			_ => panic!("out of bound"),
-		}
-	}
-}
-
-impl<T> IndexMut<usize> for Vector2<T> {
-	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-		match index {
-			0 => &mut self.x,
-			1 => &mut self.y,
-			_ => panic!("out of bound"),
-		}
-	}
-}
-
-impl<T: Default> Default for Vector2<T> {
-	fn default() -> Self {
-		Self {
-			x: T::default(),
-			y: T::default(),
-		}
-	}
-}
-
-impl<T: Add<Output = T>> Add for Vector2<T> {
-	type Output = Self;
-	fn add(self, rhs: Self) -> Self::Output {
-		Self {
-			x: self.x + rhs.x,
-			y: self.y + rhs.y,
-		}
-	}
-}
-
-impl<T: AddAssign> AddAssign for Vector2<T> {
-	fn add_assign(&mut self, rhs: Self) {
-		self.x += rhs.x;
-		self.y += rhs.y;
-	}
-}
-
-impl<T: Sub<Output = T>> Sub for Vector2<T> {
-	type Output = Self;
-	fn sub(self, rhs: Self) -> Self::Output {
-		Self {
-			x: self.x - rhs.x,
-			y: self.y - rhs.y,
-		}
-	}
-}
-
-impl<T: SubAssign> SubAssign for Vector2<T> {
-	fn sub_assign(&mut self, rhs: Self) {
-		self.x -= rhs.x;
-		self.y -= rhs.y;
-	}
-}
-
-impl<T: Mul<Output = T> + Copy> Mul<T> for Vector2<T> {
-	type Output = Self;
-	fn mul(self, rhs: T) -> Self::Output {
-		Self {
-			x: self.x * rhs,
-			y: self.y * rhs,
-		}
-	}
-}
-
-impl<T: MulAssign + Copy> MulAssign<T> for Vector2<T> {
-	fn mul_assign(&mut self, rhs: T) {
-		self.x *= rhs;
-		self.y *= rhs;
-	}
-}
-
-impl Mul<Vector2f> for Float {
-	type Output = Vector2f;
-	fn mul(self, rhs: Vector2f) -> Self::Output {
-		rhs * self
-	}
-}
-
-impl Mul<Vector2i> for i32 {
-	type Output = Vector2i;
-	fn mul(self, rhs: Vector2i) -> Self::Output {
-		rhs * self
-	}
-}
-
-impl Div<Float> for Vector2f {
-	type Output = Self;
-	fn div(self, rhs: Float) -> Self::Output {
-		let inv = 1.0 / rhs;
-		Self {
-			x: self.x * inv,
-			y: self.y * inv,
-		}
-	}
-}
-
-impl Div<i32> for Vector2i {
-	type Output = Self;
-	fn div(self, rhs: i32) -> Self::Output {
-		let inv = 1.0 / rhs as Float;
-		Self {
-			x: (self.x as Float * inv) as i32,
-			y: (self.y as Float * inv) as i32,
-		}
-	}
-}
-
-impl DivAssign<Float> for Vector2f {
-	fn div_assign(&mut self, rhs: Float) {
-		let inv = 1.0 / rhs;
-		self.x *= inv;
-		self.y *= inv;
-	}
-}
-
-impl DivAssign<i32> for Vector2i {
-	fn div_assign(&mut self, rhs: i32) {
-		let inv = 1.0 / rhs as Float;
-		self.x = (self.x as Float * inv) as i32;
-		self.y = (self.y as Float * inv) as i32;
-	}
-}
-
-impl<T: Neg<Output = T>> Neg for Vector2<T> {
-	type Output = Self;
-	fn neg(self) -> Self::Output {
-		Self {
-			x: -self.x,
-			y: -self.y,
-		}
 	}
 }
 
@@ -391,16 +401,6 @@ impl<T> IndexMut<usize> for Vector3<T> {
 			1 => &mut self.y,
 			2 => &mut self.z,
 			_ => panic!("out of bound"),
-		}
-	}
-}
-
-impl<T: Default> Default for Vector3<T> {
-	fn default() -> Self {
-		Self {
-			x: T::default(),
-			y: T::default(),
-			z: T::default(),
 		}
 	}
 }
