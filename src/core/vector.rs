@@ -3,13 +3,36 @@ use number::Number;
 use std::ops::*;
 
 mod number {
-	pub trait Number {
+	use std::ops::*;
+
+	pub trait Number:
+		Copy
+		+ Add<Output = Self>
+		+ Sub<Output = Self>
+		+ Mul<Output = Self>
+		+ Div<Output = Self>
+		+ AddAssign
+		+ SubAssign
+		+ MulAssign
+		+ DivAssign
+		+ PartialOrd
+	{
 		fn abs(self) -> Self;
+		fn min(self, rhs: Self) -> Self;
+		fn max(self, rhs: Self) -> Self;
 	}
 
 	impl Number for f32 {
 		fn abs(self) -> Self {
 			f32::abs(self)
+		}
+
+		fn min(self, rhs: Self) -> Self {
+			f32::min(self, rhs)
+		}
+
+		fn max(self, rhs: Self) -> Self {
+			f32::max(self, rhs)
 		}
 	}
 
@@ -17,11 +40,27 @@ mod number {
 		fn abs(self) -> Self {
 			i32::abs(self)
 		}
+
+		fn min(self, rhs: Self) -> Self {
+			Ord::min(self, rhs)
+		}
+
+		fn max(self, rhs: Self) -> Self {
+			Ord::max(self, rhs)
+		}
 	}
 
 	impl Number for f64 {
 		fn abs(self) -> Self {
 			f64::abs(self)
+		}
+
+		fn min(self, rhs: Self) -> Self {
+			f64::min(self, rhs)
+		}
+
+		fn max(self, rhs: Self) -> Self {
+			f64::max(self, rhs)
 		}
 	}
 }
@@ -44,36 +83,73 @@ pub type Vector2i = Vector2<i32>;
 pub type Vector3f = Vector3<Float>;
 pub type Vector3i = Vector3<i32>;
 
-impl<T> Vector2<T> {
-	pub fn abs(self) -> Self
-	where
-		T: Number,
-	{
+impl<T: Number> Vector2<T> {
+	pub fn abs(self) -> Self {
 		Self {
 			x: self.x.abs(),
 			y: self.y.abs(),
 		}
 	}
 
-	pub fn dot(&self, rhs: Self) -> T
-	where
-		T: Mul<Output = T> + Add<Output = T> + Copy,
-	{
+	pub fn dot(&self, rhs: Self) -> T {
 		self.x * rhs.x + self.y * rhs.y
 	}
 
-	pub fn abs_dot(&self, rhs: Self) -> T
-	where
-		T: Mul<Output = T> + Add<Output = T> + Copy + Number,
-	{
+	pub fn abs_dot(&self, rhs: Self) -> T {
 		self.dot(rhs).abs()
 	}
 
-	pub fn length_squared(self) -> T
-	where
-		T: Mul<Output = T> + Add<Output = T> + Copy,
-	{
+	pub fn length_squared(self) -> T {
 		self.dot(self)
+	}
+
+	/// Fused multiply-add operation, return component-wise `a * b + c`.
+	pub fn fma(a: Self, b: Self, c: Self) -> Self {
+		let prod = Self {
+			x: a.x * b.x,
+			y: a.y * b.y,
+		};
+
+		prod + c
+	}
+
+	/// per element min
+	pub fn min(self, rhs: Self) -> Self {
+		Self {
+			x: self.x.min(rhs.x),
+			y: self.y.min(rhs.y),
+		}
+	}
+
+	/// per element max
+	pub fn max(self, rhs: Self) -> Self {
+		Self {
+			x: self.x.max(rhs.x),
+			y: self.y.max(rhs.y),
+		}
+	}
+
+	pub fn min_component(self) -> T {
+		self.x.min(self.y)
+	}
+
+	pub fn max_component(self) -> T {
+		self.x.max(self.y)
+	}
+
+	pub fn min_dimension(self) -> usize {
+		if self.x <= self.y { 0 } else { 1 }
+	}
+
+	pub fn max_dimension(self) -> usize {
+		if self.x >= self.y { 0 } else { 1 }
+	}
+
+	pub fn permute(self, x: usize, y: usize) -> Self {
+		Self {
+			x: self[x],
+			y: self[y],
+		}
 	}
 }
 
@@ -117,6 +193,12 @@ impl Vector2f {
 			y: self.y.floor(),
 		}
 	}
+
+	/// Return `(1 - t) * a + t * b`.
+	pub fn lerp(t: Float, a: Self, b: Self) -> Self {
+		debug_assert!((0.0..=1.0).contains(&t));
+		(1.0 - t) * a + t * b
+	}
 }
 
 impl Vector2i {
@@ -151,6 +233,16 @@ impl<T> IndexMut<usize> for Vector2<T> {
 			0 => &mut self.x,
 			1 => &mut self.y,
 			_ => panic!("out of bound"),
+		}
+	}
+}
+
+impl<T: Neg<Output = T>> Neg for Vector2<T> {
+	type Output = Self;
+	fn neg(self) -> Self::Output {
+		Self {
+			x: -self.x,
+			y: -self.y,
 		}
 	}
 }
@@ -258,21 +350,8 @@ impl DivAssign<i32> for Vector2i {
 	}
 }
 
-impl<T: Neg<Output = T>> Neg for Vector2<T> {
-	type Output = Self;
-	fn neg(self) -> Self::Output {
-		Self {
-			x: -self.x,
-			y: -self.y,
-		}
-	}
-}
-
-impl<T> Vector3<T> {
-	pub fn abs(self) -> Self
-	where
-		T: Number,
-	{
+impl<T: Number> Vector3<T> {
+	pub fn abs(self) -> Self {
 		Self {
 			x: self.x.abs(),
 			y: self.y.abs(),
@@ -280,59 +359,31 @@ impl<T> Vector3<T> {
 		}
 	}
 
-	pub fn dot(self, rhs: Self) -> T
-	where
-		T: Mul<Output = T> + Add<Output = T> + Copy,
-	{
+	pub fn dot(self, rhs: Self) -> T {
 		self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
 	}
 
-	pub fn abs_dot(self, rhs: Self) -> T
-	where
-		T: Mul<Output = T> + Add<Output = T> + Copy + Number,
-	{
+	pub fn abs_dot(self, rhs: Self) -> T {
 		self.dot(rhs).abs()
 	}
 
-	pub fn length_squared(self) -> T
-	where
-		T: Mul<Output = T> + Add<Output = T> + Copy,
-	{
+	pub fn length_squared(self) -> T {
 		self.dot(self)
 	}
 
-	pub fn min_component(self) -> T
-	where
-		T: Ord + Copy,
-	{
-		self.x.min(self.y).min(self.z)
-	}
+	/// Fused multiply-add operation, return component-wise `a * b + c`.
+	pub fn fma(a: Self, b: Self, c: Self) -> Self {
+		let prod = Self {
+			x: a.x * b.x,
+			y: a.y * b.y,
+			z: a.z * b.z,
+		};
 
-	pub fn max_component(self) -> T
-	where
-		T: Ord + Copy,
-	{
-		self.x.max(self.y).max(self.z)
-	}
-
-	pub fn max_dimension(self) -> usize
-	where
-		T: Ord,
-	{
-		if self.x > self.y && self.x > self.z {
-			0
-		} else if self.y > self.z {
-			1
-		} else {
-			2
-		}
+		prod + c
 	}
 
 	/// per element min
-	pub fn min(self, rhs: Self) -> Self
-	where
-		T: Ord + Copy,
-	{
+	pub fn min(self, rhs: Self) -> Self {
 		Self {
 			x: self.x.min(rhs.x),
 			y: self.y.min(rhs.y),
@@ -341,10 +392,7 @@ impl<T> Vector3<T> {
 	}
 
 	/// per element max
-	pub fn max(self, rhs: Self) -> Self
-	where
-		T: Ord + Copy,
-	{
+	pub fn max(self, rhs: Self) -> Self {
 		Self {
 			x: self.x.max(rhs.x),
 			y: self.y.max(rhs.y),
@@ -352,10 +400,35 @@ impl<T> Vector3<T> {
 		}
 	}
 
-	pub fn permute(self, x: usize, y: usize, z: usize) -> Self
-	where
-		T: Copy,
-	{
+	pub fn min_component(self) -> T {
+		self.x.min(self.y).min(self.z)
+	}
+
+	pub fn max_component(self) -> T {
+		self.x.max(self.y).max(self.z)
+	}
+
+	pub fn min_dimension(self) -> usize {
+		if self.x <= self.y && self.x <= self.z {
+			0
+		} else if self.y <= self.z {
+			1
+		} else {
+			2
+		}
+	}
+
+	pub fn max_dimension(self) -> usize {
+		if self.x >= self.y && self.x >= self.z {
+			0
+		} else if self.y >= self.z {
+			1
+		} else {
+			2
+		}
+	}
+
+	pub fn permute(self, x: usize, y: usize, z: usize) -> Self {
 		Self {
 			x: self[x],
 			y: self[y],
@@ -423,6 +496,12 @@ impl Vector3f {
 			z: self.z.floor(),
 		}
 	}
+
+	/// Return `(1 - t) * a + t * b`.
+	pub fn lerp(t: Float, a: Self, b: Self) -> Self {
+		debug_assert!((0.0..=1.0).contains(&t));
+		(1.0 - t) * a + t * b
+	}
 }
 
 impl<T: Default> Default for Vector3<T> {
@@ -464,6 +543,17 @@ impl<T> IndexMut<usize> for Vector3<T> {
 			1 => &mut self.y,
 			2 => &mut self.z,
 			_ => panic!("out of bound"),
+		}
+	}
+}
+
+impl<T: Neg<Output = T>> Neg for Vector3<T> {
+	type Output = Self;
+	fn neg(self) -> Self::Output {
+		Self {
+			x: -self.x,
+			y: -self.y,
+			z: -self.z,
 		}
 	}
 }
@@ -581,17 +671,6 @@ impl DivAssign<i32> for Vector3i {
 	}
 }
 
-impl<T: Neg<Output = T>> Neg for Vector3<T> {
-	type Output = Self;
-	fn neg(self) -> Self::Output {
-		Self {
-			x: -self.x,
-			y: -self.y,
-			z: -self.z,
-		}
-	}
-}
-
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -650,5 +729,29 @@ mod tests {
 		let b = Vector3f::new(0.0, 1.0, 0.0);
 		assert_eq!(a.cross(b), Vector3f::new(0.0, 0.0, 1.0));
 		assert_eq!(b.cross(a), Vector3f::new(0.0, 0.0, -1.0));
+	}
+
+	#[test]
+	fn test_lerp() {
+		let a = Vector2f::new(1.0, 2.0);
+		let b = Vector2f::new(4.0, 5.0);
+		assert_eq!(Vector2f::lerp(0.25, a, b), Vector2f::new(1.75, 2.75));
+
+		let a = Vector3f::new(1.0, 2.0, 3.0);
+		let b = Vector3f::new(4.0, 5.0, 6.0);
+		assert_eq!(Vector3f::lerp(0.25, a, b), Vector3f::new(1.75, 2.75, 3.75));
+	}
+
+	#[test]
+	fn test_fma() {
+		let a = Vector2i::new(1, 2);
+		let b = Vector2i::new(3, 4);
+		let c = Vector2i::new(5, 6);
+		assert_eq!(Vector2i::fma(a, b, c), Vector2i::new(8, 14));
+
+		let a = Vector3i::new(1, 2, 3);
+		let b = Vector3i::new(4, 5, 6);
+		let c = Vector3i::new(7, 8, 9);
+		assert_eq!(Vector3i::fma(a, b, c), Vector3i::new(11, 18, 27));
 	}
 }
