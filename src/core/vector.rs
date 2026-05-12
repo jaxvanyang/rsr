@@ -4,24 +4,24 @@ use std::ops::*;
 
 mod number {
 	pub trait Number {
-		fn abs(&self) -> Self;
+		fn abs(self) -> Self;
 	}
 
 	impl Number for f32 {
-		fn abs(&self) -> Self {
-			f32::abs(*self)
+		fn abs(self) -> Self {
+			f32::abs(self)
 		}
 	}
 
 	impl Number for i32 {
-		fn abs(&self) -> Self {
-			i32::abs(*self)
+		fn abs(self) -> Self {
+			i32::abs(self)
 		}
 	}
 
 	impl Number for f64 {
-		fn abs(&self) -> Self {
-			f64::abs(*self)
+		fn abs(self) -> Self {
+			f64::abs(self)
 		}
 	}
 }
@@ -45,7 +45,7 @@ pub type Vector3f = Vector3<Float>;
 pub type Vector3i = Vector3<i32>;
 
 impl<T> Vector2<T> {
-	pub fn abs(&self) -> Self
+	pub fn abs(self) -> Self
 	where
 		T: Number,
 	{
@@ -55,29 +55,52 @@ impl<T> Vector2<T> {
 		}
 	}
 
-	pub fn dot(&self, rhs: &Self) -> T
+	pub fn dot(&self, rhs: Self) -> T
 	where
 		T: Mul<Output = T> + Add<Output = T> + Copy,
 	{
 		self.x * rhs.x + self.y * rhs.y
 	}
 
-	pub fn abs_dot(&self, rhs: &Self) -> T
+	pub fn abs_dot(&self, rhs: Self) -> T
 	where
 		T: Mul<Output = T> + Add<Output = T> + Copy + Number,
 	{
 		self.dot(rhs).abs()
 	}
+
+	pub fn length_squared(self) -> T
+	where
+		T: Mul<Output = T> + Add<Output = T> + Copy,
+	{
+		self.dot(self)
+	}
 }
 
 impl Vector2f {
-	pub fn has_nan(&self) -> bool {
+	pub fn has_nan(self) -> bool {
 		self.x.is_nan() || self.y.is_nan()
 	}
 
 	pub fn new(x: Float, y: Float) -> Self {
 		let ret = Self { x, y };
 		debug_assert!(!ret.has_nan());
+		ret
+	}
+
+	pub fn length(self) -> Float {
+		self.length_squared().sqrt()
+	}
+
+	pub fn normalize(&mut self) {
+		let inv_len = 1.0 / self.length();
+		self.x *= inv_len;
+		self.y *= inv_len;
+	}
+
+	pub fn normalized(self) -> Self {
+		let mut ret = self;
+		ret.normalize();
 		ret
 	}
 }
@@ -232,7 +255,7 @@ impl<T: Neg<Output = T>> Neg for Vector2<T> {
 }
 
 impl<T> Vector3<T> {
-	pub fn abs(&self) -> Self
+	pub fn abs(self) -> Self
 	where
 		T: Number,
 	{
@@ -243,42 +266,42 @@ impl<T> Vector3<T> {
 		}
 	}
 
-	pub fn dot(&self, rhs: &Self) -> T
+	pub fn dot(self, rhs: Self) -> T
 	where
 		T: Mul<Output = T> + Add<Output = T> + Copy,
 	{
 		self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
 	}
 
-	pub fn abs_dot(&self, rhs: &Self) -> T
+	pub fn abs_dot(self, rhs: Self) -> T
 	where
 		T: Mul<Output = T> + Add<Output = T> + Copy + Number,
 	{
 		self.dot(rhs).abs()
 	}
 
-	pub fn length_squared(&self) -> T
+	pub fn length_squared(self) -> T
 	where
 		T: Mul<Output = T> + Add<Output = T> + Copy,
 	{
 		self.dot(self)
 	}
 
-	pub fn min_component(&self) -> T
+	pub fn min_component(self) -> T
 	where
 		T: Ord + Copy,
 	{
 		self.x.min(self.y).min(self.z)
 	}
 
-	pub fn max_component(&self) -> T
+	pub fn max_component(self) -> T
 	where
 		T: Ord + Copy,
 	{
 		self.x.max(self.y).max(self.z)
 	}
 
-	pub fn max_dimension(&self) -> usize
+	pub fn max_dimension(self) -> usize
 	where
 		T: Ord,
 	{
@@ -292,7 +315,7 @@ impl<T> Vector3<T> {
 	}
 
 	/// per element min
-	pub fn min(&self, rhs: &Self) -> Self
+	pub fn min(self, rhs: Self) -> Self
 	where
 		T: Ord + Copy,
 	{
@@ -304,7 +327,7 @@ impl<T> Vector3<T> {
 	}
 
 	/// per element max
-	pub fn max(&self, rhs: &Self) -> Self
+	pub fn max(self, rhs: Self) -> Self
 	where
 		T: Ord + Copy,
 	{
@@ -315,7 +338,7 @@ impl<T> Vector3<T> {
 		}
 	}
 
-	pub fn permute(&self, x: usize, y: usize, z: usize) -> Self
+	pub fn permute(self, x: usize, y: usize, z: usize) -> Self
 	where
 		T: Copy,
 	{
@@ -328,7 +351,7 @@ impl<T> Vector3<T> {
 }
 
 impl Vector3f {
-	pub fn has_nan(&self) -> bool {
+	pub fn has_nan(self) -> bool {
 		self.x.is_nan() || self.y.is_nan() || self.z.is_nan()
 	}
 
@@ -338,7 +361,25 @@ impl Vector3f {
 		ret
 	}
 
-	pub fn cross(&self, rhs: &Self) -> Self {
+	pub fn length(self) -> Float {
+		self.length_squared().sqrt()
+	}
+
+	pub fn normalize(&mut self) {
+		let inv_len = 1.0 / self.length();
+		self.x *= inv_len;
+		self.y *= inv_len;
+		self.z *= inv_len;
+	}
+
+	pub fn normalized(self) -> Self {
+		let mut ret = self;
+		ret.normalize();
+		ret
+	}
+
+	pub fn cross(self, rhs: Self) -> Self {
+		// use f64 to increase precision
 		let v1x = self.x as f64;
 		let v1y = self.y as f64;
 		let v1z = self.z as f64;
@@ -351,14 +392,6 @@ impl Vector3f {
 			y: (v1z * v2x - v1x * v2z) as Float,
 			z: (v1x * v2y - v1y * v2x) as Float,
 		}
-	}
-
-	pub fn length(&self) -> Float {
-		self.length_squared().sqrt()
-	}
-
-	pub fn normalize(&self) -> Self {
-		*self / self.length_squared()
 	}
 }
 
@@ -557,5 +590,35 @@ mod tests {
 	fn test_out_of_bounds_v3() {
 		let v = Vector3i::default();
 		v[3];
+	}
+
+	#[test]
+	fn test_dot() {
+		let a = Vector2f::new(1.0, -2.0);
+		let b = Vector2f::new(3.0, 4.0);
+		assert_eq!(a.dot(b), -5.0);
+		assert_eq!(a.abs_dot(b), 5.0);
+
+		let a = Vector3f::new(1.0, 2.0, -3.0);
+		let b = Vector3f::new(4.0, 5.0, 6.0);
+		assert_eq!(a.dot(b), -4.0);
+		assert_eq!(a.abs_dot(b), 4.0);
+	}
+
+	#[test]
+	fn test_normalize() {
+		let v = Vector2f::new(3.0, 4.0).normalized();
+		assert_eq!(v.length(), 1.0);
+
+		let v = Vector3f::new(0.0, 3.0, 4.0).normalized();
+		assert_eq!(v.length(), 1.0);
+	}
+
+	#[test]
+	fn test_cross() {
+		let a = Vector3f::new(1.0, 0.0, 0.0);
+		let b = Vector3f::new(0.0, 1.0, 0.0);
+		assert_eq!(a.cross(b), Vector3f::new(0.0, 0.0, 1.0));
+		assert_eq!(b.cross(a), Vector3f::new(0.0, 0.0, -1.0));
 	}
 }
