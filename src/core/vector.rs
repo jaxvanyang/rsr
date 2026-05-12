@@ -151,6 +151,11 @@ impl<T: Number> Vector2<T> {
 			y: self[y],
 		}
 	}
+
+	/// Horizontal product, return `self.x * self.y`.
+	pub fn hprod(self) -> T {
+		self.x * self.y
+	}
 }
 
 impl Vector2f {
@@ -434,6 +439,11 @@ impl<T: Number> Vector3<T> {
 			y: self[y],
 			z: self[z],
 		}
+	}
+
+	/// Horizontal product, return `self.x * self.y * self.z`.
+	pub fn hprod(self) -> T {
+		self.x * self.y * self.z
 	}
 }
 
