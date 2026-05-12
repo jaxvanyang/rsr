@@ -8,5 +8,11 @@ check:
 	cargo fmt --check
 	typos
 
+fix:
+	cargo fix --allow-dirty
+	cargo clippy --fix --allow-dirty
+	typos -w
+	cargo fmt
+
 run app:
 	cargo run --release --bin {{app}}
