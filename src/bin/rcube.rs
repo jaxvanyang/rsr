@@ -1,4 +1,4 @@
-use rsr::core::*;
+use rsr::*;
 
 fn main() {
 	let mut screen = Screen::new(640, 480);

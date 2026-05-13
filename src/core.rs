@@ -1,16 +1,6 @@
-mod camera;
-mod color;
-mod matrix;
-mod screen;
-mod shapes;
-mod vector;
+pub mod color;
 
-pub use camera::*;
 pub use color::*;
-pub use matrix::*;
-pub use screen::*;
-pub use shapes::*;
-pub use vector::*;
 
 #[cfg(feature = "use_f64")]
 pub type Float = f64;

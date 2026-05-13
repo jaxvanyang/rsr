@@ -1,4 +1,4 @@
-use super::Float;
+use crate::Float;
 use number::Number;
 use std::fmt::Display;
 use std::ops::*;
