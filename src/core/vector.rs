@@ -191,6 +191,16 @@ impl Vector2f {
 		self.length_squared().sqrt()
 	}
 
+	/// Return the distance to `rhs`.
+	pub fn distance(self, rhs: Self) -> Float {
+		(self - rhs).length()
+	}
+
+	/// Return the squared distance to `rhs`.
+	pub fn distance_squared(self, rhs: Self) -> Float {
+		(self - rhs).length_squared()
+	}
+
 	pub fn normalize(&mut self) {
 		let inv_len = 1.0 / self.length();
 		self.x *= inv_len;
@@ -488,6 +498,16 @@ impl Vector3f {
 
 	pub fn length(self) -> Float {
 		self.length_squared().sqrt()
+	}
+
+	/// Return the distance to `rhs`.
+	pub fn distance(self, rhs: Self) -> Float {
+		(self - rhs).length()
+	}
+
+	/// Return the squared distance to `rhs`.
+	pub fn distance_squared(self, rhs: Self) -> Float {
+		(self - rhs).length_squared()
 	}
 
 	pub fn normalize(&mut self) {
