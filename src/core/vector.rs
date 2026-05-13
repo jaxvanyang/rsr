@@ -579,6 +579,10 @@ impl Vector3f {
 			z: -self.y,
 		};
 	}
+
+	pub fn face_forward(self, v: Self) -> Self {
+		if self.dot(v) < 0.0 { -self } else { self }
+	}
 }
 
 impl Vector3i {
