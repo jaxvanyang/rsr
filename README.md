@@ -1,10 +1,12 @@
-# Rust Software Renderer
+# Rusty Software Renderer
 
-`rsr` is a software renderer implemented in Rust. Its goal is to achieve most functionality of [pbrt-v4][pbrt].
+`rsr` is a software renderer implemented in Rust. Its goal is to achieve basic
+functionality of [pbrt-v4][pbrt].
 
 ## References
 
-- [Physically Based Rendering](https://www.pbr-book.org)
+- [Physically Based Rendering](https://www.pbr-book.org/4ed/contents)
 - [pbrt-v4][pbrt]
+- [pbrt-v4 User's Guide](https://pbrt.org/users-guide-v4)
 
 [pbrt]: https://github.com/mmp/pbrt-v4
