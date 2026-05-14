@@ -10,6 +10,7 @@ pub type Float = f32;
 
 pub trait Number:
 	Copy
+	+ Neg<Output = Self>
 	+ Add<Output = Self>
 	+ Sub<Output = Self>
 	+ Mul<Output = Self>
@@ -19,20 +20,31 @@ pub trait Number:
 	+ MulAssign
 	+ DivAssign
 	+ PartialOrd
+	+ Default
 {
-	fn abs(self) -> Self;
-	fn min(self, rhs: Self) -> Self;
-	fn max(self, rhs: Self) -> Self;
+	fn is_nan(self) -> bool {
+		false
+	}
 
 	/// Check if two numbers are approximately equal with machine epsilon.
 	fn approx_eq(self, rhs: Self) -> bool {
 		self == rhs
 	}
+
+	fn abs(self) -> Self {
+		if self < Self::default() { -self } else { self }
+	}
+
+	fn as_float(self) -> Float;
+	fn min(self, rhs: Self) -> Self;
+	fn max(self, rhs: Self) -> Self;
+	fn min_num() -> Self;
+	fn max_num() -> Self;
 }
 
 impl Number for i32 {
-	fn abs(self) -> Self {
-		i32::abs(self)
+	fn as_float(self) -> Float {
+		self as Float
 	}
 
 	fn min(self, rhs: Self) -> Self {
@@ -42,11 +54,27 @@ impl Number for i32 {
 	fn max(self, rhs: Self) -> Self {
 		Ord::max(self, rhs)
 	}
+
+	fn min_num() -> Self {
+		Self::MIN
+	}
+
+	fn max_num() -> Self {
+		Self::MAX
+	}
 }
 
 impl Number for f32 {
-	fn abs(self) -> Self {
-		f32::abs(self)
+	fn is_nan(self) -> bool {
+		self.is_nan()
+	}
+
+	fn approx_eq(self, rhs: Self) -> bool {
+		(self - rhs).abs() < Self::EPSILON
+	}
+
+	fn as_float(self) -> Float {
+		self as Float
 	}
 
 	fn min(self, rhs: Self) -> Self {
@@ -57,14 +85,26 @@ impl Number for f32 {
 		f32::max(self, rhs)
 	}
 
-	fn approx_eq(self, rhs: Self) -> bool {
-		(self - rhs).abs() < Self::EPSILON
+	fn min_num() -> Self {
+		Self::MIN
+	}
+
+	fn max_num() -> Self {
+		Self::MAX
 	}
 }
 
 impl Number for f64 {
-	fn abs(self) -> Self {
-		f64::abs(self)
+	fn is_nan(self) -> bool {
+		self.is_nan()
+	}
+
+	fn approx_eq(self, rhs: Self) -> bool {
+		(self - rhs).abs() < Self::EPSILON
+	}
+
+	fn as_float(self) -> Float {
+		self as Float
 	}
 
 	fn min(self, rhs: Self) -> Self {
@@ -75,7 +115,16 @@ impl Number for f64 {
 		f64::max(self, rhs)
 	}
 
-	fn approx_eq(self, rhs: Self) -> bool {
-		(self - rhs).abs() < Self::EPSILON
+	fn min_num() -> Self {
+		Self::MIN
 	}
+
+	fn max_num() -> Self {
+		Self::MAX
+	}
+}
+
+pub fn lerp(t: Float, a: Float, b: Float) -> Float {
+	debug_assert!((0.0..1.0).contains(&t));
+	a + t * (b - a)
 }
