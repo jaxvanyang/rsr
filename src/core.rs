@@ -26,11 +26,6 @@ pub trait Number:
 		false
 	}
 
-	/// Check if two numbers are approximately equal with machine epsilon.
-	fn approx_eq(self, rhs: Self) -> bool {
-		self == rhs
-	}
-
 	fn abs(self) -> Self {
 		if self < Self::default() { -self } else { self }
 	}
@@ -69,10 +64,6 @@ impl Number for f32 {
 		self.is_nan()
 	}
 
-	fn approx_eq(self, rhs: Self) -> bool {
-		(self - rhs).abs() < Self::EPSILON
-	}
-
 	fn as_float(self) -> Float {
 		self as Float
 	}
@@ -97,10 +88,6 @@ impl Number for f32 {
 impl Number for f64 {
 	fn is_nan(self) -> bool {
 		self.is_nan()
-	}
-
-	fn approx_eq(self, rhs: Self) -> bool {
-		(self - rhs).abs() < Self::EPSILON
 	}
 
 	fn as_float(self) -> Float {

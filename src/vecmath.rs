@@ -1,4 +1,5 @@
 use crate::{Float, Number, lerp};
+use approx::{AbsDiffEq, abs_diff_eq};
 use std::fmt::Display;
 use std::ops::*;
 
@@ -106,11 +107,6 @@ impl<T: Number> Vector2<T> {
 }
 
 impl Vector2f {
-	// TODO: use approx crate
-	pub fn approx_eq(self, rhs: Self) -> bool {
-		self.x.approx_eq(rhs.x) && self.y.approx_eq(rhs.y)
-	}
-
 	pub fn length(self) -> Float {
 		self.length_squared().sqrt()
 	}
@@ -306,6 +302,18 @@ impl DivAssign<i32> for Vector2i {
 	}
 }
 
+impl AbsDiffEq for Vector2f {
+	type Epsilon = Float;
+
+	fn default_epsilon() -> Self::Epsilon {
+		Float::EPSILON
+	}
+
+	fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
+		self.x.abs_diff_eq(&other.x, epsilon) && self.y.abs_diff_eq(&other.y, epsilon)
+	}
+}
+
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct Vector3<T> {
 	pub x: T,
@@ -438,10 +446,6 @@ impl<T: Number> Vector3<T> {
 }
 
 impl Vector3f {
-	pub fn approx_eq(self, rhs: Self) -> bool {
-		self.x.approx_eq(rhs.x) && self.y.approx_eq(rhs.y) && self.z.approx_eq(rhs.z)
-	}
-
 	pub fn length(self) -> Float {
 		self.length_squared().sqrt()
 	}
@@ -508,7 +512,7 @@ impl Vector3f {
 
 	/// Construct a local coordinate system from a signdle normalized 3D vector.
 	pub fn coordinate_system(self, v2: &mut Self, v3: &mut Self) {
-		debug_assert!(self.length().approx_eq(1.0));
+		debug_assert!(abs_diff_eq!(self.length(), 1.0));
 
 		let sign = (1.0 as Float).copysign(self.z);
 		let a = -1.0 / (sign + self.z);
@@ -690,6 +694,18 @@ impl DivAssign<i32> for Vector3i {
 		self.x = (self.x as Float * inv) as i32;
 		self.y = (self.y as Float * inv) as i32;
 		self.z = (self.z as Float * inv) as i32;
+	}
+}
+
+impl AbsDiffEq for Vector3f {
+	type Epsilon = Float;
+
+	fn default_epsilon() -> Self::Epsilon {
+		Float::EPSILON
+	}
+
+	fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
+		self.x.abs_diff_eq(&other.x, epsilon) && self.y.abs_diff_eq(&other.y, epsilon)
 	}
 }
 
@@ -1084,6 +1100,7 @@ impl<T> IndexMut<usize> for Bounds3<T> {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use approx::assert_abs_diff_eq;
 
 	#[test]
 	fn test_indexing() {
@@ -1173,9 +1190,9 @@ mod tests {
 		v1.coordinate_system(&mut v2, &mut v3);
 		let v1xv2 = v1.cross(v2);
 
-		assert!(v2.length().approx_eq(1.0));
-		assert!(v3.length().approx_eq(1.0));
-		assert!(v1xv2.approx_eq(v3));
+		assert_abs_diff_eq!(v2.length(), 1.0);
+		assert_abs_diff_eq!(v3.length(), 1.0);
+		assert_abs_diff_eq!(v1xv2, v3);
 	}
 
 	#[test]
@@ -1314,13 +1331,13 @@ mod tests {
 		let t = Vector2f::new(0.1, 0.2);
 		let p = Vector2f::new(1.2, 2.4);
 		assert_eq!(b.lerp(t), p);
-		assert!(b.offset(p).approx_eq(t));
+		assert_abs_diff_eq!(b.offset(p), t);
 
 		let b = Bounds3f::new(Vector3f::new(1.0, 2.0, 3.0), Vector3f::new(4.0, 5.0, 6.0));
 		let t = Vector3f::new(0.1, 0.2, 0.3);
 		let p = Vector3f::new(1.3, 2.6, 3.9);
 		assert_eq!(b.lerp(t), p);
-		assert!(b.offset(p).approx_eq(t));
+		assert_abs_diff_eq!(b.offset(p), t);
 	}
 
 	#[test]
