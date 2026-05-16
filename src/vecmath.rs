@@ -42,16 +42,6 @@ impl<T: Number> Vector2<T> {
 		self.dot(self)
 	}
 
-	/// Fused multiply-add operation, return component-wise `a * b + c`.
-	pub fn fma(a: Self, b: Self, c: Self) -> Self {
-		let prod = Self {
-			x: a.x * b.x,
-			y: a.y * b.y,
-		};
-
-		prod + c
-	}
-
 	/// per element min
 	pub fn min(self, rhs: Self) -> Self {
 		Self {
@@ -150,6 +140,14 @@ impl Vector2f {
 	pub fn lerp(t: Float, a: Self, b: Self) -> Self {
 		debug_assert!((0.0..=1.0).contains(&t));
 		a + t * (b - a)
+	}
+
+	/// Fused multiply-add operation, return component-wise `a * b + c`.
+	pub fn fma(a: Self, b: Self, c: Self) -> Self {
+		Self {
+			x: a.x.mul_add(b.x, c.x),
+			y: a.y.mul_add(b.y, c.y),
+		}
 	}
 }
 
@@ -355,17 +353,6 @@ impl<T: Number> Vector3<T> {
 		self.dot(self)
 	}
 
-	/// Fused multiply-add operation, return component-wise `a * b + c`.
-	pub fn fma(a: Self, b: Self, c: Self) -> Self {
-		let prod = Self {
-			x: a.x * b.x,
-			y: a.y * b.y,
-			z: a.z * b.z,
-		};
-
-		prod + c
-	}
-
 	/// per element min
 	pub fn min(self, rhs: Self) -> Self {
 		Self {
@@ -508,6 +495,15 @@ impl Vector3f {
 	pub fn lerp(t: Float, a: Self, b: Self) -> Self {
 		debug_assert!((0.0..=1.0).contains(&t));
 		a + t * (b - a)
+	}
+
+	/// Fused multiply-add operation, return component-wise `a * b + c`.
+	pub fn fma(a: Self, b: Self, c: Self) -> Self {
+		Self {
+			x: a.x.mul_add(b.x, c.x),
+			y: a.y.mul_add(b.y, c.y),
+			z: a.z.mul_add(b.z, c.z),
+		}
 	}
 
 	/// Construct a local coordinate system from a signdle normalized 3D vector.
@@ -1167,19 +1163,6 @@ mod tests {
 		let a = Vector3f::new(1.0, 2.0, 3.0);
 		let b = Vector3f::new(4.0, 5.0, 6.0);
 		assert_eq!(Vector3f::lerp(0.25, a, b), Vector3f::new(1.75, 2.75, 3.75));
-	}
-
-	#[test]
-	fn test_fma() {
-		let a = Vector2i::new(1, 2);
-		let b = Vector2i::new(3, 4);
-		let c = Vector2i::new(5, 6);
-		assert_eq!(Vector2i::fma(a, b, c), Vector2i::new(8, 14));
-
-		let a = Vector3i::new(1, 2, 3);
-		let b = Vector3i::new(4, 5, 6);
-		let c = Vector3i::new(7, 8, 9);
-		assert_eq!(Vector3i::fma(a, b, c), Vector3i::new(11, 18, 27));
 	}
 
 	#[test]
