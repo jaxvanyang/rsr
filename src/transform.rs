@@ -262,6 +262,23 @@ impl<const N: usize> ops::Mul<&SquareMatrix<N>> for Float {
 	}
 }
 
+impl<const N: usize> ops::Mul<&SquareMatrix<N>> for SquareMatrix<N> {
+	type Output = SquareMatrix<N>;
+
+	fn mul(self, rhs: &SquareMatrix<N>) -> SquareMatrix<N> {
+		let mut ret = SquareMatrix::zero();
+		for i in 0..N {
+			for j in 0..N {
+				for k in 0..N {
+					ret.m[i][j] += self.m[i][k] * rhs.m[k][j];
+				}
+			}
+		}
+
+		ret
+	}
+}
+
 impl<const N: usize> ops::Mul<&SquareMatrix<N>> for &SquareMatrix<N> {
 	type Output = SquareMatrix<N>;
 
@@ -340,11 +357,10 @@ pub struct Transform {
 }
 
 impl Transform {
-	pub fn new(m: &SquareMatrix<4>) -> Self {
-		Self {
-			m: m.clone(),
-			inv: m.inv(),
-		}
+	pub fn new(m: SquareMatrix<4>) -> Self {
+		let inv = m.inv();
+
+		Self { m, inv }
 	}
 
 	pub fn from_array(a: [[Float; 4]; 4]) -> Self {
@@ -354,11 +370,8 @@ impl Transform {
 		Self { m, inv }
 	}
 
-	pub fn new_with_inv(m: &SquareMatrix<4>, inv: &SquareMatrix<4>) -> Self {
-		Self {
-			m: m.clone(),
-			inv: Some(inv.clone()),
-		}
+	pub fn new_with_inv(m: SquareMatrix<4>, inv: SquareMatrix<4>) -> Self {
+		Self { m, inv: Some(inv) }
 	}
 
 	pub fn get_matrix(&self) -> &SquareMatrix<4> {
@@ -373,7 +386,7 @@ impl Transform {
 	pub fn inv(&self) -> Option<Self> {
 		self.inv
 			.as_ref()
-			.map(|inv| Self::new_with_inv(inv, &self.m))
+			.map(|inv| Self::new_with_inv(inv.clone(), self.m.clone()))
 	}
 
 	/// Return the transpose of this transform.
