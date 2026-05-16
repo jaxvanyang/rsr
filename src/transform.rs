@@ -12,7 +12,14 @@ impl<const N: usize> SquareMatrix<N> {
 	}
 
 	pub fn new(m: [[Float; N]; N]) -> Self {
-		Self { m }
+		let ret = Self { m };
+		debug_assert!(!ret.has_nan());
+
+		ret
+	}
+
+	pub fn has_nan(&self) -> bool {
+		self.m.iter().flatten().any(|x| x.is_nan())
 	}
 
 	pub fn diag(values: [Float; N]) -> Self {
@@ -326,9 +333,306 @@ impl ops::Mul<Vector3f> for SquareMatrix<3> {
 	}
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct Transform {
+	m: SquareMatrix<4>,
+	inv: Option<SquareMatrix<4>>,
+}
+
+impl Transform {
+	pub fn new(m: &SquareMatrix<4>) -> Self {
+		Self {
+			m: m.clone(),
+			inv: m.inv(),
+		}
+	}
+
+	pub fn from_array(a: [[Float; 4]; 4]) -> Self {
+		let m = SquareMatrix::new(a);
+		let inv = m.inv();
+
+		Self { m, inv }
+	}
+
+	pub fn new_with_inv(m: &SquareMatrix<4>, inv: &SquareMatrix<4>) -> Self {
+		Self {
+			m: m.clone(),
+			inv: Some(inv.clone()),
+		}
+	}
+
+	pub fn get_matrix(&self) -> &SquareMatrix<4> {
+		&self.m
+	}
+
+	pub fn get_inverse_matrix(&self) -> Option<&SquareMatrix<4>> {
+		self.inv.as_ref()
+	}
+
+	/// Return the inverse of this transform, if it exists.
+	pub fn inv(&self) -> Option<Self> {
+		self.inv
+			.as_ref()
+			.map(|inv| Self::new_with_inv(inv, &self.m))
+	}
+
+	/// Return the transpose of this transform.
+	#[allow(non_snake_case)]
+	pub fn T(&self) -> Self {
+		Self {
+			m: self.m.T(),
+			inv: self.inv.as_ref().map(|inv| inv.T()),
+		}
+	}
+
+	pub fn is_identity(&self) -> bool {
+		self.m.is_identity()
+	}
+
+	pub fn translate(delta: Vector3f) -> Self {
+		let m = SquareMatrix::new([
+			[1.0, 0.0, 0.0, delta.x],
+			[0.0, 1.0, 0.0, delta.y],
+			[0.0, 0.0, 1.0, delta.z],
+			[0.0, 0.0, 0.0, 1.0],
+		]);
+		let inv = SquareMatrix::new([
+			[1.0, 0.0, 0.0, -delta.x],
+			[0.0, 1.0, 0.0, -delta.y],
+			[0.0, 0.0, 1.0, -delta.z],
+			[0.0, 0.0, 0.0, 1.0],
+		]);
+
+		Self { m, inv: Some(inv) }
+	}
+
+	pub fn scale(x: Float, y: Float, z: Float) -> Self {
+		let m = SquareMatrix::new([
+			[x, 0.0, 0.0, 0.0],
+			[0.0, y, 0.0, 0.0],
+			[0.0, 0.0, z, 0.0],
+			[0.0, 0.0, 0.0, 1.0],
+		]);
+		let inv = SquareMatrix::new([
+			[1.0 / x, 0.0, 0.0, 0.0],
+			[0.0, 1.0 / y, 0.0, 0.0],
+			[0.0, 0.0, 1.0 / z, 0.0],
+			[0.0, 0.0, 0.0, 1.0],
+		]);
+
+		Self { m, inv: Some(inv) }
+	}
+
+	/// Return `true` if the transform has a scaling term.
+	pub fn has_scale(&self) -> bool {
+		let tolerance = 1e-3;
+		let lx2 = self
+			.map_point(Vector3f::new(1.0, 0.0, 0.0))
+			.length_squared();
+		let ly2 = self
+			.map_point(Vector3f::new(0.0, 1.0, 0.0))
+			.length_squared();
+		let lz2 = self
+			.map_point(Vector3f::new(0.0, 0.0, 1.0))
+			.length_squared();
+
+		(lx2 - 1.0).abs() > tolerance
+			|| (ly2 - 1.0).abs() > tolerance
+			|| (lz2 - 1.0).abs() > tolerance
+	}
+
+	/// Return a rotation transform around the x-axis, `theta` is in degrees.
+	pub fn rotate_x(theta: Float) -> Self {
+		let theta = theta.to_radians();
+		let sin = theta.sin();
+		let cos = theta.cos();
+		let m = SquareMatrix::new([
+			[1.0, 0.0, 0.0, 0.0],
+			[0.0, cos, -sin, 0.0],
+			[0.0, sin, cos, 0.0],
+			[0.0, 0.0, 0.0, 1.0],
+		]);
+		let inv = m.T();
+
+		Self { m, inv: Some(inv) }
+	}
+
+	/// Return a rotation transform around the y-axis, `theta` is in degrees.
+	pub fn rotate_y(theta: Float) -> Self {
+		let theta = theta.to_radians();
+		let sin = theta.sin();
+		let cos = theta.cos();
+		let m = SquareMatrix::new([
+			[cos, 0.0, sin, 0.0],
+			[0.0, 1.0, 0.0, 0.0],
+			[-sin, 0.0, cos, 0.0],
+			[0.0, 0.0, 0.0, 1.0],
+		]);
+		let inv = m.T();
+
+		Self { m, inv: Some(inv) }
+	}
+
+	/// Return a rotation transform around the y-axis, `theta` is in degrees.
+	pub fn rotate_z(theta: Float) -> Self {
+		let theta = theta.to_radians();
+		let sin = theta.sin();
+		let cos = theta.cos();
+		let m = SquareMatrix::new([
+			[cos, -sin, 0.0, 0.0],
+			[sin, cos, 0.0, 0.0],
+			[0.0, 0.0, 1.0, 0.0],
+			[0.0, 0.0, 0.0, 1.0],
+		]);
+		let inv = m.T();
+
+		Self { m, inv: Some(inv) }
+	}
+
+	/// Return a rotation transform around `axis`, `theta` is in degrees.
+	pub fn rotate(axis: Vector3f, theta: Float) -> Self {
+		let theta = theta.to_radians();
+		Self::rotate_with_sin_cos(axis, theta.sin(), theta.cos())
+	}
+
+	/// Return a rotation transform around `axis` with precomputed `sin(theta)` and `cos(theta)` values.
+	pub fn rotate_with_sin_cos(axis: Vector3f, sin: Float, cos: Float) -> Self {
+		let a = axis.normalized();
+		let mut m = SquareMatrix::zero();
+		m[3][3] = 1.0;
+
+		// TODO: why does it says the row vectors to be basis
+		// Compute rotation of first basis vector
+		m[0][0] = a.x * a.x + (1.0 - a.x * a.x) * cos;
+		m[0][1] = a.x * a.y * (1.0 - cos) - a.z * sin;
+		m[0][2] = a.x * a.z * (1.0 - cos) + a.y * sin;
+
+		// Compute rotations of second and third basis vectors
+		m[1][0] = a.x * a.y * (1.0 - cos) + a.z * sin;
+		m[1][1] = a.y * a.y + (1.0 - a.y * a.y) * cos;
+		m[1][2] = a.y * a.z * (1.0 - cos) - a.x * sin;
+
+		m[2][0] = a.x * a.z * (1.0 - cos) - a.y * sin;
+		m[2][1] = a.y * a.z * (1.0 - cos) + a.x * sin;
+		m[2][2] = a.z * a.z + (1.0 - a.z * a.z) * cos;
+
+		let inv = m.T();
+
+		Self { m, inv: Some(inv) }
+	}
+
+	/// Returns a rotation matrix that rotates from one vector to another. The arguments must be normalized.
+	/// Note: the result transform may not be the shortest rotation.
+	pub fn rotate_from_to(from: Vector3f, to: Vector3f) -> Self {
+		// Compute intermediate vector for vector reflection
+		let refl = if from.x.abs() < 0.72 && to.x.abs() < 0.72 {
+			Vector3f::new(1.0, 0.0, 0.0)
+		} else if from.y.abs() < 0.72 && to.y.abs() < 0.72 {
+			Vector3f::new(0.0, 1.0, 0.0)
+		} else {
+			Vector3f::new(0.0, 0.0, 1.0)
+		};
+
+		// TODO: understand Householder matrix
+		// Initialize matrix r for rotation
+		let u = refl - from;
+		let v = refl - to;
+		let mut r = SquareMatrix::zero();
+		r[3][3] = 1.0;
+		for i in 0..3 {
+			for j in 0..3 {
+				// Initialize matrix element `r[i][j]`
+				let delta = if i == j { 1.0 } else { 0.0 };
+				r[i][j] = delta
+					- 2.0 / u.length_squared() * u[i] * u[j]
+					- 2.0 / v.length_squared() * v[i] * v[j]
+					+ 4.0 * u.dot(v) / (u.length_squared() * v.length_squared()) * v[i] * u[j];
+			}
+		}
+		let inv = r.T();
+
+		Self {
+			m: r,
+			inv: Some(inv),
+		}
+	}
+
+	/// Create a look-at transform to camera space, the camera is looking at `look` from
+	/// `pos`, with `up` as the up direction. `up` may not be perpendicular to `look`
+	/// direction.
+	pub fn look_at(pos: Vector3f, look: Vector3f, up: Vector3f) -> Self {
+		let mut camera_to_world = SquareMatrix::<4>::zero();
+		camera_to_world[0][3] = pos.x;
+		camera_to_world[1][3] = pos.y;
+		camera_to_world[2][3] = pos.z;
+		camera_to_world[3][3] = 1.0;
+
+		// TODO: check `up` direction
+		let dir = (look - pos).normalized();
+		let right = up.normalized().cross(dir).normalized();
+		let up = dir.cross(right);
+		camera_to_world[0][0] = right.x;
+		camera_to_world[1][0] = right.y;
+		camera_to_world[2][0] = right.z;
+		camera_to_world[0][1] = up.x;
+		camera_to_world[1][1] = up.y;
+		camera_to_world[2][1] = up.z;
+		camera_to_world[0][2] = dir.x;
+		camera_to_world[1][2] = dir.y;
+		camera_to_world[2][2] = dir.z;
+
+		let world_to_camera = camera_to_world.inv().unwrap();
+
+		Self {
+			m: world_to_camera,
+			inv: Some(camera_to_world),
+		}
+	}
+
+	/// Apply the transform to a point.
+	pub fn map_point(&self, p: Vector3f) -> Vector3f {
+		let x = self.m[0][0] * p.x + self.m[0][1] * p.y + self.m[0][2] * p.z + self.m[0][3];
+		let y = self.m[1][0] * p.x + self.m[1][1] * p.y + self.m[1][2] * p.z + self.m[1][3];
+		let z = self.m[2][0] * p.x + self.m[2][1] * p.y + self.m[2][2] * p.z + self.m[2][3];
+		let w = self.m[3][0] * p.x + self.m[3][1] * p.y + self.m[3][2] * p.z + self.m[3][3];
+
+		if w == 1.0 {
+			Vector3f::new(x, y, z)
+		} else {
+			Vector3f::new(x, y, z) / w
+		}
+	}
+
+	/// Apply the inverse transform to a point.
+	pub fn invert_point(&self, p: Vector3f) -> Option<Vector3f> {
+		let m = self.inv.as_ref()?;
+		let x = m[0][0] * p.x + m[0][1] * p.y + m[0][2] * p.z + m[0][3];
+		let y = m[1][0] * p.x + m[1][1] * p.y + m[1][2] * p.z + m[1][3];
+		let z = m[2][0] * p.x + m[2][1] * p.y + m[2][2] * p.z + m[2][3];
+		let w = m[3][0] * p.x + m[3][1] * p.y + m[3][2] * p.z + m[3][3];
+
+		if w == 1.0 {
+			Some(Vector3f::new(x, y, z))
+		} else {
+			Some(Vector3f::new(x, y, z) / w)
+		}
+	}
+}
+
+impl Default for Transform {
+	fn default() -> Self {
+		let m = SquareMatrix::default();
+		Self {
+			m: m.clone(),
+			inv: Some(m),
+		}
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use approx::assert_abs_diff_eq;
 
 	#[test]
 	fn test_determinant() {
@@ -390,5 +694,76 @@ mod tests {
 		assert_eq!(m.inv().unwrap(), inv);
 		assert!((&m * &inv).is_identity());
 		assert!(singular.inv().is_none());
+	}
+
+	#[test]
+	fn test_translate() {
+		let t = Transform::translate(Vector3f::new(1.0, 2.0, 3.0));
+		let p = Vector3f::new(4.0, 5.0, 6.0);
+		let q = Vector3f::new(5.0, 7.0, 9.0);
+		assert_eq!(t.map_point(p), q);
+		assert_eq!(t.invert_point(q).unwrap(), p);
+	}
+
+	#[test]
+	fn test_scale() {
+		let t = Transform::scale(1.0, 2.0, 3.0);
+		let p = Vector3f::new(4.0, 5.0, 6.0);
+		let q = Vector3f::new(4.0, 10.0, 18.0);
+		assert_eq!(t.map_point(p), q);
+		assert_eq!(t.invert_point(q).unwrap(), p);
+		assert!(t.has_scale());
+
+		let t = Transform::default();
+		assert!(t.is_identity());
+		assert!(!t.has_scale());
+	}
+
+	#[test]
+	fn test_rotate() {
+		let t = Transform::rotate_x(90.0);
+		let p = Vector3f::new(1.0, 2.0, 3.0);
+		let q = Vector3f::new(1.0, -3.0, 2.0);
+		assert_abs_diff_eq!(t.map_point(p), q);
+		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p, epsilon = 1e-6);
+
+		let t = Transform::rotate_y(90.0);
+		let p = Vector3f::new(1.0, 2.0, 3.0);
+		let q = Vector3f::new(3.0, 2.0, -1.0);
+		assert_abs_diff_eq!(t.map_point(p), q);
+		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p);
+
+		let t = Transform::rotate_z(90.0);
+		let p = Vector3f::new(1.0, 2.0, 3.0);
+		let q = Vector3f::new(-2.0, 1.0, 3.0);
+		assert_abs_diff_eq!(t.map_point(p), q);
+		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p);
+
+		let t = Transform::rotate(Vector3f::new(1.0, 1.0, 1.0), 120.0);
+		let p = Vector3f::new(1.0, 0.0, 0.0);
+		let q = Vector3f::new(0.0, 1.0, 0.0);
+		assert_abs_diff_eq!(t.map_point(p), q, epsilon = 1e-6);
+		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p, epsilon = 1e-6);
+
+		// the rotation axis is (1, 1, 1)
+		let t =
+			Transform::rotate_from_to(Vector3f::new(1.0, 0.0, 0.0), Vector3f::new(0.0, 1.0, 0.0));
+		let p = Vector3f::new(1.0, 1.0, 0.0);
+		let q = Vector3f::new(0.0, 1.0, 1.0);
+		assert_eq!(t.map_point(p), q);
+		assert_eq!(t.invert_point(q).unwrap(), p);
+	}
+
+	#[test]
+	fn test_look_at() {
+		let t = Transform::look_at(
+			Vector3f::new(2.0, 2.0, 2.0),
+			Vector3f::new(0.0, 0.0, 0.0),
+			Vector3f::new(-1.0, 0.0, -1.0),
+		);
+		let p = Vector3f::new(1.0, 1.0, 1.0);
+		let q = Vector3f::new(0.0, 0.0, (3.0 as Float).sqrt());
+		assert_abs_diff_eq!(t.map_point(p), q, epsilon = 1e-6);
+		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p);
 	}
 }

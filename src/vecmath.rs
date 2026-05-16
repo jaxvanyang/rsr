@@ -701,7 +701,9 @@ impl AbsDiffEq for Vector3f {
 	}
 
 	fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
-		self.x.abs_diff_eq(&other.x, epsilon) && self.y.abs_diff_eq(&other.y, epsilon)
+		self.x.abs_diff_eq(&other.x, epsilon)
+			&& self.y.abs_diff_eq(&other.y, epsilon)
+			&& self.z.abs_diff_eq(&other.z, epsilon)
 	}
 }
 
