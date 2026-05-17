@@ -604,10 +604,11 @@ impl Transform {
 
 	/// Apply the transform to a point.
 	pub fn map_point(&self, p: Vector3f) -> Vector3f {
-		let x = self.m[0][0] * p.x + self.m[0][1] * p.y + self.m[0][2] * p.z + self.m[0][3];
-		let y = self.m[1][0] * p.x + self.m[1][1] * p.y + self.m[1][2] * p.z + self.m[1][3];
-		let z = self.m[2][0] * p.x + self.m[2][1] * p.y + self.m[2][2] * p.z + self.m[2][3];
-		let w = self.m[3][0] * p.x + self.m[3][1] * p.y + self.m[3][2] * p.z + self.m[3][3];
+		let m = &self.m;
+		let x = m[0][0] * p.x + m[0][1] * p.y + m[0][2] * p.z + m[0][3];
+		let y = m[1][0] * p.x + m[1][1] * p.y + m[1][2] * p.z + m[1][3];
+		let z = m[2][0] * p.x + m[2][1] * p.y + m[2][2] * p.z + m[2][3];
+		let w = m[3][0] * p.x + m[3][1] * p.y + m[3][2] * p.z + m[3][3];
 
 		if w == 1.0 {
 			Vector3f::new(x, y, z)
@@ -630,6 +631,46 @@ impl Transform {
 			Some(Vector3f::new(x, y, z) / w)
 		}
 	}
+
+	/// Apply the transform to a vector.
+	pub fn map_vector(&self, v: Vector3f) -> Vector3f {
+		let m = &self.m;
+		let x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z;
+		let y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z;
+		let z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z;
+
+		Vector3f::new(x, y, z)
+	}
+
+	/// Apply the inverse transform to a vector.
+	pub fn invert_vector(&self, v: Vector3f) -> Option<Vector3f> {
+		let m = self.inv.as_ref()?;
+		let x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z;
+		let y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z;
+		let z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z;
+
+		Some(Vector3f::new(x, y, z))
+	}
+
+	/// Apply the transform to a normal.
+	pub fn map_normal(&self, n: Vector3f) -> Option<Vector3f> {
+		let m = self.inv.as_ref()?;
+		let x = m[0][0] * n.x + m[1][0] * n.y + m[2][0] * n.z;
+		let y = m[0][1] * n.x + m[1][1] * n.y + m[2][1] * n.z;
+		let z = m[0][2] * n.x + m[1][2] * n.y + m[2][2] * n.z;
+
+		Some(Vector3f::new(x, y, z))
+	}
+
+	/// Apply the inverse transform to a normal.
+	pub fn invert_normal(&self, n: Vector3f) -> Vector3f {
+		let m = &self.m;
+		let x = m[0][0] * n.x + m[1][0] * n.y + m[2][0] * n.z;
+		let y = m[0][1] * n.x + m[1][1] * n.y + m[2][1] * n.z;
+		let z = m[0][2] * n.x + m[1][2] * n.y + m[2][2] * n.z;
+
+		Vector3f::new(x, y, z)
+	}
 }
 
 impl Default for Transform {
@@ -639,6 +680,23 @@ impl Default for Transform {
 			m: m.clone(),
 			inv: Some(m),
 		}
+	}
+}
+
+impl ops::Mul<&Transform> for Transform {
+	type Output = Transform;
+
+	fn mul(self, rhs: &Transform) -> Self::Output {
+		let m = &self.m * &rhs.m;
+		let inv = if let Some(a) = self.inv.as_ref()
+			&& let Some(b) = rhs.inv.as_ref()
+		{
+			Some(b * a)
+		} else {
+			None
+		};
+
+		Self::Output { m, inv }
 	}
 }
 
@@ -716,6 +774,10 @@ mod tests {
 		let q = Vector3f::new(5.0, 7.0, 9.0);
 		assert_eq!(t.map_point(p), q);
 		assert_eq!(t.invert_point(q).unwrap(), p);
+		assert_eq!(t.map_vector(p), p);
+		assert_eq!(t.invert_vector(p).unwrap(), p);
+		assert_eq!(t.map_normal(p).unwrap(), p);
+		assert_eq!(t.invert_normal(p), p);
 	}
 
 	#[test]
@@ -723,9 +785,14 @@ mod tests {
 		let t = Transform::scale(1.0, 2.0, 3.0);
 		let p = Vector3f::new(4.0, 5.0, 6.0);
 		let q = Vector3f::new(4.0, 10.0, 18.0);
+		let n = Vector3f::new(4.0, 2.5, 2.0);
+		assert!(t.has_scale());
 		assert_eq!(t.map_point(p), q);
 		assert_eq!(t.invert_point(q).unwrap(), p);
-		assert!(t.has_scale());
+		assert_eq!(t.map_vector(p), q);
+		assert_eq!(t.invert_vector(q).unwrap(), p);
+		assert_eq!(t.map_normal(p).unwrap(), n);
+		assert_eq!(t.invert_normal(n), p);
 
 		let t = Transform::default();
 		assert!(t.is_identity());
@@ -739,24 +806,40 @@ mod tests {
 		let q = Vector3f::new(1.0, -3.0, 2.0);
 		assert_abs_diff_eq!(t.map_point(p), q);
 		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p, epsilon = 1e-6);
+		assert_abs_diff_eq!(t.map_vector(p), q);
+		assert_abs_diff_eq!(t.invert_vector(q).unwrap(), p, epsilon = 1e-6);
+		assert_abs_diff_eq!(t.map_normal(p).unwrap(), q);
+		assert_abs_diff_eq!(t.invert_normal(q), p, epsilon = 1e-6);
 
 		let t = Transform::rotate_y(90.0);
 		let p = Vector3f::new(1.0, 2.0, 3.0);
 		let q = Vector3f::new(3.0, 2.0, -1.0);
 		assert_abs_diff_eq!(t.map_point(p), q);
 		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p);
+		assert_abs_diff_eq!(t.map_vector(p), q);
+		assert_abs_diff_eq!(t.invert_vector(q).unwrap(), p);
+		assert_abs_diff_eq!(t.map_normal(p).unwrap(), q);
+		assert_abs_diff_eq!(t.invert_normal(q), p);
 
 		let t = Transform::rotate_z(90.0);
 		let p = Vector3f::new(1.0, 2.0, 3.0);
 		let q = Vector3f::new(-2.0, 1.0, 3.0);
 		assert_abs_diff_eq!(t.map_point(p), q);
 		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p);
+		assert_abs_diff_eq!(t.map_vector(p), q);
+		assert_abs_diff_eq!(t.invert_vector(q).unwrap(), p);
+		assert_abs_diff_eq!(t.map_normal(p).unwrap(), q);
+		assert_abs_diff_eq!(t.invert_normal(q), p);
 
 		let t = Transform::rotate(Vector3f::new(1.0, 1.0, 1.0), 120.0);
 		let p = Vector3f::new(1.0, 0.0, 0.0);
 		let q = Vector3f::new(0.0, 1.0, 0.0);
 		assert_abs_diff_eq!(t.map_point(p), q, epsilon = 1e-6);
 		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p, epsilon = 1e-6);
+		assert_abs_diff_eq!(t.map_vector(p), q, epsilon = 1e-6);
+		assert_abs_diff_eq!(t.invert_vector(q).unwrap(), p, epsilon = 1e-6);
+		assert_abs_diff_eq!(t.map_normal(p).unwrap(), q, epsilon = 1e-6);
+		assert_abs_diff_eq!(t.invert_normal(q), p, epsilon = 1e-6);
 
 		// the rotation axis is (1, 1, 1)
 		let t =
@@ -765,6 +848,10 @@ mod tests {
 		let q = Vector3f::new(0.0, 1.0, 1.0);
 		assert_eq!(t.map_point(p), q);
 		assert_eq!(t.invert_point(q).unwrap(), p);
+		assert_eq!(t.map_vector(p), q);
+		assert_eq!(t.invert_vector(q).unwrap(), p);
+		assert_eq!(t.map_normal(p).unwrap(), q);
+		assert_eq!(t.invert_normal(q), p);
 	}
 
 	#[test]
@@ -776,7 +863,12 @@ mod tests {
 		);
 		let p = Vector3f::new(1.0, 1.0, 1.0);
 		let q = Vector3f::new(0.0, 0.0, (3.0 as Float).sqrt());
+		let v = Vector3f::new(0.0, 0.0, -(3.0 as Float).sqrt());
 		assert_abs_diff_eq!(t.map_point(p), q, epsilon = 1e-6);
 		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p);
+		assert_abs_diff_eq!(t.map_vector(p), v);
+		assert_abs_diff_eq!(t.invert_vector(v).unwrap(), p);
+		assert_abs_diff_eq!(t.map_normal(p).unwrap(), v);
+		assert_abs_diff_eq!(t.invert_normal(v), p);
 	}
 }
