@@ -13,13 +13,11 @@ fn main() {
 		Vector3f::new(-1.0, -1.0, -1.0),
 		Vector3f::new(-1.0, -1.0, 1.0),
 	];
-	let camera: Float = 0.1;
-	let proj_camera = SquareMatrix::new([
-		[1.0, 0.0, 0.0, 0.0],
-		[0.0, camera.cos(), -camera.sin(), 0.0],
-		[0.0, camera.sin(), camera.cos(), 0.0],
-		[0.0, 0.0, 0.0, 1.0],
-	]);
+	let world2camera = Transform::look_at(
+		Vector3f::new(10.0, 10.0, 0.0),
+		Vector3f::new(0.0, 0.0, 0.0),
+		Vector3f::new(0.0, 1.0, 0.0),
+	);
 	let proj_ortho = SquareMatrix::new([
 		[100.0, 0.0, 0.0, 0.0],
 		[0.0, 100.0, 0.0, 0.0],
@@ -32,25 +30,18 @@ fn main() {
 		[0.0, 0.0, 1.0, 0.0],
 		[0.0, 0.0, 0.0, 1.0],
 	]);
-	let proj = Transform::new(&proj_screen * &proj_ortho * &proj_camera);
+	let proj = Transform::new(&proj_screen * &proj_ortho * world2camera.get_matrix());
 
+	let rotation = Transform::rotate_y(0.2);
 	while window.is_open() {
-		let theta: Float = 0.2;
-		let rotation = Transform::rotate_y(theta);
-		for p in cube.iter_mut() {
-			*p = rotation.map_point(*p);
-		}
-
-		let mut cube = cube;
-		for p in cube.iter_mut() {
-			*p = proj.map_point(*p);
-		}
-
 		screen.clear();
 
-		for p in cube {
+		for i in cube.iter_mut() {
+			let p = proj.map_point(*i);
 			let circle = Circle::new(p.x, p.y, 2.0);
 			screen.fill_circle(circle, GREEN);
+
+			*i = rotation.map_point(*i);
 		}
 
 		screen.update_window(&mut window).unwrap();
