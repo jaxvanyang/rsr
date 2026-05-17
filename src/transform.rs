@@ -11,13 +11,6 @@ impl<const N: usize> SquareMatrix<N> {
 		Self { m: [[0.0; N]; N] }
 	}
 
-	pub fn new(m: [[Float; N]; N]) -> Self {
-		let ret = Self { m };
-		debug_assert!(!ret.has_nan());
-
-		ret
-	}
-
 	pub fn has_nan(&self) -> bool {
 		self.m.iter().flatten().any(|x| x.is_nan())
 	}
@@ -249,6 +242,15 @@ impl<const N: usize> Default for SquareMatrix<N> {
 	}
 }
 
+impl<const N: usize> From<[[Float; N]; N]> for SquareMatrix<N> {
+	fn from(m: [[Float; N]; N]) -> Self {
+		let ret = Self { m };
+		debug_assert!(!ret.has_nan());
+
+		ret
+	}
+}
+
 impl<const N: usize> ops::Add<&Self> for SquareMatrix<N> {
 	type Output = Self;
 
@@ -386,14 +388,6 @@ impl Transform {
 		Self { m, inv }
 	}
 
-	// TODO: use From trait
-	pub fn from_array(a: [[Float; 4]; 4]) -> Self {
-		let m = SquareMatrix::new(a);
-		let inv = m.inv();
-
-		Self { m, inv }
-	}
-
 	pub fn new_with_inv(m: SquareMatrix<4>, inv: SquareMatrix<4>) -> Self {
 		Self { m, inv: Some(inv) }
 	}
@@ -427,13 +421,13 @@ impl Transform {
 	}
 
 	pub fn translate(delta: Vector3f) -> Self {
-		let m = SquareMatrix::new([
+		let m = SquareMatrix::from([
 			[1.0, 0.0, 0.0, delta.x],
 			[0.0, 1.0, 0.0, delta.y],
 			[0.0, 0.0, 1.0, delta.z],
 			[0.0, 0.0, 0.0, 1.0],
 		]);
-		let inv = SquareMatrix::new([
+		let inv = SquareMatrix::from([
 			[1.0, 0.0, 0.0, -delta.x],
 			[0.0, 1.0, 0.0, -delta.y],
 			[0.0, 0.0, 1.0, -delta.z],
@@ -444,13 +438,13 @@ impl Transform {
 	}
 
 	pub fn scale(x: Float, y: Float, z: Float) -> Self {
-		let m = SquareMatrix::new([
+		let m = SquareMatrix::from([
 			[x, 0.0, 0.0, 0.0],
 			[0.0, y, 0.0, 0.0],
 			[0.0, 0.0, z, 0.0],
 			[0.0, 0.0, 0.0, 1.0],
 		]);
-		let inv = SquareMatrix::new([
+		let inv = SquareMatrix::from([
 			[1.0 / x, 0.0, 0.0, 0.0],
 			[0.0, 1.0 / y, 0.0, 0.0],
 			[0.0, 0.0, 1.0 / z, 0.0],
@@ -483,7 +477,7 @@ impl Transform {
 		let theta = theta.to_radians();
 		let sin = theta.sin();
 		let cos = theta.cos();
-		let m = SquareMatrix::new([
+		let m = SquareMatrix::from([
 			[1.0, 0.0, 0.0, 0.0],
 			[0.0, cos, -sin, 0.0],
 			[0.0, sin, cos, 0.0],
@@ -499,7 +493,7 @@ impl Transform {
 		let theta = theta.to_radians();
 		let sin = theta.sin();
 		let cos = theta.cos();
-		let m = SquareMatrix::new([
+		let m = SquareMatrix::from([
 			[cos, 0.0, sin, 0.0],
 			[0.0, 1.0, 0.0, 0.0],
 			[-sin, 0.0, cos, 0.0],
@@ -515,7 +509,7 @@ impl Transform {
 		let theta = theta.to_radians();
 		let sin = theta.sin();
 		let cos = theta.cos();
-		let m = SquareMatrix::new([
+		let m = SquareMatrix::from([
 			[cos, -sin, 0.0, 0.0],
 			[sin, cos, 0.0, 0.0],
 			[0.0, 0.0, 1.0, 0.0],
@@ -690,7 +684,7 @@ impl Transform {
 	/// Return `true` if the transform changes handedness.
 	pub fn swaps_handedness(&self) -> bool {
 		let m = &self.m;
-		let m = SquareMatrix::new([
+		let m = SquareMatrix::from([
 			[m[0][0], m[0][1], m[0][2]],
 			[m[1][0], m[1][1], m[1][2]],
 			[m[2][0], m[2][1], m[2][2]],
@@ -707,6 +701,15 @@ impl Default for Transform {
 			m: m.clone(),
 			inv: Some(m),
 		}
+	}
+}
+
+impl From<[[Float; 4]; 4]> for Transform {
+	fn from(m: [[Float; 4]; 4]) -> Self {
+		let m = SquareMatrix::from(m);
+		let inv = m.inv();
+
+		Self { m, inv }
 	}
 }
 
@@ -734,13 +737,13 @@ mod tests {
 
 	#[test]
 	fn test_determinant() {
-		let m = SquareMatrix::new([[1.0, 2.0], [3.0, 4.0]]);
+		let m = SquareMatrix::from([[1.0, 2.0], [3.0, 4.0]]);
 		assert_eq!(m.det(), -2.0);
 
-		let m = SquareMatrix::new([[0.0, 1.0, 2.0], [3.0, 0.0, 4.0], [5.0, 6.0, 0.0]]);
+		let m = SquareMatrix::from([[0.0, 1.0, 2.0], [3.0, 0.0, 4.0], [5.0, 6.0, 0.0]]);
 		assert_eq!(m.det(), 56.0);
 
-		let m = SquareMatrix::new([
+		let m = SquareMatrix::from([
 			[1.0, 2.0, 3.0, 0.0],
 			[2.0, 6.0, 6.0, 1.0],
 			[-1.0, 0.0, 0.0, 3.0],
@@ -754,36 +757,36 @@ mod tests {
 
 	#[test]
 	fn test_inverse() {
-		let m = SquareMatrix::new([[2.0]]);
-		let inv = SquareMatrix::new([[0.5]]);
+		let m = SquareMatrix::from([[2.0]]);
+		let inv = SquareMatrix::from([[0.5]]);
 		assert_eq!(m.inv().unwrap(), inv);
 		assert!((&m * &inv).is_identity());
 
-		let m = SquareMatrix::new([[1.0, 2.0], [3.0, 4.0]]);
-		let inv = SquareMatrix::new([[-2.0, 1.0], [1.5, -0.5]]);
+		let m = SquareMatrix::from([[1.0, 2.0], [3.0, 4.0]]);
+		let inv = SquareMatrix::from([[-2.0, 1.0], [1.5, -0.5]]);
 		assert_eq!(m.inv().unwrap(), inv);
 		assert!((&m * &inv).is_identity());
 
-		let m = SquareMatrix::new([[2.0, 6.0, 2.0], [1.0, 4.0, 2.0], [5.0, 9.0, 0.0]]);
-		let inv = SquareMatrix::new([[-9.0, 9.0, 2.0], [5.0, -5.0, -1.0], [-5.5, 6.0, 1.0]]);
-		let singular = SquareMatrix::new([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]);
+		let m = SquareMatrix::from([[2.0, 6.0, 2.0], [1.0, 4.0, 2.0], [5.0, 9.0, 0.0]]);
+		let inv = SquareMatrix::from([[-9.0, 9.0, 2.0], [5.0, -5.0, -1.0], [-5.5, 6.0, 1.0]]);
+		let singular = SquareMatrix::from([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]);
 		assert_eq!(m.inv().unwrap(), inv);
 		assert!((&m * &inv).is_identity());
 		assert!(singular.inv().is_none());
 
-		let m = SquareMatrix::new([
+		let m = SquareMatrix::from([
 			[1.0, 1.0, 1.0, 1.0],
 			[1.0, 1.0, -1.0, -1.0],
 			[1.0, -1.0, -1.0, 1.0],
 			[1.0, -1.0, 1.0, -1.0],
 		]);
-		let inv = SquareMatrix::new([
+		let inv = SquareMatrix::from([
 			[0.25, 0.25, 0.25, 0.25],
 			[0.25, 0.25, -0.25, -0.25],
 			[0.25, -0.25, -0.25, 0.25],
 			[0.25, -0.25, 0.25, -0.25],
 		]);
-		let singular = SquareMatrix::new([
+		let singular = SquareMatrix::from([
 			[1.0, 2.0, 3.0, 4.0],
 			[5.0, 6.0, 7.0, 8.0],
 			[9.0, 10.0, 11.0, 12.0],

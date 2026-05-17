@@ -18,13 +18,13 @@ fn main() {
 		Vector3f::new(0.0, 0.0, 0.0),
 		Vector3f::new(0.0, 1.0, 0.0),
 	);
-	let proj_ortho = SquareMatrix::new([
+	let proj_ortho = SquareMatrix::from([
 		[100.0, 0.0, 0.0, 0.0],
 		[0.0, 100.0, 0.0, 0.0],
 		[0.0, 0.0, 100.0, -200.0],
 		[0.0, 0.0, 0.0, 1.0],
 	]);
-	let proj_screen = SquareMatrix::new([
+	let proj_screen = SquareMatrix::from([
 		[1.0, 0.0, 0.0, screen.width as Float / 2.0],
 		[0.0, -1.0, 0.0, screen.height as Float / 2.0],
 		[0.0, 0.0, 1.0, 0.0],
