@@ -1,4 +1,4 @@
-use crate::{Float, Vector2f, Vector3f, diff_of_products};
+use crate::{Bounds3f, Float, Vector2f, Vector3f, diff_of_products};
 use std::ops;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -213,6 +213,29 @@ impl SquareMatrix<4> {
 
 		Some(Self { m: inv })
 	}
+
+	pub fn mul_point(&self, p: Vector3f) -> Vector3f {
+		let m = &self.m;
+		let x = m[0][0] * p.x + m[0][1] * p.y + m[0][2] * p.z + m[0][3];
+		let y = m[1][0] * p.x + m[1][1] * p.y + m[1][2] * p.z + m[1][3];
+		let z = m[2][0] * p.x + m[2][1] * p.y + m[2][2] * p.z + m[2][3];
+		let w = m[3][0] * p.x + m[3][1] * p.y + m[3][2] * p.z + m[3][3];
+
+		if w == 1.0 {
+			Vector3f::new(x, y, z)
+		} else {
+			Vector3f::new(x, y, z) / w
+		}
+	}
+
+	pub fn mul_vector(&self, v: Vector3f) -> Vector3f {
+		let m = &self.m;
+		let x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z;
+		let y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z;
+		let z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z;
+
+		Vector3f::new(x, y, z)
+	}
 }
 
 impl<const N: usize> Default for SquareMatrix<N> {
@@ -363,6 +386,7 @@ impl Transform {
 		Self { m, inv }
 	}
 
+	// TODO: use From trait
 	pub fn from_array(a: [[Float; 4]; 4]) -> Self {
 		let m = SquareMatrix::new(a);
 		let inv = m.inv();
@@ -604,52 +628,22 @@ impl Transform {
 
 	/// Apply the transform to a point.
 	pub fn map_point(&self, p: Vector3f) -> Vector3f {
-		let m = &self.m;
-		let x = m[0][0] * p.x + m[0][1] * p.y + m[0][2] * p.z + m[0][3];
-		let y = m[1][0] * p.x + m[1][1] * p.y + m[1][2] * p.z + m[1][3];
-		let z = m[2][0] * p.x + m[2][1] * p.y + m[2][2] * p.z + m[2][3];
-		let w = m[3][0] * p.x + m[3][1] * p.y + m[3][2] * p.z + m[3][3];
-
-		if w == 1.0 {
-			Vector3f::new(x, y, z)
-		} else {
-			Vector3f::new(x, y, z) / w
-		}
+		self.m.mul_point(p)
 	}
 
 	/// Apply the inverse transform to a point.
 	pub fn invert_point(&self, p: Vector3f) -> Option<Vector3f> {
-		let m = self.inv.as_ref()?;
-		let x = m[0][0] * p.x + m[0][1] * p.y + m[0][2] * p.z + m[0][3];
-		let y = m[1][0] * p.x + m[1][1] * p.y + m[1][2] * p.z + m[1][3];
-		let z = m[2][0] * p.x + m[2][1] * p.y + m[2][2] * p.z + m[2][3];
-		let w = m[3][0] * p.x + m[3][1] * p.y + m[3][2] * p.z + m[3][3];
-
-		if w == 1.0 {
-			Some(Vector3f::new(x, y, z))
-		} else {
-			Some(Vector3f::new(x, y, z) / w)
-		}
+		self.inv.as_ref().map(|m| m.mul_point(p))
 	}
 
 	/// Apply the transform to a vector.
 	pub fn map_vector(&self, v: Vector3f) -> Vector3f {
-		let m = &self.m;
-		let x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z;
-		let y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z;
-		let z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z;
-
-		Vector3f::new(x, y, z)
+		self.m.mul_vector(v)
 	}
 
 	/// Apply the inverse transform to a vector.
 	pub fn invert_vector(&self, v: Vector3f) -> Option<Vector3f> {
-		let m = self.inv.as_ref()?;
-		let x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z;
-		let y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z;
-		let z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z;
-
-		Some(Vector3f::new(x, y, z))
+		self.inv.as_ref().map(|m| m.mul_vector(v))
 	}
 
 	/// Apply the transform to a normal.
@@ -670,6 +664,39 @@ impl Transform {
 		let z = m[0][2] * n.x + m[1][2] * n.y + m[2][2] * n.z;
 
 		Vector3f::new(x, y, z)
+	}
+
+	// TODO: transform ray
+
+	/// Apply the transform to a bounding box.
+	pub fn map_bounds(&self, b: &Bounds3f) -> Bounds3f {
+		Bounds3f::from_point(self.map_point(b.corner(0)))
+			.union_point(self.map_point(b.corner(1)))
+			.union_point(self.map_point(b.corner(2)))
+			.union_point(self.map_point(b.corner(4)))
+	}
+
+	/// Apply the inverse transform to a bounding box.
+	pub fn invert_bounds(&self, b: &Bounds3f) -> Option<Bounds3f> {
+		let m = self.inv.as_ref()?;
+		let ret = Bounds3f::from_point(m.mul_point(b.corner(0)))
+			.union_point(m.mul_point(b.corner(1)))
+			.union_point(m.mul_point(b.corner(2)))
+			.union_point(m.mul_point(b.corner(4)));
+
+		Some(ret)
+	}
+
+	/// Return `true` if the transform changes handedness.
+	pub fn swaps_handedness(&self) -> bool {
+		let m = &self.m;
+		let m = SquareMatrix::new([
+			[m[0][0], m[0][1], m[0][2]],
+			[m[1][0], m[1][1], m[1][2]],
+			[m[2][0], m[2][1], m[2][2]],
+		]);
+
+		m.det() < 0.0
 	}
 }
 
@@ -870,5 +897,20 @@ mod tests {
 		assert_abs_diff_eq!(t.invert_vector(v).unwrap(), p);
 		assert_abs_diff_eq!(t.map_normal(p).unwrap(), v);
 		assert_abs_diff_eq!(t.invert_normal(v), p);
+	}
+
+	#[test]
+	fn test_bounds() {
+		let t = Transform::scale(-1.0, 2.0, -3.0);
+		let b = Bounds3f::new(
+			Vector3f::new(-1.0, -1.0, -1.0),
+			Vector3f::new(1.0, 1.0, 1.0),
+		);
+		let c = Bounds3f::new(
+			Vector3f::new(-1.0, -2.0, -3.0),
+			Vector3f::new(1.0, 2.0, 3.0),
+		);
+		assert_eq!(t.map_bounds(&b), c);
+		assert_eq!(t.invert_bounds(&c).unwrap(), b);
 	}
 }
