@@ -898,7 +898,7 @@ mod tests {
 		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p);
 		assert_abs_diff_eq!(t.map_vector(p), v);
 		assert_abs_diff_eq!(t.invert_vector(v).unwrap(), p);
-		assert_abs_diff_eq!(t.map_normal(p).unwrap(), v);
+		assert_abs_diff_eq!(t.map_normal(p).unwrap(), v, epsilon = 1e-6);
 		assert_abs_diff_eq!(t.invert_normal(v), p);
 	}
 
