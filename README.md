@@ -1,6 +1,6 @@
-# Rusty Software Renderer
+# Rusty Renderer
 
-`rsr` is a software renderer implemented in Rust. Its goal is to achieve basic
+`rsr` is a toy renderer implemented in Rust. Its goal is to achieve basic
 functionality of [pbrt-v4][pbrt].
 
 ## References
