@@ -22,6 +22,10 @@ pub trait Number:
 	+ PartialOrd
 	+ Default
 {
+	const ONE: Self;
+	const MIN: Self;
+	const MAX: Self;
+
 	fn is_nan(self) -> bool {
 		false
 	}
@@ -33,11 +37,13 @@ pub trait Number:
 	fn as_float(self) -> Float;
 	fn min(self, rhs: Self) -> Self;
 	fn max(self, rhs: Self) -> Self;
-	fn min_num() -> Self;
-	fn max_num() -> Self;
 }
 
 impl Number for i32 {
+	const ONE: Self = 1;
+	const MIN: Self = i32::MIN;
+	const MAX: Self = i32::MAX;
+
 	fn as_float(self) -> Float {
 		self as Float
 	}
@@ -49,17 +55,13 @@ impl Number for i32 {
 	fn max(self, rhs: Self) -> Self {
 		Ord::max(self, rhs)
 	}
-
-	fn min_num() -> Self {
-		Self::MIN
-	}
-
-	fn max_num() -> Self {
-		Self::MAX
-	}
 }
 
 impl Number for f32 {
+	const ONE: Self = 1.0;
+	const MIN: Self = f32::MIN;
+	const MAX: Self = f32::MAX;
+
 	fn is_nan(self) -> bool {
 		self.is_nan()
 	}
@@ -75,17 +77,13 @@ impl Number for f32 {
 	fn max(self, rhs: Self) -> Self {
 		f32::max(self, rhs)
 	}
-
-	fn min_num() -> Self {
-		Self::MIN
-	}
-
-	fn max_num() -> Self {
-		Self::MAX
-	}
 }
 
 impl Number for f64 {
+	const ONE: Self = 1.0;
+	const MIN: Self = f64::MIN;
+	const MAX: Self = f64::MAX;
+
 	fn is_nan(self) -> bool {
 		self.is_nan()
 	}
@@ -100,14 +98,6 @@ impl Number for f64 {
 
 	fn max(self, rhs: Self) -> Self {
 		f64::max(self, rhs)
-	}
-
-	fn min_num() -> Self {
-		Self::MIN
-	}
-
-	fn max_num() -> Self {
-		Self::MAX
 	}
 }
 

@@ -30,16 +30,16 @@ impl<T: Number> Vector2<T> {
 		}
 	}
 
-	pub fn dot(&self, rhs: Self) -> T {
-		self.x * rhs.x + self.y * rhs.y
+	pub fn length_squared(self) -> T {
+		self.dot(self)
 	}
 
 	pub fn abs_dot(&self, rhs: Self) -> T {
 		self.dot(rhs).abs()
 	}
 
-	pub fn length_squared(self) -> T {
-		self.dot(self)
+	pub fn dot(&self, rhs: Self) -> T {
+		self.x * rhs.x + self.y * rhs.y
 	}
 
 	/// per element min
@@ -97,6 +97,10 @@ impl<T: Number> Vector2<T> {
 }
 
 impl Vector2f {
+	pub fn is_normalized(self) -> bool {
+		abs_diff_eq!(self.length(), 1.0)
+	}
+
 	pub fn length(self) -> Float {
 		self.length_squared().sqrt()
 	}
@@ -341,16 +345,16 @@ impl<T: Number> Vector3<T> {
 		}
 	}
 
-	pub fn dot(self, rhs: Self) -> T {
-		self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
+	pub fn length_squared(self) -> T {
+		self.dot(self)
 	}
 
 	pub fn abs_dot(self, rhs: Self) -> T {
 		self.dot(rhs).abs()
 	}
 
-	pub fn length_squared(self) -> T {
-		self.dot(self)
+	pub fn dot(self, rhs: Self) -> T {
+		self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
 	}
 
 	/// per element min
@@ -433,6 +437,10 @@ impl<T: Number> Vector3<T> {
 }
 
 impl Vector3f {
+	pub fn is_normalized(self) -> bool {
+		abs_diff_eq!(self.length(), 1.0)
+	}
+
 	pub fn length(self) -> Float {
 		self.length_squared().sqrt()
 	}
@@ -506,23 +514,26 @@ impl Vector3f {
 		}
 	}
 
-	/// Construct a local coordinate system from a signdle normalized 3D vector.
-	pub fn coordinate_system(self, v2: &mut Self, v3: &mut Self) {
-		debug_assert!(abs_diff_eq!(self.length(), 1.0));
+	/// Construct a local coordinate system from a single normalized 3D vector.
+	/// Return two orthonormal vectors that are perpendicular to `self`.
+	pub fn coordinate_system(self) -> (Self, Self) {
+		debug_assert!(self.is_normalized());
 
 		let sign = (1.0 as Float).copysign(self.z);
 		let a = -1.0 / (sign + self.z);
 		let b = self.x * self.y * a;
-		*v2 = Self {
+		let v2 = Self {
 			x: 1.0 + sign * self.x * self.x * a,
 			y: sign * b,
 			z: -sign * self.x,
 		};
-		*v3 = Self {
+		let v3 = Self {
 			x: b,
 			y: sign + self.y * self.y * a,
 			z: -self.y,
 		};
+
+		(v2, v3)
 	}
 
 	pub fn face_forward(self, v: Self) -> Self {
@@ -831,16 +842,14 @@ impl Bounds2f {
 impl<T: Number> Default for Bounds2<T> {
 	/// Create an empty bounding box.
 	fn default() -> Self {
-		let min_num = T::min_num();
-		let max_num = T::max_num();
 		Self {
 			min: Vector2 {
-				x: max_num,
-				y: max_num,
+				x: T::MAX,
+				y: T::MAX,
 			},
 			max: Vector2 {
-				x: min_num,
-				y: min_num,
+				x: T::MIN,
+				y: T::MIN,
 			},
 		}
 	}
@@ -1056,18 +1065,16 @@ impl Bounds3f {
 impl<T: Number> Default for Bounds3<T> {
 	/// Create an empty bounding box.
 	fn default() -> Self {
-		let min_num = T::min_num();
-		let max_num = T::max_num();
 		Self {
 			min: Vector3 {
-				x: max_num,
-				y: max_num,
-				z: max_num,
+				x: T::MAX,
+				y: T::MAX,
+				z: T::MAX,
 			},
 			max: Vector3 {
-				x: min_num,
-				y: min_num,
-				z: min_num,
+				x: T::MIN,
+				y: T::MIN,
+				z: T::MIN,
 			},
 		}
 	}
@@ -1170,9 +1177,7 @@ mod tests {
 	#[test]
 	fn test_coordinate_system() {
 		let v1 = Vector3f::new(1.0, 2.0, 3.0).normalized();
-		let mut v2 = Vector3f::default();
-		let mut v3 = Vector3f::default();
-		v1.coordinate_system(&mut v2, &mut v3);
+		let (v2, v3) = v1.coordinate_system();
 		let v1xv2 = v1.cross(v2);
 
 		assert_abs_diff_eq!(v2.length(), 1.0);

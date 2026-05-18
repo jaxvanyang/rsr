@@ -1,4 +1,5 @@
 use crate::{Bounds3f, Float, Vector2f, Vector3f, diff_of_products};
+use approx::abs_diff_eq;
 use std::ops;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -291,16 +292,7 @@ impl<const N: usize> ops::Mul<&SquareMatrix<N>> for SquareMatrix<N> {
 	type Output = SquareMatrix<N>;
 
 	fn mul(self, rhs: &SquareMatrix<N>) -> SquareMatrix<N> {
-		let mut ret = SquareMatrix::zero();
-		for i in 0..N {
-			for j in 0..N {
-				for k in 0..N {
-					ret.m[i][j] += self.m[i][k] * rhs.m[k][j];
-				}
-			}
-		}
-
-		ret
+		(&self) * rhs
 	}
 }
 
@@ -713,7 +705,29 @@ impl From<[[Float; 4]; 4]> for Transform {
 	}
 }
 
+impl From<&Frame> for Transform {
+	fn from(f: &Frame) -> Self {
+		let m = SquareMatrix::from([
+			[f.x.x, f.x.y, f.x.z, 0.0],
+			[f.y.x, f.y.y, f.y.z, 0.0],
+			[f.z.x, f.z.y, f.z.z, 0.0],
+			[0.0, 0.0, 0.0, 1.0],
+		]);
+		let inv = m.T();
+
+		Self { m, inv: Some(inv) }
+	}
+}
+
 impl ops::Mul<&Transform> for Transform {
+	type Output = Transform;
+
+	fn mul(self, rhs: &Transform) -> Self::Output {
+		(&self) * rhs
+	}
+}
+
+impl ops::Mul<&Transform> for &Transform {
 	type Output = Transform;
 
 	fn mul(self, rhs: &Transform) -> Self::Output {
@@ -727,6 +741,60 @@ impl ops::Mul<&Transform> for Transform {
 		};
 
 		Self::Output { m, inv }
+	}
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Frame {
+	pub x: Vector3f,
+	pub y: Vector3f,
+	pub z: Vector3f,
+}
+
+impl Frame {
+	pub fn new(x: Vector3f, y: Vector3f, z: Vector3f) -> Self {
+		let ret = Self { x, y, z };
+
+		debug_assert!(x.is_normalized());
+		debug_assert!(y.is_normalized());
+		debug_assert!(z.is_normalized());
+		debug_assert!(abs_diff_eq!(x.cross(y), z));
+
+		ret
+	}
+
+	pub fn from_xz(x: Vector3f, z: Vector3f) -> Self {
+		Self::new(x, z.cross(x), z)
+	}
+
+	pub fn from_xy(x: Vector3f, y: Vector3f) -> Self {
+		Self::new(x, y, x.cross(y))
+	}
+
+	pub fn from_z(z: Vector3f) -> Self {
+		let (x, y) = z.coordinate_system();
+
+		Self::new(x, y, z)
+	}
+
+	/// Transform a vector / normal into the frame's local coordinate system.
+	pub fn to_local(&self, v: Vector3f) -> Vector3f {
+		Vector3f::new(self.x.dot(v), self.y.dot(v), self.z.dot(v))
+	}
+
+	/// Transform a vector / normal from the frame's local coordinate system to world space.
+	pub fn from_local(&self, v: Vector3f) -> Vector3f {
+		v.x * self.x + v.y * self.y + v.z * self.z
+	}
+}
+
+impl Default for Frame {
+	fn default() -> Self {
+		Self {
+			x: Vector3f::new(1.0, 0.0, 0.0),
+			y: Vector3f::new(0.0, 1.0, 0.0),
+			z: Vector3f::new(0.0, 0.0, 1.0),
+		}
 	}
 }
 
@@ -915,5 +983,34 @@ mod tests {
 		);
 		assert_eq!(t.map_bounds(&b), c);
 		assert_eq!(t.invert_bounds(&c).unwrap(), b);
+	}
+
+	#[test]
+	fn test_composition() {
+		let tx = Transform::rotate_x(90.0);
+		let ty = Transform::rotate_y(90.0);
+		let tz = Transform::rotate_z(90.0);
+		let t = &tz * &ty * &tx;
+		let p = Vector3f::new(1.0, 1.0, 1.0);
+		let q = Vector3f::new(1.0, 1.0, -1.0);
+		assert_abs_diff_eq!(t.map_point(p), q);
+		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p);
+		assert_abs_diff_eq!(t.map_vector(p), q);
+		assert_abs_diff_eq!(t.invert_vector(q).unwrap(), p);
+		assert_abs_diff_eq!(t.map_normal(p).unwrap(), q);
+		assert_abs_diff_eq!(t.invert_normal(q), p);
+	}
+
+	#[test]
+	fn test_frame() {
+		let f = Frame::from_z(Vector3f::new(1.0, 0.0, 0.0));
+		let t = Transform::from(&f);
+		let u = Vector3f::new(1.0, 2.0, 3.0);
+		let v = Vector3f::new(-3.0, 2.0, 1.0);
+		println!("f = {f:?}");
+		assert_eq!(f.to_local(u), v);
+		assert_eq!(f.from_local(v), u);
+		assert_eq!(t.map_vector(u), v);
+		assert_eq!(t.invert_vector(v).unwrap(), u);
 	}
 }
