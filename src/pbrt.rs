@@ -1,4 +1,5 @@
 pub mod color;
+pub mod interaction;
 pub mod matrix;
 pub mod transform;
 pub mod vecmath;
