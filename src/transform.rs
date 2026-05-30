@@ -1007,7 +1007,6 @@ mod tests {
 		let t = Transform::from(&f);
 		let u = Vector3f::new(1.0, 2.0, 3.0);
 		let v = Vector3f::new(-3.0, 2.0, 1.0);
-		println!("f = {f:?}");
 		assert_eq!(f.to_local(u), v);
 		assert_eq!(f.from_local(v), u);
 		assert_eq!(t.map_vector(u), v);

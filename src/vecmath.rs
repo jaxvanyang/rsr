@@ -1,9 +1,9 @@
-use crate::{Float, Number, lerp};
+use crate::{Float, Interval, Number, lerp};
 use approx::{AbsDiffEq, abs_diff_eq};
 use std::fmt::Display;
 use std::ops::*;
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Vector2<T> {
 	pub x: T,
 	pub y: T,
@@ -325,6 +325,7 @@ pub struct Vector3<T> {
 
 pub type Vector3f = Vector3<Float>;
 pub type Vector3i = Vector3<i32>;
+pub type Vector3fi = Vector3<Interval>;
 
 impl<T: Number> Vector3<T> {
 	pub fn new(x: T, y: T, z: T) -> Self {
@@ -538,6 +539,29 @@ impl Vector3f {
 
 	pub fn face_forward(self, v: Self) -> Self {
 		if self.dot(v) < 0.0 { -self } else { self }
+	}
+}
+
+impl Vector3fi {
+	pub fn new_with_error(v: Vector3f, e: Vector3f) -> Self {
+		Self::new(
+			Interval::new_with_error(v.x, e.x),
+			Interval::new_with_error(v.y, e.y),
+			Interval::new_with_error(v.z, e.z),
+		)
+	}
+
+	/// Return error bounds for the vector components.
+	pub fn error(&self) -> Vector3f {
+		Vector3f::new(
+			self.x.width() / 2.0,
+			self.y.width() / 2.0,
+			self.z.width() / 2.0,
+		)
+	}
+	/// Return whether the value stored has empty intervals.
+	pub fn is_exact(&self) -> bool {
+		self.x.width() == 0.0 && self.y.width() == 0.0 && self.z.width() == 0.0
 	}
 }
 
