@@ -1,13 +1,16 @@
 pub mod color;
+pub mod matrix;
+pub mod transform;
+pub mod vecmath;
 
-use approx::AbsDiffEq;
 pub use color::*;
-use std::ops::*;
+pub use matrix::*;
+pub use transform::*;
+pub use vecmath::*;
 
-#[cfg(feature = "use_f64")]
-pub type Float = f64;
-#[cfg(not(feature = "use_f64"))]
-pub type Float = f32;
+use crate::Float;
+use approx::AbsDiffEq;
+use std::ops::*;
 
 pub fn lerp(t: Float, a: Float, b: Float) -> Float {
 	debug_assert!((0.0..1.0).contains(&t));
@@ -68,7 +71,7 @@ impl Interval {
 	/// # Examples
 	///
 	/// ```
-	/// # use rsr::core::Interval;
+	/// # use rsr::Interval;
 	/// assert_eq!(Interval::new(1.0, 2.0), Interval::new(1.0, 2.0));
 	/// assert_eq!(Interval::new(2.0, 1.0), Interval::new(1.0, 2.0));
 	/// ```
@@ -402,7 +405,7 @@ impl Number for Interval {
 	/// # Examples
 	///
 	/// ```
-	/// # use rsr::core::{Interval, Number};
+	/// # use rsr::{Interval, Number};
 	/// assert_eq!(Interval::new(1.0, 2.0).abs(), Interval::new(1.0, 2.0));
 	/// assert_eq!(Interval::new(-1.0, 2.0).abs(), Interval::new(0.0, 2.0));
 	/// assert_eq!(Interval::new(-2.0, -1.0).abs(), Interval::new(1.0, 2.0));

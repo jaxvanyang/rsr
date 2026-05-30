@@ -1,15 +1,14 @@
 pub mod camera;
-pub mod core;
-pub mod matrix;
+pub mod pbrt;
 pub mod screen;
 pub mod shapes;
-pub mod transform;
-pub mod vecmath;
 
 pub use camera::*;
-pub use core::*;
-pub use matrix::*;
+pub use pbrt::*;
 pub use screen::*;
 pub use shapes::*;
-pub use transform::*;
-pub use vecmath::*;
+
+#[cfg(feature = "use_f64")]
+pub type Float = f64;
+#[cfg(not(feature = "use_f64"))]
+pub type Float = f32;

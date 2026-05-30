@@ -1,4 +1,7 @@
-use crate::{Bounds3f, Float, Vector2f, Vector3f, diff_of_products};
+use super::{
+	Float, diff_of_products,
+	vecmath::{Bounds3f, Vector2f, Vector3f},
+};
 use approx::abs_diff_eq;
 use std::ops;
 

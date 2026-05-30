@@ -1,4 +1,4 @@
-use crate::{Float, Vector3f};
+use super::{Float, vecmath::Vector3f};
 use std::ops::*;
 
 #[derive(Debug, Clone, Copy, Default)]

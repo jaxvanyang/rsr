@@ -1,4 +1,4 @@
-use super::{Float, Vector3f};
+use super::{Float, vecmath::Vector3f};
 
 pub struct Camera {
 	pub position: Vector3f,

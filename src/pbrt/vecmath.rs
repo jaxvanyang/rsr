@@ -542,6 +542,12 @@ impl Vector3f {
 	}
 }
 
+impl From<Vector3fi> for Vector3f {
+	fn from(v: Vector3fi) -> Self {
+		Self::new(v.x.into(), v.y.into(), v.z.into())
+	}
+}
+
 impl Vector3fi {
 	pub fn new_with_error(v: Vector3f, e: Vector3f) -> Self {
 		Self::new(
