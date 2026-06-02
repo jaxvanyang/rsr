@@ -1,5 +1,9 @@
 use minifb::Key;
-use rsr::*;
+use rsr::{
+	Float,
+	pbrt::Vector2f,
+	ui::{Circle, GREEN, Screen},
+};
 
 fn main() {
 	let mut screen = Screen::new(640, 360);

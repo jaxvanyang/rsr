@@ -1,4 +1,4 @@
-pub mod color;
+pub mod camera;
 pub mod interaction;
 pub mod math;
 pub mod matrix;
@@ -6,7 +6,7 @@ pub mod spectrum;
 pub mod transform;
 pub mod vecmath;
 
-pub use color::*;
+pub use camera::*;
 pub use matrix::*;
 pub use transform::*;
 pub use vecmath::*;
@@ -69,7 +69,7 @@ impl Interval {
 	/// # Examples
 	///
 	/// ```
-	/// # use rsr::Interval;
+	/// # use rsr::pbrt::Interval;
 	/// assert_eq!(Interval::new(1.0, 2.0), Interval::new(1.0, 2.0));
 	/// assert_eq!(Interval::new(2.0, 1.0), Interval::new(1.0, 2.0));
 	/// ```
@@ -403,7 +403,7 @@ impl Number for Interval {
 	/// # Examples
 	///
 	/// ```
-	/// # use rsr::{Interval, Number};
+	/// # use rsr::pbrt::{Interval, Number};
 	/// assert_eq!(Interval::new(1.0, 2.0).abs(), Interval::new(1.0, 2.0));
 	/// assert_eq!(Interval::new(-1.0, 2.0).abs(), Interval::new(0.0, 2.0));
 	/// assert_eq!(Interval::new(-2.0, -1.0).abs(), Interval::new(1.0, 2.0));

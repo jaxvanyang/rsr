@@ -1,4 +1,8 @@
-use rsr::*;
+use rsr::{
+	Float,
+	pbrt::{SquareMatrix, Transform, Vector3f},
+	ui::{Circle, GREEN, Screen},
+};
 
 fn main() {
 	let mut screen = Screen::new(640, 480);

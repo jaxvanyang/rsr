@@ -1,4 +1,5 @@
-use super::{Float, shapes::*};
+use super::shapes::*;
+use crate::Float;
 use minifb::{Window, WindowOptions};
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 

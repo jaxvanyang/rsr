@@ -1,4 +1,4 @@
-use super::{Float, vecmath::Vector2f};
+use crate::{Float, pbrt::vecmath::Vector2f};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Rectangle {
