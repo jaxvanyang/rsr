@@ -15,6 +15,8 @@ use crate::Float;
 use approx::AbsDiffEq;
 use std::ops::*;
 
+// TODO: trait HasNAN
+
 pub fn diff_of_products(a: Float, b: Float, c: Float, d: Float) -> Float {
 	let cd = c * d;
 	let result = a.mul_add(b, -cd);

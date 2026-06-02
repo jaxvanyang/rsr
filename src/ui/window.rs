@@ -1,26 +1,47 @@
 use super::shapes::*;
 use crate::Float;
-use minifb::{Window, WindowOptions};
-use std::ops::{Deref, DerefMut, Index, IndexMut};
+use std::ops;
+
+pub use minifb::{Result, WindowOptions};
 
 #[derive(Debug)]
-pub struct Screen {
+pub struct Window {
 	pub width: usize,
 	pub height: usize,
+	pub window: minifb::Window,
 	pub buffer: Vec<u32>,
 }
 
-impl Screen {
-	pub fn new(width: usize, height: usize) -> Self {
-		Screen {
+impl Window {
+	pub fn new(name: &str, width: usize, height: usize) -> Result<Self> {
+		Self::new_with_opts(name, width, height, WindowOptions::default())
+	}
+
+	pub fn new_with_opts(
+		name: &str,
+		width: usize,
+		height: usize,
+		opts: WindowOptions,
+	) -> Result<Self> {
+		minifb::Window::new(name, width, height, opts).map(|window| Self {
 			width,
 			height,
+			window,
 			buffer: vec![0; width * height],
-		}
+		})
+	}
+
+	pub fn update(&mut self) -> Result<()> {
+		self.window
+			.update_with_buffer(&self.buffer, self.width, self.height)
 	}
 
 	pub fn clear(&mut self) {
-		self.buffer.fill(0);
+		self.fill(0);
+	}
+
+	pub fn fill(&mut self, color: u32) {
+		self.buffer.fill(color);
 	}
 
 	pub fn fill_rect(&mut self, rect: Rectangle, color: u32) {
@@ -53,31 +74,9 @@ impl Screen {
 			}
 		}
 	}
-
-	pub fn new_window(&self, name: &str) -> Result<Window, minifb::Error> {
-		Window::new(name, self.width, self.height, WindowOptions::default())
-	}
-
-	pub fn update_window(&self, window: &mut Window) -> Result<(), minifb::Error> {
-		window.update_with_buffer(&self.buffer, self.width, self.height)
-	}
 }
 
-impl Deref for Screen {
-	type Target = Vec<u32>;
-
-	fn deref(&self) -> &Self::Target {
-		&self.buffer
-	}
-}
-
-impl DerefMut for Screen {
-	fn deref_mut(&mut self) -> &mut Self::Target {
-		&mut self.buffer
-	}
-}
-
-impl Index<(usize, usize)> for Screen {
+impl ops::Index<(usize, usize)> for Window {
 	type Output = u32;
 
 	fn index(&self, (x, y): (usize, usize)) -> &Self::Output {
@@ -85,8 +84,22 @@ impl Index<(usize, usize)> for Screen {
 	}
 }
 
-impl IndexMut<(usize, usize)> for Screen {
+impl ops::IndexMut<(usize, usize)> for Window {
 	fn index_mut(&mut self, (x, y): (usize, usize)) -> &mut Self::Output {
 		&mut self.buffer[y * self.width + x]
+	}
+}
+
+impl ops::Deref for Window {
+	type Target = minifb::Window;
+
+	fn deref(&self) -> &Self::Target {
+		&self.window
+	}
+}
+
+impl ops::DerefMut for Window {
+	fn deref_mut(&mut self) -> &mut Self::Target {
+		&mut self.window
 	}
 }

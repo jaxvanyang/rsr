@@ -1,12 +1,11 @@
 use rsr::{
 	Float,
 	pbrt::{SquareMatrix, Transform, Vector3f},
-	ui::{Circle, GREEN, Screen},
+	ui::{Circle, GREEN, Result, Window},
 };
 
-fn main() {
-	let mut screen = Screen::new(640, 480);
-	let mut window = screen.new_window("Rotating Cube").unwrap();
+fn main() -> Result<()> {
+	let mut window = Window::new("Rotating Cube", 640, 480)?;
 	let mut cube = [
 		Vector3f::new(1.0, 1.0, 1.0),
 		Vector3f::new(1.0, 1.0, -1.0),
@@ -29,8 +28,8 @@ fn main() {
 		[0.0, 0.0, 0.0, 1.0],
 	]);
 	let proj_screen = SquareMatrix::from([
-		[1.0, 0.0, 0.0, screen.width as Float / 2.0],
-		[0.0, -1.0, 0.0, screen.height as Float / 2.0],
+		[1.0, 0.0, 0.0, window.width as Float / 2.0],
+		[0.0, -1.0, 0.0, window.height as Float / 2.0],
 		[0.0, 0.0, 1.0, 0.0],
 		[0.0, 0.0, 0.0, 1.0],
 	]);
@@ -38,16 +37,18 @@ fn main() {
 
 	let rotation = Transform::rotate_y(0.2);
 	while window.is_open() {
-		screen.clear();
+		window.clear();
 
 		for i in cube.iter_mut() {
 			let p = proj.map_point(*i);
 			let circle = Circle::new(p.x, p.y, 2.0);
-			screen.fill_circle(circle, GREEN);
+			window.fill_circle(circle, GREEN);
 
 			*i = rotation.map_point(*i);
 		}
 
-		screen.update_window(&mut window).unwrap();
+		window.update()?;
 	}
+
+	Ok(())
 }
