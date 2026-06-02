@@ -1,4 +1,4 @@
-use crate::{Float, Interval, Number, lerp};
+use crate::{Float, Interval, Number, math::lerp};
 use approx::{AbsDiffEq, abs_diff_eq};
 use std::fmt::Display;
 use std::ops::*;

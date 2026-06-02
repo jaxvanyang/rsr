@@ -1,6 +1,8 @@
 pub mod color;
 pub mod interaction;
+pub mod math;
 pub mod matrix;
+pub mod spectrum;
 pub mod transform;
 pub mod vecmath;
 
@@ -13,11 +15,6 @@ use crate::Float;
 use approx::AbsDiffEq;
 use std::ops::*;
 
-pub fn lerp(t: Float, a: Float, b: Float) -> Float {
-	debug_assert!((0.0..1.0).contains(&t));
-	a + t * (b - a)
-}
-
 pub fn diff_of_products(a: Float, b: Float, c: Float, d: Float) -> Float {
 	let cd = c * d;
 	let result = a.mul_add(b, -cd);
@@ -25,7 +22,7 @@ pub fn diff_of_products(a: Float, b: Float, c: Float, d: Float) -> Float {
 	result + error
 }
 
-pub fn next_float_up(mut v: Float) -> Float {
+fn next_float_up(mut v: Float) -> Float {
 	if v.is_infinite() && v > 0.0 {
 		return v;
 	}
@@ -43,7 +40,7 @@ pub fn next_float_up(mut v: Float) -> Float {
 	Float::from_bits(bits)
 }
 
-pub fn next_float_down(mut v: Float) -> Float {
+fn next_float_down(mut v: Float) -> Float {
 	if v.is_infinite() && v < 0.0 {
 		return v;
 	}
