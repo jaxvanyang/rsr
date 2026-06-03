@@ -1,13 +1,11 @@
 pub mod camera;
 pub mod interaction;
 pub mod math;
-pub mod matrix;
 pub mod spectrum;
 pub mod transform;
 pub mod vecmath;
 
 pub use camera::*;
-pub use matrix::*;
 pub use transform::*;
 pub use vecmath::*;
 
