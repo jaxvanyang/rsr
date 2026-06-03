@@ -1,7 +1,10 @@
 use super::shapes::*;
 use crate::{
 	Float,
-	pbrt::math::{round_to_left, round_to_right},
+	pbrt::{
+		Vector2i,
+		math::{round_to_left, round_to_right},
+	},
 };
 use std::ops;
 
@@ -48,9 +51,56 @@ impl Window {
 	}
 
 	/// Draw a pixel according to its top-left corner coordinates.
-	pub fn draw_pixel(&mut self, x: usize, y: usize, color: u32) {
+	pub fn draw_pixel(&mut self, x: i32, y: i32, color: u32) {
+		if x < 0 || y < 0 {
+			return;
+		}
+		let (x, y) = (x as usize, y as usize);
 		if x < self.width && y < self.height {
 			self[(x, y)] = color;
+		}
+	}
+
+	/// Draw a line from pixel `(x0, y0)` to `(x1, y1)`, use Bresenham's line algorithm.
+	pub fn draw_line(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, color: u32) {
+		let (mut x0, mut y0, mut x1, mut y1) = (x0, y0, x1, y1);
+		let steep = (y1 - y0).abs() > (x1 - x0).abs();
+		if steep {
+			(x0, y0) = (y0, x0);
+			(x1, y1) = (y1, x1);
+		}
+		if x0 > x1 {
+			(x0, y0, x1, y1) = (x1, y1, x0, y0);
+		}
+		let dx = x1 - x0;
+		let dx2 = dx * 2;
+		let dy2 = (y1 - y0).abs() * 2;
+		let y_step = if y0 < y1 { 1 } else { -1 };
+
+		let mut error = dx;
+		let mut y = y0;
+		for x in x0..=x1 {
+			if steep {
+				self.draw_pixel(y, x, color);
+			} else {
+				self.draw_pixel(x, y, color)
+			}
+			error -= dy2;
+			if error <= 0 {
+				y += y_step;
+				error += dx2;
+			}
+		}
+	}
+
+	pub fn draw_polygon(&mut self, points: &[Vector2i], color: u32) {
+		if points.len() < 2 {
+			return;
+		}
+
+		for (i, p) in points.iter().enumerate() {
+			let q = points[(i + 1) % points.len()];
+			self.draw_line(p.x, p.y, q.x, q.y, color);
 		}
 	}
 
@@ -84,6 +134,47 @@ impl Window {
 				if dx.powi(2) + dy.powi(2) <= r2 {
 					self[(x, y)] = color;
 				}
+			}
+		}
+	}
+
+	pub fn fill_polygon(&mut self, points: &[Vector2i], color: u32) {
+		if points.len() < 2 {
+			return;
+		}
+
+		let y_min = points.iter().map(|p| p.y).min().unwrap().max(0);
+		let y_max = points.iter().map(|p| p.y).max().unwrap();
+		let y_end = (y_max + 1).min(self.height as i32);
+
+		for y in y_min..y_end {
+			let mut xs = Vec::new();
+
+			for (i, p) in points.iter().enumerate() {
+				let q = points[(i + 1) % points.len()];
+
+				// only consider the upper end to avoid duplication
+				if !((p.y <= y && y < q.y) || (q.y <= y && y < p.y)) {
+					continue;
+				}
+
+				let (dx, dy) = (q.x - p.x, q.y - p.y);
+				// no need to convert to float because we have to round to integer anyway
+				let x = dx * (y - p.y) / dy + p.x;
+				xs.push(x);
+			}
+
+			xs.sort();
+
+			for i in 0..(xs.len() / 2) {
+				let (x0, x1) = (xs[i * 2], xs[i * 2 + 1]);
+				let (x0, x1) = (x0.max(0), x1.min(self.width as i32 - 1));
+				for x in x0..=x1 {
+					self[(x as usize, y as usize)] = color;
+				}
+			}
+			if xs.len() % 2 == 1 {
+				self.draw_pixel(*xs.last().unwrap(), y, color);
 			}
 		}
 	}

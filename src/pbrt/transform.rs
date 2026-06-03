@@ -351,6 +351,14 @@ impl ops::Mul<Vector2f> for SquareMatrix<2> {
 	type Output = Vector2f;
 
 	fn mul(self, v: Vector2f) -> Vector2f {
+		&self * v
+	}
+}
+
+impl ops::Mul<Vector2f> for &SquareMatrix<2> {
+	type Output = Vector2f;
+
+	fn mul(self, v: Vector2f) -> Vector2f {
 		Vector2f::new(
 			self.m[0][0] * v.x + self.m[0][1] * v.y,
 			self.m[1][0] * v.x + self.m[1][1] * v.y,
@@ -359,6 +367,14 @@ impl ops::Mul<Vector2f> for SquareMatrix<2> {
 }
 
 impl ops::Mul<Vector3f> for SquareMatrix<3> {
+	type Output = Vector3f;
+
+	fn mul(self, v: Vector3f) -> Vector3f {
+		&self * v
+	}
+}
+
+impl ops::Mul<Vector3f> for &SquareMatrix<3> {
 	type Output = Vector3f;
 
 	fn mul(self, v: Vector3f) -> Vector3f {

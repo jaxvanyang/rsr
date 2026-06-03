@@ -1,5 +1,10 @@
 use crate::Float;
 
+#[cfg(not(feature = "use_f64"))]
+pub use std::f32::consts::PI;
+#[cfg(feature = "use_f64")]
+pub use std::f64::consts::PI;
+
 /// # Examples
 ///
 /// ```
