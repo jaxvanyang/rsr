@@ -12,8 +12,8 @@
 		"command": "cargo test",
 	},
 	{
-		"label": "default",
-		"command": "cargo run",
+		"label": "circle",
+		"command": "cargo run circle",
 	},
 	{
 		"label": "rcube",

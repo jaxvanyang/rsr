@@ -1,7 +1,7 @@
 use rsr::{
 	Float,
 	pbrt::{SquareMatrix, Transform, Vector3f},
-	ui::{Circle, GREEN, Result, Window},
+	ui::{Circle, Result, Window, color},
 };
 
 fn main() -> Result<()> {
@@ -42,7 +42,7 @@ fn main() -> Result<()> {
 		for i in cube.iter_mut() {
 			let p = proj.map_point(*i);
 			let circle = Circle::new(p.x, p.y, 2.0);
-			window.fill_circle(circle, GREEN);
+			window.fill_circle(circle, color::GREEN);
 
 			*i = rotation.map_point(*i);
 		}

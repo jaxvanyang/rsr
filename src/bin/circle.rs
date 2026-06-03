@@ -2,7 +2,7 @@ use minifb::Key;
 use rsr::{
 	Float,
 	pbrt::Vector2f,
-	ui::{Circle, GREEN, Result, Window},
+	ui::{Circle, Result, Window, color},
 };
 
 fn main() -> Result<()> {
@@ -22,7 +22,7 @@ fn main() -> Result<()> {
 		}
 
 		window.clear();
-		window.fill_circle(circle, GREEN);
+		window.fill_circle(circle, color::GREEN);
 		window.update()?;
 	}
 
