@@ -72,6 +72,48 @@ fn get_exponent(v: f32) -> i32 {
 	(bits >> 23) as i32 - 127
 }
 
+/// Return the nearest integer to self. If a value is half-way between two integers, round to left.
+///
+/// # Examples
+///
+/// ```
+/// # use rsr::pbrt::math::round_to_left;
+/// assert_eq!(round_to_left(0.5), 0.);
+/// assert_eq!(round_to_left(-0.5), -1.);
+/// assert_eq!(round_to_left(0.4), 0.);
+/// assert_eq!(round_to_left(-0.4), 0.);
+/// assert_eq!(round_to_left(0.6), 1.);
+/// assert_eq!(round_to_left(-0.6), -1.);
+/// ```
+pub fn round_to_left(v: Float) -> Float {
+	if v.fract().abs() == 0.5 {
+		v.floor()
+	} else {
+		v.round()
+	}
+}
+
+/// Return the nearest integer to self. If a value is half-way between two integers, round to right.
+///
+/// # Examples
+///
+/// ```
+/// # use rsr::pbrt::math::round_to_right;
+/// assert_eq!(round_to_right(0.5), 1.);
+/// assert_eq!(round_to_right(-0.5), 0.);
+/// assert_eq!(round_to_right(0.4), 0.);
+/// assert_eq!(round_to_right(-0.4), 0.);
+/// assert_eq!(round_to_right(0.6), 1.);
+/// assert_eq!(round_to_right(-0.6), -1.);
+/// ```
+pub fn round_to_right(v: Float) -> Float {
+	if v.fract().abs() == 0.5 {
+		v.ceil()
+	} else {
+		v.round()
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;

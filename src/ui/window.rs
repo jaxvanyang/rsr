@@ -1,5 +1,8 @@
 use super::shapes::*;
-use crate::Float;
+use crate::{
+	Float,
+	pbrt::math::{round_to_left, round_to_right},
+};
 use std::ops;
 
 pub use minifb::{Result, WindowOptions};
@@ -44,31 +47,41 @@ impl Window {
 		self.buffer.fill(color);
 	}
 
-	pub fn fill_rect(&mut self, rect: Rectangle, color: u32) {
-		let start_x = rect.position.x as usize;
-		let end_x = ((rect.position.x + rect.width) as usize).min(self.width);
-		let start_y = rect.position.y as usize;
-		let end_y = ((rect.position.y + rect.height) as usize).min(self.height);
+	/// Draw a pixel according to its top-left corner coordinates.
+	pub fn draw_pixel(&mut self, x: usize, y: usize, color: u32) {
+		if x < self.width && y < self.height {
+			self[(x, y)] = color;
+		}
+	}
 
-		for y in start_y..end_y {
-			for x in start_x..end_x {
+	/// Pixels whose center is in the rectangle are filled.
+	pub fn fill_rect(&mut self, rect: Rectangle, color: u32) {
+		let x_begin = round_to_left(rect.x()).max(0.) as usize;
+		let y_begin = round_to_left(rect.y()).max(0.) as usize;
+		let x_end = round_to_right(rect.x() + rect.w).min(self.width as Float) as usize;
+		let y_end = round_to_right(rect.y() + rect.h).min(self.height as Float) as usize;
+
+		for y in y_begin..y_end {
+			for x in x_begin..x_end {
 				self[(x, y)] = color;
 			}
 		}
 	}
 
 	// TODO: improve performance
+	/// Pixels whose center is in the circle are filled.
 	pub fn fill_circle(&mut self, circle: Circle, color: u32) {
-		let start_x = (circle.position.x - circle.radius).ceil() as usize;
-		let end_x = ((circle.position.x + circle.radius) as usize).min(self.width - 1);
-		let start_y = (circle.position.y - circle.radius).ceil() as usize;
-		let end_y = ((circle.position.y + circle.radius) as usize).min(self.height - 1);
+		let x_begin = round_to_left(circle.x() - circle.r).max(0.) as usize;
+		let y_begin = round_to_left(circle.y() - circle.r).max(0.) as usize;
+		let x_end = round_to_right(circle.x() + circle.r).min(self.width as Float) as usize;
+		let y_end = round_to_right(circle.y() + circle.r).min(self.height as Float) as usize;
+		let r2 = circle.r.powi(2);
 
-		for y in start_y..=end_y {
-			for x in start_x..=end_x {
-				if (x as Float - circle.position.x).hypot(y as Float - circle.position.y)
-					<= circle.radius
-				{
+		for y in y_begin..y_end {
+			for x in x_begin..x_end {
+				let dx = x as Float + 0.5 - circle.x();
+				let dy = y as Float + 0.5 - circle.y();
+				if dx.powi(2) + dy.powi(2) <= r2 {
 					self[(x, y)] = color;
 				}
 			}
