@@ -171,6 +171,18 @@ impl<T: Default> Default for Vector2<T> {
 	}
 }
 
+impl From<Vector2i> for Vector2f {
+	fn from(v: Vector2i) -> Self {
+		Self::new(v.x as Float, v.y as Float)
+	}
+}
+
+impl From<Vector2f> for Vector2i {
+	fn from(v: Vector2f) -> Self {
+		Self::new(v.x as i32, v.y as i32)
+	}
+}
+
 impl<T> Index<usize> for Vector2<T> {
 	type Output = T;
 	fn index(&self, index: usize) -> &Self::Output {

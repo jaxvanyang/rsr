@@ -1,13 +1,5 @@
 [
 	{
-		"label": "default",
-		"command": "cargo run",
-	},
-	{
-		"label": "rcube",
-		"command": "just run rcube",
-	},
-	{
 		"label": "build",
 		"command": "just build",
 	},
@@ -18,5 +10,17 @@
 	{
 		"label": "test",
 		"command": "cargo test",
+	},
+	{
+		"label": "default",
+		"command": "cargo run",
+	},
+	{
+		"label": "rcube",
+		"command": "just run rcube",
+	},
+	{
+		"label": "flag",
+		"command": "just run flag",
 	},
 ]
