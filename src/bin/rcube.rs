@@ -1,7 +1,9 @@
+use std::time::Instant;
+
 use rsr::{
 	Float,
-	pbrt::{SquareMatrix, Transform, Vector3f},
-	ui::{Circle, Result, Window, color},
+	pbrt::{SquareMatrix, Transform, Vector2i, Vector3f},
+	ui::{Result, Window, color, elapsed_with_update},
 };
 
 fn main() -> Result<()> {
@@ -33,22 +35,38 @@ fn main() -> Result<()> {
 		[0.0, 0.0, 1.0, 0.0],
 		[0.0, 0.0, 0.0, 1.0],
 	]);
-	let proj = Transform::new(&proj_screen * &proj_ortho * world2camera.get_matrix());
+	let proj = Transform::new(proj_screen * proj_ortho * world2camera.get_matrix());
+	let mut t0 = Instant::now();
 
-	let rotation = Transform::rotate_y(0.2);
 	while window.is_open() {
-		window.clear();
-
-		for i in cube.iter_mut() {
-			let p = proj.map_point(*i);
-			let circle = Circle::new(p.x, p.y, 2.0);
-			window.fill_circle(circle, color::GREEN);
-
-			*i = rotation.map_point(*i);
+		let dt = elapsed_with_update(&mut t0);
+		let rotation = Transform::rotate_y(dt * 30.);
+		for p in cube.iter_mut() {
+			*p = rotation.map_point(*p);
 		}
+
+		draw_cube(&mut window, &cube, &proj);
 
 		window.update()?;
 	}
 
 	Ok(())
+}
+
+fn draw_cube(window: &mut Window, cube: &[Vector3f; 8], projection: &Transform) {
+	let cube = cube
+		.map(|p| {
+			let q = projection.map_point(p);
+			Vector2i::new(q.x as i32, q.y as i32)
+		})
+		.into_iter()
+		.collect::<Vec<_>>();
+
+	window.clear();
+	window.draw_polygon(&cube[..4], color::BLUE);
+	window.draw_polygon(&cube[4..], color::BLUE);
+	for (i, p) in cube.iter().enumerate().take(4) {
+		let q = cube[i + 4];
+		window.draw_line(p.x, p.y, q.x, q.y, color::BLUE);
+	}
 }
