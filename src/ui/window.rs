@@ -2,7 +2,7 @@ use super::shapes::*;
 use crate::{
 	Float,
 	pbrt::{
-		Vector2i,
+		Vector2f, Vector2i,
 		math::{round_to_left, round_to_right},
 	},
 };
@@ -59,6 +59,18 @@ impl Window {
 		if x < self.width && y < self.height {
 			self[(x, y)] = color;
 		}
+	}
+
+	pub fn draw_pixel_f(&mut self, x: Float, y: Float, color: u32) {
+		self.draw_pixel(x as i32, y as i32, color);
+	}
+
+	pub fn draw_pixel_vf(&mut self, p: Vector2f, color: u32) {
+		self.draw_pixel(p.x as i32, p.y as i32, color);
+	}
+
+	pub fn draw_pixel_vi(&mut self, p: Vector2i, color: u32) {
+		self.draw_pixel(p.x, p.y, color);
 	}
 
 	/// Draw a line from pixel `(x0, y0)` to `(x1, y1)`, use Bresenham's line algorithm.

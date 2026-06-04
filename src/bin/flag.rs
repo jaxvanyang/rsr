@@ -1,6 +1,6 @@
 use rsr::{
 	Float,
-	pbrt::{Number, SquareMatrix, Vector2f, Vector2i, math::PI},
+	pbrt::{Number, SquareMatrix, Vector2f, math::PI},
 	ui::{Rectangle, Result, Window},
 };
 use std::time::Instant;
