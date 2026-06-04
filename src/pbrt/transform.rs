@@ -291,11 +291,19 @@ impl<const N: usize> ops::Mul<&SquareMatrix<N>> for Float {
 	}
 }
 
+impl<const N: usize> ops::Mul<SquareMatrix<N>> for SquareMatrix<N> {
+	type Output = SquareMatrix<N>;
+
+	fn mul(self, rhs: SquareMatrix<N>) -> SquareMatrix<N> {
+		&self * &rhs
+	}
+}
+
 impl<const N: usize> ops::Mul<&SquareMatrix<N>> for SquareMatrix<N> {
 	type Output = SquareMatrix<N>;
 
 	fn mul(self, rhs: &SquareMatrix<N>) -> SquareMatrix<N> {
-		(&self) * rhs
+		&self * rhs
 	}
 }
 
