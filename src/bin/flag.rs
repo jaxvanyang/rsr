@@ -1,16 +1,36 @@
 use rsr::{
 	Float,
-	pbrt::{Number, SquareMatrix, Vector2f, math::PI},
-	ui::{Rectangle, Result, Window},
+	pbrt::{SquareMatrix, Vector2f, math::PI},
+	ui::{Rectangle, Result, Window, elapsed_with_update},
 };
 use std::time::Instant;
 
-fn draw_china_flag(window: &mut Window, x: Float, y: Float, width: Float) {
+fn main() -> Result<()> {
+	let mut window = Window::new("Flag", 800, 600)?;
+	let mut width = 300.0;
+	let mut t0 = Instant::now();
+
+	while window.is_open() {
+		let dt = elapsed_with_update(&mut t0);
+		width += dt * 50.;
+
+		draw_china_flag(&mut window, width);
+
+		window.update()?;
+	}
+
+	Ok(())
+}
+
+fn draw_china_flag(window: &mut Window, width: Float) {
 	let height = width * 2. / 3.;
+	let x = (window.width as Float - width) / 2.;
+	let y = (window.height as Float - height) / 2.;
 	let unit = width / 30.;
 	let rect = Rectangle::new(x, y, width, height);
 	let red = 0xee1c25;
 
+	window.clear();
 	window.fill_rect(rect, red);
 	draw_star(window, x + unit * 5., y + unit * 5., unit * 3., 0.);
 	draw_star(
@@ -63,29 +83,4 @@ fn draw_star(window: &mut Window, x: Float, y: Float, radius: Float, theta: Floa
 	}
 
 	window.fill_polygon(&points.map(|p| p.into()), yellow);
-}
-
-fn main() -> Result<()> {
-	let mut window = Window::new("Flag", 800, 600)?;
-	let mut t0 = Instant::now();
-	let mut width = 300.0;
-
-	while window.is_open() {
-		let height = width * 2. / 3.;
-		let x = (window.width as Float - width) / 2.;
-		let y = (window.height as Float - height) / 2.;
-
-		window.clear();
-
-		draw_china_flag(&mut window, x, y, width);
-
-		window.update()?;
-
-		let t1 = Instant::now();
-		let dt = t1.duration_since(t0).as_secs_f32().as_float();
-		t0 = t1;
-		width += dt * 50.;
-	}
-
-	Ok(())
 }

@@ -2,13 +2,22 @@ use super::shapes::*;
 use crate::{
 	Float,
 	pbrt::{
-		Vector2f, Vector2i,
+		Number, Vector2f, Vector2i,
 		math::{round_to_left, round_to_right},
 	},
 };
-use std::ops;
+use std::{ops, time::Instant};
 
 pub use minifb::{Result, WindowOptions};
+
+/// Return the time in seconds elapsed from an instant and update it to now.
+pub fn elapsed_with_update(t0: &mut Instant) -> Float {
+	let t1 = Instant::now();
+	let ret = t1.duration_since(*t0).as_secs_f64().as_float();
+	*t0 = t1;
+
+	ret
+}
 
 #[derive(Debug)]
 pub struct Window {
@@ -105,6 +114,17 @@ impl Window {
 		}
 	}
 
+	pub fn draw_lines(&mut self, points: &[Vector2i], color: u32) {
+		if points.len() < 2 {
+			return;
+		}
+
+		for i in 1..points.len() {
+			let (p, q) = (points[i - 1], points[i]);
+			self.draw_line(p.x, p.y, q.x, q.y, color);
+		}
+	}
+
 	pub fn draw_polygon(&mut self, points: &[Vector2i], color: u32) {
 		if points.len() < 2 {
 			return;
@@ -150,14 +170,17 @@ impl Window {
 		}
 	}
 
+	/// # Note
+	///
+	/// This might go wrong with concave polygon.
 	pub fn fill_polygon(&mut self, points: &[Vector2i], color: u32) {
 		if points.len() < 2 {
 			return;
 		}
 
-		let y_min = points.iter().map(|p| p.y).min().unwrap().max(0);
+		let y_min = Ord::max(points.iter().map(|p| p.y).min().unwrap(), 0);
 		let y_max = points.iter().map(|p| p.y).max().unwrap();
-		let y_end = (y_max + 1).min(self.height as i32);
+		let y_end = Ord::min(y_max + 1, self.height as i32);
 
 		for y in y_min..y_end {
 			let mut xs = Vec::new();
@@ -180,7 +203,7 @@ impl Window {
 
 			for i in 0..(xs.len() / 2) {
 				let (x0, x1) = (xs[i * 2], xs[i * 2 + 1]);
-				let (x0, x1) = (x0.max(0), x1.min(self.width as i32 - 1));
+				let (x0, x1) = (Ord::max(x0, 0), Ord::min(x1, self.width as i32 - 1));
 				for x in x0..=x1 {
 					self[(x as usize, y as usize)] = color;
 				}
