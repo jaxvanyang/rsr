@@ -2,7 +2,8 @@
 
 use super::{
 	Float,
-	color::XYZ,
+	color::{RGB, XYZ},
+	colorspace::RGBColorSpace,
 	math::{fast_exp, lerp},
 };
 use std::ops;
@@ -64,7 +65,7 @@ impl Spectrum for ConstantSpectrum {
 	}
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DenselySampledSpectrum {
 	lambda_min: usize,
 	lambda_max: usize,
@@ -220,17 +221,22 @@ impl SampledSpectrum {
 		self.values.iter().all(|v| *v == 0.)
 	}
 
-	pub fn to_xyz(&self, swl: &SampledWavelengths) -> XYZ {
-		let x = spectra::x().sample(swl);
-		let y = spectra::x().sample(swl);
-		let z = spectra::x().sample(swl);
-		let pdf = swl.pdf();
+	pub fn to_xyz(&self, lambda: &SampledWavelengths) -> XYZ {
+		let x = spectra::x().sample(lambda);
+		let y = spectra::x().sample(lambda);
+		let z = spectra::x().sample(lambda);
+		let pdf = lambda.pdf();
 
 		XYZ::new(
 			(x * self).safe_div(&pdf).average(),
 			(y * self).safe_div(&pdf).average(),
 			(z * self).safe_div(&pdf).average(),
 		) / CIE_Y_INTEGRAL
+	}
+
+	pub fn to_rgb(&self, lambda: &SampledWavelengths, cs: &RGBColorSpace) -> RGB {
+		let xyz = self.to_xyz(lambda);
+		cs.to_rgb(xyz)
 	}
 
 	pub fn average(&self) -> Float {

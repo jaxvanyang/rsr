@@ -1,5 +1,7 @@
 use super::{
-	Float, diff_of_products,
+	Float,
+	color::{RGB, XYZ},
+	diff_of_products,
 	vecmath::{Bounds3f, Vector2f, Vector3f},
 };
 use approx::abs_diff_eq;
@@ -48,6 +50,22 @@ impl<const N: usize> SquareMatrix<N> {
 				ret.m[j][i] = self.m[i][j];
 			}
 		}
+		ret
+	}
+
+	pub fn mul<Output, V>(&self, v: V) -> Output
+	where
+		Output: Default + ops::IndexMut<usize, Output = Float>,
+		V: ops::Index<usize, Output = Float>,
+	{
+		let mut ret = Output::default();
+
+		for i in 0..N {
+			for j in 0..N {
+				ret[i] += self[i][j] * v[j];
+			}
+		}
+
 		ret
 	}
 
@@ -390,6 +408,46 @@ impl ops::Mul<Vector3f> for &SquareMatrix<3> {
 			self.m[0][0] * v.x + self.m[0][1] * v.y + self.m[0][2] * v.z,
 			self.m[1][0] * v.x + self.m[1][1] * v.y + self.m[1][2] * v.z,
 			self.m[2][0] * v.x + self.m[2][1] * v.y + self.m[2][2] * v.z,
+		)
+	}
+}
+
+impl ops::Mul<XYZ> for SquareMatrix<3> {
+	type Output = XYZ;
+
+	fn mul(self, v: XYZ) -> XYZ {
+		&self * v
+	}
+}
+
+impl ops::Mul<XYZ> for &SquareMatrix<3> {
+	type Output = XYZ;
+
+	fn mul(self, v: XYZ) -> XYZ {
+		XYZ::new(
+			self.m[0][0] * v.x + self.m[0][1] * v.y + self.m[0][2] * v.z,
+			self.m[1][0] * v.x + self.m[1][1] * v.y + self.m[1][2] * v.z,
+			self.m[2][0] * v.x + self.m[2][1] * v.y + self.m[2][2] * v.z,
+		)
+	}
+}
+
+impl ops::Mul<RGB> for SquareMatrix<3> {
+	type Output = RGB;
+
+	fn mul(self, v: RGB) -> RGB {
+		&self * v
+	}
+}
+
+impl ops::Mul<RGB> for &SquareMatrix<3> {
+	type Output = RGB;
+
+	fn mul(self, v: RGB) -> RGB {
+		RGB::new(
+			self.m[0][0] * v.g + self.m[0][1] * v.b + self.m[0][2] * v.b,
+			self.m[1][0] * v.g + self.m[1][1] * v.b + self.m[1][2] * v.b,
+			self.m[2][0] * v.g + self.m[2][1] * v.b + self.m[2][2] * v.b,
 		)
 	}
 }
