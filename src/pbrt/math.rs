@@ -10,7 +10,7 @@ pub use std::f64::consts::PI;
 /// ```
 /// # use rsr::polynomial;
 /// assert_eq!(polynomial!(2.0, 1.0), 1.0);
-/// // 1 + 2 * x + 3 * x^2, x = 2
+/// // x = 2, f(x) = 1 + 2 * x + 3 * x^2
 /// assert_eq!(polynomial!(2_f32, 1_f32, 2_f32), 5_f32);
 /// assert_eq!(polynomial!(2_f32, 1_f32, 2_f32, 3_f32), 17_f32);
 /// assert_eq!(polynomial!(2_f64, 1_f64, 2_f64, 3_f64), 17_f64);
@@ -117,6 +117,35 @@ pub fn round_to_right(v: Float) -> Float {
 	} else {
 		v.round()
 	}
+}
+
+/// Usually return the index `i` such that `pred(i)` is true and `pred(i + 1)` is false, unless:
+/// - The returned index `i` is no larger than `size - 2`.
+/// - If there is no index such that the predicate is true, `0` is returned.
+/// - If there is no index such that the predicate is false, `size - 2` is returned.
+///
+/// # Examples
+///
+/// ```
+/// # use rsr::pbrt::math::find_interval;
+/// assert_eq!(find_interval(4, |x| x < 3), 2);
+/// assert_eq!(find_interval(4, |x| x > 5), 0);
+/// assert_eq!(find_interval(4, |x| x < 5), 2);
+/// ```
+pub fn find_interval(size: usize, pred: impl Fn(usize) -> bool) -> usize {
+	assert!(size >= 2);
+	let mut l = 0;
+	let mut r = size - 1;
+	while l < r {
+		let m = (l + r) / 2;
+		if pred(m) {
+			l = m + 1;
+		} else {
+			r = m;
+		}
+	}
+
+	if l == size - 1 { size - 2 } else { l }
 }
 
 #[cfg(test)]

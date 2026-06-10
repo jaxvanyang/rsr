@@ -1,9 +1,52 @@
 use super::{
-	color::{RGB, XYZ},
-	spectrum::{DenselySampledSpectrum, Spectrum},
+	color::{RGB, RGBSigmoidPolynomial, RGBToSpectrumTable, XYZ},
+	spectrum::{DenselySampledSpectrum, Spectrum, get_named_spectrum},
 	transform::SquareMatrix,
 	vecmath::Vector2f,
 };
+use std::sync::LazyLock;
+
+// TODO: sRGB, DCI_P3, Rec2020, ACES2065_1
+#[allow(non_upper_case_globals)]
+pub static sRGB: LazyLock<RGBColorSpace> = LazyLock::new(|| {
+	RGBColorSpace::new(
+		Vector2f::new(0.64, 0.33),
+		Vector2f::new(0.3, 0.6),
+		Vector2f::new(0.15, 0.06),
+		get_named_spectrum("stdillum-D65").unwrap(),
+		&RGBToSpectrumTable::sRGB,
+	)
+});
+// P3-D65 (display)
+pub static DCI_P3: LazyLock<RGBColorSpace> = LazyLock::new(|| {
+	RGBColorSpace::new(
+		Vector2f::new(0.68, 0.32),
+		Vector2f::new(0.265, 0.690),
+		Vector2f::new(0.15, 0.06),
+		get_named_spectrum("stdillum-D65").unwrap(),
+		&RGBToSpectrumTable::DCI_P3,
+	)
+});
+// ITU-R Rec BT.2020
+#[allow(non_upper_case_globals)]
+pub static Rec2020: LazyLock<RGBColorSpace> = LazyLock::new(|| {
+	RGBColorSpace::new(
+		Vector2f::new(0.708, 0.292),
+		Vector2f::new(0.170, 0.797),
+		Vector2f::new(0.131, 0.046),
+		get_named_spectrum("stdillum-D65").unwrap(),
+		&RGBToSpectrumTable::Rec2020,
+	)
+});
+pub static ACES2065_1: LazyLock<RGBColorSpace> = LazyLock::new(|| {
+	RGBColorSpace::new(
+		Vector2f::new(0.7347, 0.2653),
+		Vector2f::new(0., 1.),
+		Vector2f::new(0.0001, -0.077),
+		get_named_spectrum("illum-acesD60").unwrap(),
+		&RGBToSpectrumTable::ACES2065_1,
+	)
+});
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RGBColorSpace<'a> {
@@ -12,7 +55,7 @@ pub struct RGBColorSpace<'a> {
 	pub b: Vector2f,
 	pub w: Vector2f,
 	pub illuminant: DenselySampledSpectrum,
-	pub rgb2spec: &'a RGBToSpectrumTable,
+	pub rgb2spec: &'a RGBToSpectrumTable<'a>,
 	pub rgb2xyz: SquareMatrix<3>,
 	pub xyz2rgb: SquareMatrix<3>,
 }
@@ -64,7 +107,8 @@ impl<'a> RGBColorSpace<'a> {
 			&to.xyz2rgb * &from.rgb2xyz
 		}
 	}
-}
 
-#[derive(Debug, PartialEq)]
-pub struct RGBToSpectrumTable;
+	pub fn to_rgb_coeffs(&self, rgb: RGB) -> RGBSigmoidPolynomial {
+		self.rgb2spec.eval(rgb.clamp_zero())
+	}
+}

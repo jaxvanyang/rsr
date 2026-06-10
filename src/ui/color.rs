@@ -86,18 +86,19 @@ pub const YELLOW_C: u32 = 0xFFFF00;
 pub const YELLOW_D: u32 = 0xF4D345;
 pub const YELLOW_E: u32 = 0xE8C11C;
 
-pub fn new_color(r: u8, g: u8, b: u8) -> u32 {
-	let (r, g, b) = (r as u32, g as u32, b as u32);
-	(r << 16) | (g << 8) | b
-}
-
 pub trait Color {
+	fn from_rgb(r: u8, g: u8, b: u8) -> Self;
 	fn r(self) -> u8;
 	fn g(self) -> u8;
 	fn b(self) -> u8;
 }
 
 impl Color for u32 {
+	fn from_rgb(r: u8, g: u8, b: u8) -> u32 {
+		let (r, g, b) = (r as u32, g as u32, b as u32);
+		(r << 16) | (g << 8) | b
+	}
+
 	fn r(self) -> u8 {
 		((self & 0x00ff0000) >> 16) as u8
 	}
@@ -115,7 +116,7 @@ mod tests {
 
 	#[test]
 	fn test_color() {
-		let c = new_color(1, 2, 3);
+		let c = u32::from_rgb(1, 2, 3);
 		assert_eq!(c.r(), 1);
 		assert_eq!(c.g(), 2);
 		assert_eq!(c.b(), 3);
