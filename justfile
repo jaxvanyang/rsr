@@ -2,7 +2,7 @@ build:
 	cargo build --release
 
 check:
-	cargo check
+	cargo build
 	cargo test --verbose -- --no-capture
 	cargo clippy
 	cargo fmt --check
@@ -15,5 +15,5 @@ fix:
 	typos -w
 	cargo fmt
 
-run app:
-	cargo run --release --bin {{app}}
+run app *args:
+	cargo run --release --bin {{app}} {{args}}
