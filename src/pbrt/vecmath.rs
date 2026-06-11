@@ -1,6 +1,6 @@
 use super::{
 	math::lerp,
-	number::{Interval, Number},
+	number::{HasNaN, Interval, Number},
 };
 use crate::Float;
 use approx::{AbsDiffEq, abs_diff_eq};
@@ -21,10 +21,6 @@ impl<T: Number> Vector2<T> {
 		let ret = Self { x, y };
 		debug_assert!(!ret.has_nan());
 		ret
-	}
-
-	pub fn has_nan(self) -> bool {
-		self.x.is_nan() || self.y.is_nan()
 	}
 
 	pub fn abs(self) -> Self {
@@ -159,12 +155,6 @@ impl Vector2f {
 	}
 }
 
-impl<T: Display> Display for Vector2<T> {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "({}, {})", self.x, self.y)
-	}
-}
-
 impl<T: Default> Default for Vector2<T> {
 	fn default() -> Self {
 		Self {
@@ -183,6 +173,18 @@ impl From<Vector2i> for Vector2f {
 impl From<Vector2f> for Vector2i {
 	fn from(v: Vector2f) -> Self {
 		Self::new(v.x as i32, v.y as i32)
+	}
+}
+
+impl<T: Display> Display for Vector2<T> {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "({}, {})", self.x, self.y)
+	}
+}
+
+impl<T: Number> HasNaN for Vector2<T> {
+	fn has_nan(&self) -> bool {
+		self.x.is_nan() || self.y.is_nan()
 	}
 }
 
@@ -348,10 +350,6 @@ impl<T: Number> Vector3<T> {
 		let ret = Self { x, y, z };
 		debug_assert!(!ret.has_nan());
 		ret
-	}
-
-	pub fn has_nan(self) -> bool {
-		self.x.is_nan() || self.y.is_nan() || self.z.is_nan()
 	}
 
 	pub fn abs(self) -> Self {
@@ -558,12 +556,6 @@ impl Vector3f {
 	}
 }
 
-impl From<Vector3fi> for Vector3f {
-	fn from(v: Vector3fi) -> Self {
-		Self::new(v.x.into(), v.y.into(), v.z.into())
-	}
-}
-
 impl Vector3fi {
 	pub fn new_with_error(v: Vector3f, e: Vector3f) -> Self {
 		Self::new(
@@ -587,12 +579,6 @@ impl Vector3fi {
 	}
 }
 
-impl<T: Display> Display for Vector3<T> {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "({}, {}, {})", self.x, self.y, self.z)
-	}
-}
-
 impl<T: Default> Default for Vector3<T> {
 	fn default() -> Self {
 		Self {
@@ -600,6 +586,24 @@ impl<T: Default> Default for Vector3<T> {
 			y: T::default(),
 			z: T::default(),
 		}
+	}
+}
+
+impl From<Vector3fi> for Vector3f {
+	fn from(v: Vector3fi) -> Self {
+		Self::new(v.x.into(), v.y.into(), v.z.into())
+	}
+}
+
+impl<T: Display> Display for Vector3<T> {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "({}, {}, {})", self.x, self.y, self.z)
+	}
+}
+
+impl<T: Number> HasNaN for Vector3<T> {
+	fn has_nan(&self) -> bool {
+		self.x.is_nan() || self.y.is_nan() || self.z.is_nan()
 	}
 }
 

@@ -2,6 +2,7 @@ use super::{
 	Float,
 	color::{RGB, XYZ},
 	math::diff_of_products,
+	number::HasNaN,
 	vecmath::{Bounds3f, Vector2f, Vector3f},
 };
 use approx::abs_diff_eq;
@@ -15,10 +16,6 @@ pub struct SquareMatrix<const N: usize> {
 impl<const N: usize> SquareMatrix<N> {
 	pub fn zero() -> Self {
 		Self { m: [[0.0; N]; N] }
-	}
-
-	pub fn has_nan(&self) -> bool {
-		self.m.iter().flatten().any(|x| x.is_nan())
 	}
 
 	pub fn diag(values: [Float; N]) -> Self {
@@ -270,6 +267,12 @@ impl<const N: usize> From<[[Float; N]; N]> for SquareMatrix<N> {
 		debug_assert!(!ret.has_nan());
 
 		ret
+	}
+}
+
+impl<const N: usize> HasNaN for SquareMatrix<N> {
+	fn has_nan(&self) -> bool {
+		self.m.iter().flatten().any(|x| x.is_nan())
 	}
 }
 

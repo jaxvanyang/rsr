@@ -131,6 +131,12 @@ impl Number for f64 {
 	}
 }
 
+pub trait HasNaN {
+	fn has_nan(&self) -> bool {
+		false
+	}
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Interval {
 	low: Float,

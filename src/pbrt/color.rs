@@ -1,7 +1,7 @@
 use super::{
 	Float,
 	math::{find_interval, lerp},
-	number::Number,
+	number::{HasNaN, Number},
 	spectrum::{LAMBDA_MAX, LAMBDA_MIN, Spectrum, spectra},
 	{Vector2f, spectrum::CIE_Y_INTEGRAL},
 };
@@ -16,9 +16,10 @@ pub struct XYZ {
 }
 
 impl XYZ {
-	// TODO: check NAN
 	pub fn new(x: Float, y: Float, z: Float) -> Self {
-		Self { x, y, z }
+		let ret = Self { x, y, z };
+		debug_assert!(!ret.has_nan());
+		ret
 	}
 
 	pub fn from_xy(xy: Vector2f) -> Self {
@@ -49,15 +50,17 @@ impl From<&dyn Spectrum> for XYZ {
 	}
 }
 
+impl HasNaN for XYZ {
+	fn has_nan(&self) -> bool {
+		self.x.is_nan() || self.y.is_nan() || self.z.is_nan()
+	}
+}
+
 impl ops::Neg for XYZ {
 	type Output = Self;
 
 	fn neg(self) -> Self::Output {
-		Self {
-			x: self.x,
-			y: self.y,
-			z: self.z,
-		}
+		Self { x: -self.x, y: -self.y, z: -self.z }
 	}
 }
 
@@ -101,11 +104,7 @@ impl ops::Sub<XYZ> for Float {
 	type Output = XYZ;
 
 	fn sub(self, rhs: XYZ) -> Self::Output {
-		XYZ {
-			x: self - rhs.x,
-			y: self - rhs.y,
-			z: self - rhs.z,
-		}
+		XYZ { x: self - rhs.x, y: self - rhs.y, z: self - rhs.z }
 	}
 }
 
@@ -212,12 +211,14 @@ pub struct RGB {
 }
 
 impl RGB {
-	pub const RED: Self = Self::new(1., 0., 0.);
-	pub const GREEN: Self = Self::new(0., 1., 0.);
-	pub const BLUE: Self = Self::new(0., 0., 1.);
+	pub const RED: Self = Self { r: 1., g: 0., b: 0. };
+	pub const GREEN: Self = Self { r: 0., g: 1., b: 0. };
+	pub const BLUE: Self = Self { r: 0., g: 0., b: 1. };
 
-	pub const fn new(r: Float, g: Float, b: Float) -> Self {
-		Self { r, g, b }
+	pub fn new(r: Float, g: Float, b: Float) -> Self {
+		let ret = Self { r, g, b };
+		debug_assert!(!ret.has_nan());
+		ret
 	}
 
 	pub fn avg(&self) -> Float {
@@ -235,11 +236,7 @@ impl RGB {
 	}
 
 	pub fn clamp(&self, min: Float, max: Float) -> Self {
-		Self::new(
-			self.r.clamp(min, max),
-			self.g.clamp(min, max),
-			self.b.clamp(min, max),
-		)
+		Self::new(self.r.clamp(min, max), self.g.clamp(min, max), self.b.clamp(min, max))
 	}
 
 	pub fn clamp_zero(&self) -> Self {
@@ -270,15 +267,17 @@ impl From<RGB> for u32 {
 	}
 }
 
+impl HasNaN for RGB {
+	fn has_nan(&self) -> bool {
+		self.r.is_nan() || self.g.is_nan() || self.b.is_nan()
+	}
+}
+
 impl ops::Neg for RGB {
 	type Output = Self;
 
 	fn neg(self) -> Self::Output {
-		Self {
-			r: self.r,
-			g: self.g,
-			b: self.b,
-		}
+		Self { r: -self.r, g: -self.g, b: -self.b }
 	}
 }
 
@@ -322,11 +321,7 @@ impl ops::Sub<RGB> for Float {
 	type Output = RGB;
 
 	fn sub(self, rhs: RGB) -> Self::Output {
-		RGB {
-			r: self - rhs.r,
-			g: self - rhs.g,
-			b: self - rhs.b,
-		}
+		RGB { r: self - rhs.r, g: self - rhs.g, b: self - rhs.b }
 	}
 }
 
@@ -492,12 +487,8 @@ impl<'a> RGBToSpectrumTable<'a> {
 	#[allow(non_upper_case_globals)]
 	pub const Rec2020: Self =
 		unsafe { Self::new(&REC2020ToSpectrumTable_Scale, &REC2020ToSpectrumTable_Data) };
-	pub const ACES2065_1: Self = unsafe {
-		Self::new(
-			&ACES2065_1ToSpectrumTable_Scale,
-			&ACES2065_1ToSpectrumTable_Data,
-		)
-	};
+	pub const ACES2065_1: Self =
+		unsafe { Self::new(&ACES2065_1ToSpectrumTable_Scale, &ACES2065_1ToSpectrumTable_Data) };
 
 	pub const fn new(z_nodes: &'a [f32; RES], coeffs: &'a CoefficientArray) -> Self {
 		Self { z_nodes, coeffs }
@@ -534,16 +525,8 @@ impl<'a> RGBToSpectrumTable<'a> {
 			};
 			*ci = lerp(
 				dz,
-				lerp(
-					dy,
-					lerp(dx, co(0, 0, 0), co(1, 0, 0)),
-					lerp(dx, co(0, 1, 0), co(1, 1, 0)),
-				),
-				lerp(
-					dy,
-					lerp(dx, co(0, 0, 1), co(1, 0, 1)),
-					lerp(dx, co(0, 1, 1), co(1, 1, 1)),
-				),
+				lerp(dy, lerp(dx, co(0, 0, 0), co(1, 0, 0)), lerp(dx, co(0, 1, 0), co(1, 1, 0))),
+				lerp(dy, lerp(dx, co(0, 0, 1), co(1, 0, 1)), lerp(dx, co(0, 1, 1), co(1, 1, 1))),
 			);
 		}
 
@@ -559,6 +542,7 @@ mod tests {
 	fn test_xyz_arithmetic() {
 		let a = XYZ::new(1., 2., 3.);
 		let b = XYZ::new(4., 5., 6.);
+		assert_eq!(-a, XYZ::new(-1., -2., -3.));
 		assert_eq!(a + b, XYZ::new(5., 7., 9.));
 		assert_eq!(a - b, XYZ::new(-3., -3., -3.));
 		assert_eq!(a * b, XYZ::new(4., 10., 18.));
@@ -572,6 +556,7 @@ mod tests {
 	fn test_rgb_arithmetic() {
 		let a = RGB::new(1., 2., 3.);
 		let b = RGB::new(4., 5., 6.);
+		assert_eq!(-a, RGB::new(-1., -2., -3.));
 		assert_eq!(a + b, RGB::new(5., 7., 9.));
 		assert_eq!(a - b, RGB::new(-3., -3., -3.));
 		assert_eq!(a * b, RGB::new(4., 10., 18.));
