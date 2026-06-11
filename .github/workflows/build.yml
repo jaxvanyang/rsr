@@ -25,13 +25,13 @@ jobs:
       - name: Run tests
         run: cargo test --verbose -- --no-capture
       - name: Lint code
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'macos-latest'
         run: cargo clippy
       - name: Check code style
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'macos-latest'
         run: cargo fmt --check
       - name: Spell check
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'macos-latest'
         uses: crate-ci/typos@v1
       - name: Test f64 build
         run: cargo test --verbose --features use_f64 -- --no-capture
