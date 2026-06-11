@@ -98,11 +98,21 @@ impl DenselySampledSpectrum {
 			values,
 		}
 	}
+
+	pub fn new_with_values(lambda_min: usize, values: &[Float]) -> Self {
+		debug_assert!(values.len() >= 1);
+		Self {
+			lambda_min,
+			lambda_max: lambda_min + values.len() - 1,
+			values: values.to_vec(),
+		}
+	}
 }
 
 impl Spectrum for DenselySampledSpectrum {
 	fn eval(&self, lambda: Float) -> Float {
-		let lambda = lambda.ceil() as usize;
+		debug_assert!(lambda > 0.);
+		let lambda = lambda.round() as usize;
 		if lambda < self.lambda_min || lambda > self.lambda_max {
 			0.
 		} else {
