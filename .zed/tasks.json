@@ -27,4 +27,8 @@
 		"label": "plot",
 		"command": "just run plot",
 	},
+	{
+		"label": "chroma",
+		"command": "just run chroma",
+	},
 ]

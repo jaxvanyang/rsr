@@ -100,7 +100,7 @@ impl DenselySampledSpectrum {
 	}
 
 	pub fn new_with_values(lambda_min: usize, values: &[Float]) -> Self {
-		debug_assert!(values.len() >= 1);
+		debug_assert!(!values.is_empty());
 		Self {
 			lambda_min,
 			lambda_max: lambda_min + values.len() - 1,

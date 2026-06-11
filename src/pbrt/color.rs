@@ -211,7 +211,11 @@ pub struct RGB {
 }
 
 impl RGB {
-	pub fn new(r: Float, g: Float, b: Float) -> Self {
+	pub const RED: Self = Self::new(1., 0., 0.);
+	pub const GREEN: Self = Self::new(0., 1., 0.);
+	pub const BLUE: Self = Self::new(0., 0., 1.);
+
+	pub const fn new(r: Float, g: Float, b: Float) -> Self {
 		Self { r, g, b }
 	}
 
