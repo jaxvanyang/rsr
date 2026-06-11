@@ -12,11 +12,7 @@ impl Rectangle {
 	pub fn new(x: Float, y: Float, width: Float, height: Float) -> Self {
 		debug_assert!(!width.is_nan());
 		debug_assert!(!height.is_nan());
-		Self {
-			p: Vector2f::new(x, y),
-			w: width,
-			h: height,
-		}
+		Self { p: Vector2f::new(x, y), w: width, h: height }
 	}
 
 	pub fn x(&self) -> Float {
@@ -38,10 +34,7 @@ pub struct Circle {
 impl Circle {
 	pub fn new(x: Float, y: Float, radius: Float) -> Self {
 		debug_assert!(!radius.is_nan());
-		Self {
-			c: Vector2f::new(x, y),
-			r: radius,
-		}
+		Self { c: Vector2f::new(x, y), r: radius }
 	}
 
 	pub fn x(&self) -> Float {

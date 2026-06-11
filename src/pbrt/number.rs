@@ -153,25 +153,16 @@ impl Interval {
 	/// assert_eq!(Interval::new(2.0, 1.0), Interval::new(1.0, 2.0));
 	/// ```
 	pub const fn new(low: Float, high: Float) -> Self {
-		Self {
-			low: low.min(high),
-			high: high.max(low),
-		}
+		Self { low: low.min(high), high: high.max(low) }
 	}
 
 	pub fn new_with_error(value: Float, error: Float) -> Self {
 		debug_assert!(error >= 0.0);
 
 		if error == 0.0 {
-			Self {
-				low: value,
-				high: value,
-			}
+			Self { low: value, high: value }
 		} else {
-			Self {
-				low: next_float_down(value - error),
-				high: next_float_up(value + error),
-			}
+			Self { low: next_float_down(value - error), high: next_float_up(value + error) }
 		}
 	}
 
@@ -184,10 +175,7 @@ impl Interval {
 	}
 
 	pub fn sqrt(self) -> Interval {
-		Interval {
-			low: next_float_down(self.low.sqrt()),
-			high: next_float_up(self.high.sqrt()),
-		}
+		Interval { low: next_float_down(self.low.sqrt()), high: next_float_up(self.high.sqrt()) }
 	}
 
 	pub fn fma(self, b: Interval, c: Interval) -> Interval {
@@ -206,10 +194,7 @@ impl Interval {
 		let low = lows.into_iter().reduce(|a, b| a.min(b)).unwrap();
 		let high = highs.into_iter().reduce(|a, b| a.max(b)).unwrap();
 
-		Interval {
-			low: next_float_down(low),
-			high: next_float_up(high),
-		}
+		Interval { low: next_float_down(low), high: next_float_up(high) }
 	}
 
 	pub fn square(self) -> Interval {
@@ -287,19 +272,11 @@ impl Number for Interval {
 	}
 
 	fn min(self, rhs: Self) -> Self {
-		if self.midpoint() < rhs.midpoint() {
-			self
-		} else {
-			rhs
-		}
+		if self.midpoint() < rhs.midpoint() { self } else { rhs }
 	}
 
 	fn max(self, rhs: Self) -> Self {
-		if self.midpoint() < rhs.midpoint() {
-			rhs
-		} else {
-			self
-		}
+		if self.midpoint() < rhs.midpoint() { rhs } else { self }
 	}
 }
 
@@ -313,10 +290,7 @@ impl Neg for Interval {
 	type Output = Interval;
 
 	fn neg(self) -> Interval {
-		Interval {
-			low: -self.high,
-			high: -self.low,
-		}
+		Interval { low: -self.high, high: -self.low }
 	}
 }
 
@@ -358,19 +332,12 @@ impl Mul<Interval> for Interval {
 	type Output = Interval;
 
 	fn mul(self, rhs: Interval) -> Interval {
-		let results = [
-			self.low * rhs.low,
-			self.high * rhs.low,
-			self.low * rhs.high,
-			self.high * rhs.high,
-		];
+		let results =
+			[self.low * rhs.low, self.high * rhs.low, self.low * rhs.high, self.high * rhs.high];
 		let low = results.into_iter().reduce(|a, b| a.min(b)).unwrap();
 		let high = results.into_iter().reduce(|a, b| a.max(b)).unwrap();
 
-		Interval {
-			low: next_float_down(low),
-			high: next_float_up(high),
-		}
+		Interval { low: next_float_down(low), high: next_float_up(high) }
 	}
 }
 
@@ -385,25 +352,15 @@ impl Div<Interval> for Interval {
 
 	fn div(self, rhs: Interval) -> Interval {
 		if rhs.low <= 0.0 && 0.0 <= rhs.high {
-			return Interval {
-				low: Float::NEG_INFINITY,
-				high: Float::INFINITY,
-			};
+			return Interval { low: Float::NEG_INFINITY, high: Float::INFINITY };
 		}
 
-		let results = [
-			self.low / rhs.low,
-			self.high / rhs.low,
-			self.low / rhs.high,
-			self.high / rhs.high,
-		];
+		let results =
+			[self.low / rhs.low, self.high / rhs.low, self.low / rhs.high, self.high / rhs.high];
 		let low = results.into_iter().reduce(|a, b| a.min(b)).unwrap();
 		let high = results.into_iter().reduce(|a, b| a.max(b)).unwrap();
 
-		Interval {
-			low: next_float_down(low),
-			high: next_float_up(high),
-		}
+		Interval { low: next_float_down(low), high: next_float_up(high) }
 	}
 }
 

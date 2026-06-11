@@ -48,8 +48,7 @@ impl Window {
 	}
 
 	pub fn update(&mut self) -> Result<()> {
-		self.window
-			.update_with_buffer(&self.buffer, self.width, self.height)
+		self.window.update_with_buffer(&self.buffer, self.width, self.height)
 	}
 
 	pub fn clear(&mut self) {

@@ -91,11 +91,7 @@ fn get_exponent(v: f32) -> i32 {
 /// assert_eq!(round_to_left(-0.6), -1.);
 /// ```
 pub fn round_to_left(v: Float) -> Float {
-	if v.fract().abs() == 0.5 {
-		v.floor()
-	} else {
-		v.round()
-	}
+	if v.fract().abs() == 0.5 { v.floor() } else { v.round() }
 }
 
 /// Return the nearest integer to self. If a value is half-way between two integers, round to right.
@@ -112,11 +108,7 @@ pub fn round_to_left(v: Float) -> Float {
 /// assert_eq!(round_to_right(-0.6), -1.);
 /// ```
 pub fn round_to_right(v: Float) -> Float {
-	if v.fract().abs() == 0.5 {
-		v.ceil()
-	} else {
-		v.round()
-	}
+	if v.fract().abs() == 0.5 { v.ceil() } else { v.round() }
 }
 
 /// Usually return the index `i` such that `pred(i)` is true and `pred(i + 1)` is false, unless:

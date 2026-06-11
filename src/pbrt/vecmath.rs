@@ -24,10 +24,7 @@ impl<T: Number> Vector2<T> {
 	}
 
 	pub fn abs(self) -> Self {
-		Self {
-			x: self.x.abs(),
-			y: self.y.abs(),
-		}
+		Self { x: self.x.abs(), y: self.y.abs() }
 	}
 
 	pub fn length_squared(self) -> T {
@@ -44,18 +41,12 @@ impl<T: Number> Vector2<T> {
 
 	/// per element min
 	pub fn min(self, rhs: Self) -> Self {
-		Self {
-			x: self.x.min(rhs.x),
-			y: self.y.min(rhs.y),
-		}
+		Self { x: self.x.min(rhs.x), y: self.y.min(rhs.y) }
 	}
 
 	/// per element max
 	pub fn max(self, rhs: Self) -> Self {
-		Self {
-			x: self.x.max(rhs.x),
-			y: self.y.max(rhs.y),
-		}
+		Self { x: self.x.max(rhs.x), y: self.y.max(rhs.y) }
 	}
 
 	pub fn min_component(self) -> T {
@@ -75,10 +66,7 @@ impl<T: Number> Vector2<T> {
 	}
 
 	pub fn permute(self, x: usize, y: usize) -> Self {
-		Self {
-			x: self[x],
-			y: self[y],
-		}
+		Self { x: self[x], y: self[y] }
 	}
 
 	/// Horizontal product, return `self.x * self.y`.
@@ -128,17 +116,11 @@ impl Vector2f {
 	}
 
 	pub fn ceil(self) -> Self {
-		Self {
-			x: self.x.ceil(),
-			y: self.y.ceil(),
-		}
+		Self { x: self.x.ceil(), y: self.y.ceil() }
 	}
 
 	pub fn floor(self) -> Self {
-		Self {
-			x: self.x.floor(),
-			y: self.y.floor(),
-		}
+		Self { x: self.x.floor(), y: self.y.floor() }
 	}
 
 	pub fn lerp(t: Float, a: Self, b: Self) -> Self {
@@ -148,19 +130,13 @@ impl Vector2f {
 
 	/// Fused multiply-add operation, return component-wise `a * b + c`.
 	pub fn fma(a: Self, b: Self, c: Self) -> Self {
-		Self {
-			x: a.x.mul_add(b.x, c.x),
-			y: a.y.mul_add(b.y, c.y),
-		}
+		Self { x: a.x.mul_add(b.x, c.x), y: a.y.mul_add(b.y, c.y) }
 	}
 }
 
 impl<T: Default> Default for Vector2<T> {
 	fn default() -> Self {
-		Self {
-			x: T::default(),
-			y: T::default(),
-		}
+		Self { x: T::default(), y: T::default() }
 	}
 }
 
@@ -212,20 +188,14 @@ impl<T> IndexMut<usize> for Vector2<T> {
 impl<T: Neg<Output = T>> Neg for Vector2<T> {
 	type Output = Self;
 	fn neg(self) -> Self::Output {
-		Self {
-			x: -self.x,
-			y: -self.y,
-		}
+		Self { x: -self.x, y: -self.y }
 	}
 }
 
 impl<T: Add<Output = T>> Add for Vector2<T> {
 	type Output = Self;
 	fn add(self, rhs: Self) -> Self::Output {
-		Self {
-			x: self.x + rhs.x,
-			y: self.y + rhs.y,
-		}
+		Self { x: self.x + rhs.x, y: self.y + rhs.y }
 	}
 }
 
@@ -239,10 +209,7 @@ impl<T: AddAssign> AddAssign for Vector2<T> {
 impl<T: Sub<Output = T>> Sub for Vector2<T> {
 	type Output = Self;
 	fn sub(self, rhs: Self) -> Self::Output {
-		Self {
-			x: self.x - rhs.x,
-			y: self.y - rhs.y,
-		}
+		Self { x: self.x - rhs.x, y: self.y - rhs.y }
 	}
 }
 
@@ -256,10 +223,7 @@ impl<T: SubAssign> SubAssign for Vector2<T> {
 impl<T: Mul<Output = T> + Copy> Mul<T> for Vector2<T> {
 	type Output = Self;
 	fn mul(self, rhs: T) -> Self::Output {
-		Self {
-			x: self.x * rhs,
-			y: self.y * rhs,
-		}
+		Self { x: self.x * rhs, y: self.y * rhs }
 	}
 }
 
@@ -288,10 +252,7 @@ impl Div<Float> for Vector2f {
 	type Output = Self;
 	fn div(self, rhs: Float) -> Self::Output {
 		let inv = 1.0 / rhs;
-		Self {
-			x: self.x * inv,
-			y: self.y * inv,
-		}
+		Self { x: self.x * inv, y: self.y * inv }
 	}
 }
 
@@ -299,10 +260,7 @@ impl Div<i32> for Vector2i {
 	type Output = Self;
 	fn div(self, rhs: i32) -> Self::Output {
 		let inv = 1.0 / rhs as Float;
-		Self {
-			x: (self.x as Float * inv) as i32,
-			y: (self.y as Float * inv) as i32,
-		}
+		Self { x: (self.x as Float * inv) as i32, y: (self.y as Float * inv) as i32 }
 	}
 }
 
@@ -353,11 +311,7 @@ impl<T: Number> Vector3<T> {
 	}
 
 	pub fn abs(self) -> Self {
-		Self {
-			x: self.x.abs(),
-			y: self.y.abs(),
-			z: self.z.abs(),
-		}
+		Self { x: self.x.abs(), y: self.y.abs(), z: self.z.abs() }
 	}
 
 	pub fn length_squared(self) -> T {
@@ -374,20 +328,12 @@ impl<T: Number> Vector3<T> {
 
 	/// per element min
 	pub fn min(self, rhs: Self) -> Self {
-		Self {
-			x: self.x.min(rhs.x),
-			y: self.y.min(rhs.y),
-			z: self.z.min(rhs.z),
-		}
+		Self { x: self.x.min(rhs.x), y: self.y.min(rhs.y), z: self.z.min(rhs.z) }
 	}
 
 	/// per element max
 	pub fn max(self, rhs: Self) -> Self {
-		Self {
-			x: self.x.max(rhs.x),
-			y: self.y.max(rhs.y),
-			z: self.z.max(rhs.z),
-		}
+		Self { x: self.x.max(rhs.x), y: self.y.max(rhs.y), z: self.z.max(rhs.z) }
 	}
 
 	pub fn min_component(self) -> T {
@@ -419,11 +365,7 @@ impl<T: Number> Vector3<T> {
 	}
 
 	pub fn permute(self, x: usize, y: usize, z: usize) -> Self {
-		Self {
-			x: self[x],
-			y: self[y],
-			z: self[z],
-		}
+		Self { x: self[x], y: self[y], z: self[z] }
 	}
 
 	/// Horizontal product, return `self.x * self.y * self.z`.
@@ -500,19 +442,11 @@ impl Vector3f {
 	}
 
 	pub fn ceil(self) -> Self {
-		Self {
-			x: self.x.ceil(),
-			y: self.y.ceil(),
-			z: self.z.ceil(),
-		}
+		Self { x: self.x.ceil(), y: self.y.ceil(), z: self.z.ceil() }
 	}
 
 	pub fn floor(self) -> Self {
-		Self {
-			x: self.x.floor(),
-			y: self.y.floor(),
-			z: self.z.floor(),
-		}
+		Self { x: self.x.floor(), y: self.y.floor(), z: self.z.floor() }
 	}
 
 	pub fn lerp(t: Float, a: Self, b: Self) -> Self {
@@ -522,11 +456,7 @@ impl Vector3f {
 
 	/// Fused multiply-add operation, return component-wise `a * b + c`.
 	pub fn fma(a: Self, b: Self, c: Self) -> Self {
-		Self {
-			x: a.x.mul_add(b.x, c.x),
-			y: a.y.mul_add(b.y, c.y),
-			z: a.z.mul_add(b.z, c.z),
-		}
+		Self { x: a.x.mul_add(b.x, c.x), y: a.y.mul_add(b.y, c.y), z: a.z.mul_add(b.z, c.z) }
 	}
 
 	/// Construct a local coordinate system from a single normalized 3D vector.
@@ -537,16 +467,8 @@ impl Vector3f {
 		let sign = (1.0 as Float).copysign(self.z);
 		let a = -1.0 / (sign + self.z);
 		let b = self.x * self.y * a;
-		let v2 = Self {
-			x: 1.0 + sign * self.x * self.x * a,
-			y: sign * b,
-			z: -sign * self.x,
-		};
-		let v3 = Self {
-			x: b,
-			y: sign + self.y * self.y * a,
-			z: -self.y,
-		};
+		let v2 = Self { x: 1.0 + sign * self.x * self.x * a, y: sign * b, z: -sign * self.x };
+		let v3 = Self { x: b, y: sign + self.y * self.y * a, z: -self.y };
 
 		(v2, v3)
 	}
@@ -567,11 +489,7 @@ impl Vector3fi {
 
 	/// Return error bounds for the vector components.
 	pub fn error(&self) -> Vector3f {
-		Vector3f::new(
-			self.x.width() / 2.0,
-			self.y.width() / 2.0,
-			self.z.width() / 2.0,
-		)
+		Vector3f::new(self.x.width() / 2.0, self.y.width() / 2.0, self.z.width() / 2.0)
 	}
 	/// Return whether the value stored has empty intervals.
 	pub fn is_exact(&self) -> bool {
@@ -581,11 +499,7 @@ impl Vector3fi {
 
 impl<T: Default> Default for Vector3<T> {
 	fn default() -> Self {
-		Self {
-			x: T::default(),
-			y: T::default(),
-			z: T::default(),
-		}
+		Self { x: T::default(), y: T::default(), z: T::default() }
 	}
 }
 
@@ -633,22 +547,14 @@ impl<T> IndexMut<usize> for Vector3<T> {
 impl<T: Neg<Output = T>> Neg for Vector3<T> {
 	type Output = Self;
 	fn neg(self) -> Self::Output {
-		Self {
-			x: -self.x,
-			y: -self.y,
-			z: -self.z,
-		}
+		Self { x: -self.x, y: -self.y, z: -self.z }
 	}
 }
 
 impl<T: Add<Output = T>> Add for Vector3<T> {
 	type Output = Self;
 	fn add(self, rhs: Self) -> Self::Output {
-		Self {
-			x: self.x + rhs.x,
-			y: self.y + rhs.y,
-			z: self.z + rhs.z,
-		}
+		Self { x: self.x + rhs.x, y: self.y + rhs.y, z: self.z + rhs.z }
 	}
 }
 
@@ -663,11 +569,7 @@ impl<T: AddAssign> AddAssign for Vector3<T> {
 impl<T: Sub<Output = T>> Sub for Vector3<T> {
 	type Output = Self;
 	fn sub(self, rhs: Self) -> Self::Output {
-		Self {
-			x: self.x - rhs.x,
-			y: self.y - rhs.y,
-			z: self.z - rhs.z,
-		}
+		Self { x: self.x - rhs.x, y: self.y - rhs.y, z: self.z - rhs.z }
 	}
 }
 
@@ -682,11 +584,7 @@ impl<T: SubAssign> SubAssign for Vector3<T> {
 impl<T: Mul<Output = T> + Copy> Mul<T> for Vector3<T> {
 	type Output = Self;
 	fn mul(self, rhs: T) -> Self::Output {
-		Self {
-			x: self.x * rhs,
-			y: self.y * rhs,
-			z: self.z * rhs,
-		}
+		Self { x: self.x * rhs, y: self.y * rhs, z: self.z * rhs }
 	}
 }
 
@@ -716,11 +614,7 @@ impl Div<Float> for Vector3f {
 	type Output = Self;
 	fn div(self, rhs: Float) -> Self::Output {
 		let inv = 1.0 / rhs;
-		Self {
-			x: self.x * inv,
-			y: self.y * inv,
-			z: self.z * inv,
-		}
+		Self { x: self.x * inv, y: self.y * inv, z: self.z * inv }
 	}
 }
 
@@ -779,10 +673,7 @@ pub type Bounds2i = Bounds2<i32>;
 
 impl<T: Number> Bounds2<T> {
 	pub fn new(p1: Vector2<T>, p2: Vector2<T>) -> Self {
-		Self {
-			min: p1.min(p2),
-			max: p1.max(p2),
-		}
+		Self { min: p1.min(p2), max: p1.max(p2) }
 	}
 
 	/// Return a bounding box that encloses just a single point.
@@ -791,31 +682,19 @@ impl<T: Number> Bounds2<T> {
 	}
 
 	pub fn corner(&self, code: usize) -> Vector2<T> {
-		Vector2 {
-			x: self[code & 1].x,
-			y: self[(code >> 1) & 1].y,
-		}
+		Vector2 { x: self[code & 1].x, y: self[(code >> 1) & 1].y }
 	}
 
 	pub fn union_point(&self, p: Vector2<T>) -> Self {
-		Self {
-			min: self.min.min(p),
-			max: self.max.max(p),
-		}
+		Self { min: self.min.min(p), max: self.max.max(p) }
 	}
 
 	pub fn union(&self, rhs: &Self) -> Self {
-		Self {
-			min: self.min.min(rhs.min),
-			max: self.max.max(rhs.max),
-		}
+		Self { min: self.min.min(rhs.min), max: self.max.max(rhs.max) }
 	}
 
 	pub fn intersect(&self, rhs: &Self) -> Self {
-		Self {
-			min: self.min.max(rhs.min),
-			max: self.max.min(rhs.max),
-		}
+		Self { min: self.min.max(rhs.min), max: self.max.min(rhs.max) }
 	}
 
 	pub fn overlap(&self, rhs: &Self) -> bool {
@@ -839,10 +718,7 @@ impl<T: Number> Bounds2<T> {
 	/// Return a new bounding box expanded by `delta` in all dimensions.
 	pub fn expand(&self, delta: T) -> Self {
 		let delta = Vector2::new(delta, delta);
-		Self {
-			min: self.min - delta,
-			max: self.max + delta,
-		}
+		Self { min: self.min - delta, max: self.max + delta }
 	}
 
 	pub fn diagonal(&self) -> Vector2<T> {
@@ -869,10 +745,7 @@ impl<T: Number> Bounds2<T> {
 
 impl Bounds2f {
 	pub fn lerp(&self, t: Vector2f) -> Vector2f {
-		Vector2f::new(
-			lerp(t.x, self.min.x, self.max.x),
-			lerp(t.y, self.min.y, self.max.y),
-		)
+		Vector2f::new(lerp(t.x, self.min.x, self.max.x), lerp(t.y, self.min.y, self.max.y))
 	}
 
 	/// Inverse of `lerp()`.
@@ -892,16 +765,7 @@ impl Bounds2f {
 impl<T: Number> Default for Bounds2<T> {
 	/// Create an empty bounding box.
 	fn default() -> Self {
-		Self {
-			min: Vector2 {
-				x: T::MAX,
-				y: T::MAX,
-			},
-			max: Vector2 {
-				x: T::MIN,
-				y: T::MIN,
-			},
-		}
+		Self { min: Vector2 { x: T::MAX, y: T::MAX }, max: Vector2 { x: T::MIN, y: T::MIN } }
 	}
 }
 
@@ -929,10 +793,7 @@ impl<T> IndexMut<usize> for Bounds2<T> {
 
 impl Bounds2i {
 	pub fn iter(&self) -> Bounds2iIterator {
-		Bounds2iIterator {
-			bounds: self.clone(),
-			p: self.min,
-		}
+		Bounds2iIterator { bounds: self.clone(), p: self.min }
 	}
 }
 
@@ -972,10 +833,7 @@ pub type Bounds3i = Bounds3<i32>;
 
 impl<T: Number> Bounds3<T> {
 	pub fn new(p1: Vector3<T>, p2: Vector3<T>) -> Self {
-		Self {
-			min: p1.min(p2),
-			max: p1.max(p2),
-		}
+		Self { min: p1.min(p2), max: p1.max(p2) }
 	}
 
 	/// Return a bounding box that encloses just a single point.
@@ -984,32 +842,19 @@ impl<T: Number> Bounds3<T> {
 	}
 
 	pub fn corner(&self, code: usize) -> Vector3<T> {
-		Vector3 {
-			x: self[code & 1].x,
-			y: self[(code >> 1) & 1].y,
-			z: self[(code >> 2) & 1].z,
-		}
+		Vector3 { x: self[code & 1].x, y: self[(code >> 1) & 1].y, z: self[(code >> 2) & 1].z }
 	}
 
 	pub fn union_point(&self, p: Vector3<T>) -> Self {
-		Self {
-			min: self.min.min(p),
-			max: self.max.max(p),
-		}
+		Self { min: self.min.min(p), max: self.max.max(p) }
 	}
 
 	pub fn union(&self, rhs: &Self) -> Self {
-		Self {
-			min: self.min.min(rhs.min),
-			max: self.max.max(rhs.max),
-		}
+		Self { min: self.min.min(rhs.min), max: self.max.max(rhs.max) }
 	}
 
 	pub fn intersect(&self, rhs: &Self) -> Self {
-		Self {
-			min: self.min.max(rhs.min),
-			max: self.max.min(rhs.max),
-		}
+		Self { min: self.min.max(rhs.min), max: self.max.min(rhs.max) }
 	}
 
 	pub fn overlap(&self, rhs: &Self) -> bool {
@@ -1035,10 +880,7 @@ impl<T: Number> Bounds3<T> {
 	/// Return a new bounding box expanded by `delta` in all dimensions.
 	pub fn expand(&self, delta: T) -> Self {
 		let delta = Vector3::new(delta, delta, delta);
-		Self {
-			min: self.min - delta,
-			max: self.max + delta,
-		}
+		Self { min: self.min - delta, max: self.max + delta }
 	}
 
 	pub fn diagonal(&self) -> Vector3<T> {
@@ -1102,11 +944,7 @@ impl Bounds3f {
 
 	pub fn bounding_sphere(&self) -> (Vector3f, Float) {
 		let center = (self.min + self.max) / 2.0;
-		let radius = if center.inside(self) {
-			center.distance(self.max)
-		} else {
-			0.0
-		};
+		let radius = if center.inside(self) { center.distance(self.max) } else { 0.0 };
 
 		(center, radius)
 	}
@@ -1116,16 +954,8 @@ impl<T: Number> Default for Bounds3<T> {
 	/// Create an empty bounding box.
 	fn default() -> Self {
 		Self {
-			min: Vector3 {
-				x: T::MAX,
-				y: T::MAX,
-				z: T::MAX,
-			},
-			max: Vector3 {
-				x: T::MIN,
-				y: T::MIN,
-				z: T::MIN,
-			},
+			min: Vector3 { x: T::MAX, y: T::MAX, z: T::MAX },
+			max: Vector3 { x: T::MIN, y: T::MIN, z: T::MIN },
 		}
 	}
 }
@@ -1282,10 +1112,7 @@ mod tests {
 
 		let b1 = Bounds2i::new(Vector2i::new(-1, -1), Vector2i::new(1, 2));
 		let b2 = Bounds2i::new(Vector2i::new(0, 0), Vector2i::new(2, 3));
-		assert_eq!(
-			b1.union(&b2),
-			Bounds2i::new(Vector2i::new(-1, -1), Vector2i::new(2, 3))
-		);
+		assert_eq!(b1.union(&b2), Bounds2i::new(Vector2i::new(-1, -1), Vector2i::new(2, 3)));
 
 		let empty = Bounds3i::default();
 		let bounds = Bounds3i::new(Vector3i::new(1, 2, 3), Vector3i::new(4, 5, 6));
@@ -1294,20 +1121,14 @@ mod tests {
 
 		let b1 = Bounds3i::new(Vector3i::new(-1, -1, -1), Vector3i::new(1, 2, 3));
 		let b2 = Bounds3i::new(Vector3i::new(0, 0, 0), Vector3i::new(3, 2, 1));
-		assert_eq!(
-			b1.union(&b2),
-			Bounds3i::new(Vector3i::new(-1, -1, -1), Vector3i::new(3, 2, 3))
-		);
+		assert_eq!(b1.union(&b2), Bounds3i::new(Vector3i::new(-1, -1, -1), Vector3i::new(3, 2, 3)));
 	}
 
 	#[test]
 	fn test_intersect() {
 		let b1 = Bounds2i::new(Vector2i::new(-1, -2), Vector2i::new(1, 2));
 		let b2 = Bounds2i::new(Vector2i::new(-2, -1), Vector2i::new(2, 1));
-		assert_eq!(
-			b1.intersect(&b2),
-			Bounds2i::new(Vector2i::new(-1, -1), Vector2i::new(1, 1))
-		);
+		assert_eq!(b1.intersect(&b2), Bounds2i::new(Vector2i::new(-1, -1), Vector2i::new(1, 1)));
 
 		let b1 = Bounds3i::new(Vector3i::new(-1, -1, -1), Vector3i::new(1, 2, 3));
 		let b2 = Bounds3i::new(Vector3i::new(0, 0, 0), Vector3i::new(3, 2, 1));

@@ -18,13 +18,7 @@ pub struct Interaction {
 
 impl Interaction {
 	pub fn new(pi: Vector3fi, n: Vector3f, uv: Vector2f, wo: Vector3f, time: Float) -> Self {
-		Self {
-			pi,
-			time,
-			wo,
-			n,
-			uv,
-		}
+		Self { pi, time, wo, n, uv }
 	}
 
 	/// Return the interaction point without error.
@@ -81,13 +75,7 @@ impl SurfaceInteraction {
 	) -> Self {
 		let mut interaction = Interaction::new(pi, dpdu.cross(dpdv).normalized(), uv, wo, time);
 		// initialize shading geometry from true geometry
-		let mut shading = Shading {
-			n: interaction.n,
-			dpdu,
-			dpdv,
-			dndu,
-			dndv,
-		};
+		let mut shading = Shading { n: interaction.n, dpdu, dpdv, dndu, dndv };
 
 		// adujust normal based on orientation and handedness
 		if flip_normal {

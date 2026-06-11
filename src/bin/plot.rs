@@ -40,16 +40,8 @@ fn plot(window: &mut Window, center: Vector2i, f: fn(Float) -> Float, color: u32
 fn draw_background(window: &mut Window, center: Vector2i, step: usize) {
 	let (x, y) = (center.x, center.y);
 	let step_i = step as i32;
-	let x_min = if x < 0 {
-		(x % step_i) + step_i
-	} else {
-		x % step_i
-	} as usize;
-	let y_min = if y < 0 {
-		(y % step_i) + step_i
-	} else {
-		y % step_i
-	} as usize;
+	let x_min = if x < 0 { (x % step_i) + step_i } else { x % step_i } as usize;
+	let y_min = if y < 0 { (y % step_i) + step_i } else { y % step_i } as usize;
 
 	window.clear();
 	for y in (y_min..window.height).step_by(step) {

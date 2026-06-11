@@ -31,10 +31,7 @@ pub trait Spectrum {
 
 	fn sample(&self, swl: &SampledWavelengths) -> SampledSpectrum {
 		SampledSpectrum::new(
-			&swl.lambdas
-				.iter()
-				.map(|lambda| self.eval(*lambda))
-				.collect::<Vec<_>>(),
+			&swl.lambdas.iter().map(|lambda| self.eval(*lambda)).collect::<Vec<_>>(),
 		)
 	}
 
@@ -88,24 +85,15 @@ impl DenselySampledSpectrum {
 	}
 
 	pub fn new_with_lambdas(spec: &dyn Spectrum, lambda_min: usize, lambda_max: usize) -> Self {
-		let values = (lambda_min..=lambda_max)
-			.map(|lambda| spec.eval(lambda as Float))
-			.collect::<Vec<_>>();
+		let values =
+			(lambda_min..=lambda_max).map(|lambda| spec.eval(lambda as Float)).collect::<Vec<_>>();
 
-		Self {
-			lambda_min,
-			lambda_max,
-			values,
-		}
+		Self { lambda_min, lambda_max, values }
 	}
 
 	pub fn new_with_values(lambda_min: usize, values: &[Float]) -> Self {
 		debug_assert!(!values.is_empty());
-		Self {
-			lambda_min,
-			lambda_max: lambda_min + values.len() - 1,
-			values: values.to_vec(),
-		}
+		Self { lambda_min, lambda_max: lambda_min + values.len() - 1, values: values.to_vec() }
 	}
 }
 
@@ -136,10 +124,7 @@ impl PiecewiseLinearSpectrum {
 		assert!(lambdas.is_sorted());
 		assert!(lambdas.len() == values.len());
 
-		Self {
-			lambdas: lambdas.to_vec(),
-			values: values.to_vec(),
-		}
+		Self { lambdas: lambdas.to_vec(), values: values.to_vec() }
 	}
 
 	pub fn from_interleaved(samples: &[Float], normalize: bool) -> Self {
@@ -191,11 +176,7 @@ impl Spectrum for PiecewiseLinearSpectrum {
 		}
 
 		if self.lambdas.len() == 1 {
-			return if lambda == self.lambdas[0] {
-				self.values[0]
-			} else {
-				0.
-			};
+			return if lambda == self.lambdas[0] { self.values[0] } else { 0. };
 		}
 
 		let mut i = 0;
@@ -264,15 +245,11 @@ pub struct SampledSpectrum {
 
 impl SampledSpectrum {
 	pub fn new(v: &[Float]) -> Self {
-		Self {
-			values: v[..SPECTRUM_SAMPLES].try_into().unwrap(),
-		}
+		Self { values: v[..SPECTRUM_SAMPLES].try_into().unwrap() }
 	}
 
 	pub fn new_with_const(c: Float) -> Self {
-		Self {
-			values: [c; SPECTRUM_SAMPLES],
-		}
+		Self { values: [c; SPECTRUM_SAMPLES] }
 	}
 
 	pub fn is_zero(&self) -> bool {
@@ -367,10 +344,7 @@ impl SampledWavelengths {
 			}
 		}
 
-		Self {
-			lambdas,
-			pdf: [1. / width; SPECTRUM_SAMPLES],
-		}
+		Self { lambdas, pdf: [1. / width; SPECTRUM_SAMPLES] }
 	}
 
 	pub fn pdf(&self) -> SampledSpectrum {
@@ -416,9 +390,7 @@ impl RGBAlbedoSpectrum {
 		debug_assert!(0. <= rgb.r && rgb.r <= 1.);
 		debug_assert!(0. <= rgb.g && rgb.g <= 1.);
 		debug_assert!(0. <= rgb.b && rgb.b <= 1.);
-		Self {
-			rsp: cs.to_rgb_coeffs(rgb),
-		}
+		Self { rsp: cs.to_rgb_coeffs(rgb) }
 	}
 }
 
@@ -442,11 +414,7 @@ impl RGBUnboundedSpectrum {
 	pub fn new(cs: &RGBColorSpace, rgb: RGB) -> Self {
 		let m = rgb.r.max(rgb.g).max(rgb.b);
 		let scale = m * 2.;
-		let rsp = cs.to_rgb_coeffs(if scale != 0. {
-			rgb / scale
-		} else {
-			RGB::default()
-		});
+		let rsp = cs.to_rgb_coeffs(if scale != 0. { rgb / scale } else { RGB::default() });
 
 		Self { scale, rsp }
 	}
@@ -473,17 +441,9 @@ impl<'a> RGBIlluminantSpectrum<'a> {
 	pub fn new(cs: &'a RGBColorSpace, rgb: RGB) -> Self {
 		let m = rgb.r.max(rgb.g).max(rgb.b);
 		let scale = m * 2.;
-		let rsp = cs.to_rgb_coeffs(if scale != 0. {
-			rgb / scale
-		} else {
-			RGB::default()
-		});
+		let rsp = cs.to_rgb_coeffs(if scale != 0. { rgb / scale } else { RGB::default() });
 
-		Self {
-			scale,
-			rsp,
-			illuminant: &cs.illuminant,
-		}
+		Self { scale, rsp, illuminant: &cs.illuminant }
 	}
 }
 

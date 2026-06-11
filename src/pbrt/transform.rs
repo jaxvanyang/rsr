@@ -79,9 +79,7 @@ impl SquareMatrix<1> {
 			return None;
 		}
 
-		Some(Self {
-			m: [[1.0 / self[0][0]]],
-		})
+		Some(Self { m: [[1.0 / self[0][0]]] })
 	}
 }
 
@@ -233,11 +231,7 @@ impl SquareMatrix<4> {
 		let z = m[2][0] * p.x + m[2][1] * p.y + m[2][2] * p.z + m[2][3];
 		let w = m[3][0] * p.x + m[3][1] * p.y + m[3][2] * p.z + m[3][3];
 
-		if w == 1.0 {
-			Vector3f::new(x, y, z)
-		} else {
-			Vector3f::new(x, y, z) / w
-		}
+		if w == 1.0 { Vector3f::new(x, y, z) } else { Vector3f::new(x, y, z) / w }
 	}
 
 	pub fn mul_vector(&self, v: Vector3f) -> Vector3f {
@@ -482,18 +476,13 @@ impl Transform {
 
 	/// Return the inverse of this transform, if it exists.
 	pub fn inv(&self) -> Option<Self> {
-		self.inv
-			.as_ref()
-			.map(|inv| Self::new_with_inv(inv.clone(), self.m.clone()))
+		self.inv.as_ref().map(|inv| Self::new_with_inv(inv.clone(), self.m.clone()))
 	}
 
 	/// Return the transpose of this transform.
 	#[allow(non_snake_case)]
 	pub fn T(&self) -> Self {
-		Self {
-			m: self.m.T(),
-			inv: self.inv.as_ref().map(|inv| inv.T()),
-		}
+		Self { m: self.m.T(), inv: self.inv.as_ref().map(|inv| inv.T()) }
 	}
 
 	pub fn is_identity(&self) -> bool {
@@ -537,15 +526,9 @@ impl Transform {
 	/// Return `true` if the transform has a scaling term.
 	pub fn has_scale(&self) -> bool {
 		let tolerance = 1e-3;
-		let lx2 = self
-			.map_point(Vector3f::new(1.0, 0.0, 0.0))
-			.length_squared();
-		let ly2 = self
-			.map_point(Vector3f::new(0.0, 1.0, 0.0))
-			.length_squared();
-		let lz2 = self
-			.map_point(Vector3f::new(0.0, 0.0, 1.0))
-			.length_squared();
+		let lx2 = self.map_point(Vector3f::new(1.0, 0.0, 0.0)).length_squared();
+		let ly2 = self.map_point(Vector3f::new(0.0, 1.0, 0.0)).length_squared();
+		let lz2 = self.map_point(Vector3f::new(0.0, 0.0, 1.0)).length_squared();
 
 		(lx2 - 1.0).abs() > tolerance
 			|| (ly2 - 1.0).abs() > tolerance
@@ -662,10 +645,7 @@ impl Transform {
 		}
 		let inv = r.T();
 
-		Self {
-			m: r,
-			inv: Some(inv),
-		}
+		Self { m: r, inv: Some(inv) }
 	}
 
 	/// Create a look-at transform to camera space, the camera is looking at `look` from
@@ -694,10 +674,7 @@ impl Transform {
 
 		let world_to_camera = camera_to_world.inv().unwrap();
 
-		Self {
-			m: world_to_camera,
-			inv: Some(camera_to_world),
-		}
+		Self { m: world_to_camera, inv: Some(camera_to_world) }
 	}
 
 	/// Apply the transform to a point.
@@ -777,10 +754,7 @@ impl Transform {
 impl Default for Transform {
 	fn default() -> Self {
 		let m = SquareMatrix::default();
-		Self {
-			m: m.clone(),
-			inv: Some(m),
-		}
+		Self { m: m.clone(), inv: Some(m) }
 	}
 }
 
@@ -1061,14 +1035,8 @@ mod tests {
 	#[test]
 	fn test_bounds() {
 		let t = Transform::scale(-1.0, 2.0, -3.0);
-		let b = Bounds3f::new(
-			Vector3f::new(-1.0, -1.0, -1.0),
-			Vector3f::new(1.0, 1.0, 1.0),
-		);
-		let c = Bounds3f::new(
-			Vector3f::new(-1.0, -2.0, -3.0),
-			Vector3f::new(1.0, 2.0, 3.0),
-		);
+		let b = Bounds3f::new(Vector3f::new(-1.0, -1.0, -1.0), Vector3f::new(1.0, 1.0, 1.0));
+		let c = Bounds3f::new(Vector3f::new(-1.0, -2.0, -3.0), Vector3f::new(1.0, 2.0, 3.0));
 		assert_eq!(t.map_bounds(&b), c);
 		assert_eq!(t.invert_bounds(&c).unwrap(), b);
 	}

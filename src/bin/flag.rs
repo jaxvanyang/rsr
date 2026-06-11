@@ -33,34 +33,10 @@ fn draw_china_flag(window: &mut Window, width: Float) {
 	window.clear();
 	window.fill_rect(rect, red);
 	draw_star(window, x + unit * 5., y + unit * 5., unit * 3., 0.);
-	draw_star(
-		window,
-		x + unit * 10.,
-		y + unit * 2.,
-		unit,
-		Float::atan2(5., 3.) + PI,
-	);
-	draw_star(
-		window,
-		x + unit * 12.,
-		y + unit * 4.,
-		unit,
-		Float::atan2(7., 1.) + PI,
-	);
-	draw_star(
-		window,
-		x + unit * 12.,
-		y + unit * 7.,
-		unit,
-		Float::atan2(7., -2.) + PI,
-	);
-	draw_star(
-		window,
-		x + unit * 10.,
-		y + unit * 9.,
-		unit,
-		Float::atan2(5., -4.) + PI,
-	);
+	draw_star(window, x + unit * 10., y + unit * 2., unit, Float::atan2(5., 3.) + PI);
+	draw_star(window, x + unit * 12., y + unit * 4., unit, Float::atan2(7., 1.) + PI);
+	draw_star(window, x + unit * 12., y + unit * 7., unit, Float::atan2(7., -2.) + PI);
+	draw_star(window, x + unit * 10., y + unit * 9., unit, Float::atan2(5., -4.) + PI);
 }
 
 fn draw_star(window: &mut Window, x: Float, y: Float, radius: Float, theta: Float) {
