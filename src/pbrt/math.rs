@@ -148,6 +148,13 @@ pub fn find_interval(size: usize, pred: impl Fn(usize) -> bool) -> usize {
 	if l == size - 1 { size - 2 } else { l }
 }
 
+pub fn diff_of_products(a: Float, b: Float, c: Float, d: Float) -> Float {
+	let cd = c * d;
+	let result = a.mul_add(b, -cd);
+	let error = (-c).mul_add(d, cd);
+	result + error
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;

@@ -2,8 +2,9 @@ use super::shapes::*;
 use crate::{
 	Float,
 	pbrt::{
-		Number, Vector2f, Vector2i,
+		Vector2f, Vector2i,
 		math::{round_to_left, round_to_right},
+		number::Number,
 	},
 };
 use std::{ops, time::Instant};

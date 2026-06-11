@@ -1,4 +1,7 @@
-use super::{Interval, Number, math::lerp};
+use super::{
+	math::lerp,
+	number::{Interval, Number},
+};
 use crate::Float;
 use approx::{AbsDiffEq, abs_diff_eq};
 use std::fmt::Display;

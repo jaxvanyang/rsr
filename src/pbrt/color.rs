@@ -1,6 +1,7 @@
 use super::{
-	Float, Number,
+	Float,
 	math::{find_interval, lerp},
+	number::Number,
 	spectrum::{LAMBDA_MAX, LAMBDA_MIN, Spectrum, spectra},
 	{Vector2f, spectrum::CIE_Y_INTEGRAL},
 };

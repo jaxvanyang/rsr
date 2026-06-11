@@ -1,7 +1,7 @@
 use super::{
 	Float,
 	color::{RGB, XYZ},
-	diff_of_products,
+	math::diff_of_products,
 	vecmath::{Bounds3f, Vector2f, Vector3f},
 };
 use approx::abs_diff_eq;
