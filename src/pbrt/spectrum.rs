@@ -422,6 +422,71 @@ impl Spectrum for RGBAlbedoSpectrum {
 	}
 }
 
+#[derive(Debug)]
+pub struct RGBUnboundedSpectrum {
+	scale: Float,
+	rsp: RGBSigmoidPolynomial,
+}
+
+impl RGBUnboundedSpectrum {
+	pub fn new(cs: &RGBColorSpace, rgb: RGB) -> Self {
+		let m = rgb.r.max(rgb.g).max(rgb.b);
+		let scale = m * 2.;
+		let rsp = cs.to_rgb_coeffs(if scale != 0. {
+			rgb / scale
+		} else {
+			RGB::default()
+		});
+
+		Self { scale, rsp }
+	}
+}
+
+impl Spectrum for RGBUnboundedSpectrum {
+	fn eval(&self, lambda: Float) -> Float {
+		self.scale * self.rsp.eval(lambda)
+	}
+
+	fn max_value(&self) -> Float {
+		self.scale * self.rsp.max_value()
+	}
+}
+
+#[derive(Debug)]
+pub struct RGBIlluminantSpectrum<'a> {
+	scale: Float,
+	rsp: RGBSigmoidPolynomial,
+	illuminant: &'a DenselySampledSpectrum,
+}
+
+impl<'a> RGBIlluminantSpectrum<'a> {
+	pub fn new(cs: &'a RGBColorSpace, rgb: RGB) -> Self {
+		let m = rgb.r.max(rgb.g).max(rgb.b);
+		let scale = m * 2.;
+		let rsp = cs.to_rgb_coeffs(if scale != 0. {
+			rgb / scale
+		} else {
+			RGB::default()
+		});
+
+		Self {
+			scale,
+			rsp,
+			illuminant: &cs.illuminant,
+		}
+	}
+}
+
+impl<'a> Spectrum for RGBIlluminantSpectrum<'a> {
+	fn eval(&self, lambda: Float) -> Float {
+		self.scale * self.rsp.eval(lambda) * self.illuminant.eval(lambda)
+	}
+
+	fn max_value(&self) -> Float {
+		self.scale * self.rsp.max_value() * self.illuminant.max_value()
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
