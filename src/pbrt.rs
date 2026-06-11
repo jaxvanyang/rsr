@@ -4,6 +4,7 @@ pub mod colorspace;
 pub mod interaction;
 pub mod math;
 pub mod number;
+pub mod ray;
 pub mod spectrum;
 pub mod transform;
 pub mod vecmath;
