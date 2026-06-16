@@ -1,10 +1,10 @@
 use super::{
-	Float,
 	math::{find_interval, lerp},
 	number::{HasNaN, Number},
 	spectrum::{LAMBDA_MAX, LAMBDA_MIN, Spectrum, spectra},
 	{Vector2f, spectrum::CIE_Y_INTEGRAL},
 };
+use crate::Float;
 use crate::{polynomial, ui::Color};
 use std::ops;
 

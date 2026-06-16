@@ -1,9 +1,14 @@
+use super::vecmath::Vector2f;
 use crate::Float;
 
-#[cfg(not(feature = "use_f64"))]
-pub use std::f32::consts::PI;
-#[cfg(feature = "use_f64")]
-pub use std::f64::consts::PI;
+cfg_select! {
+	feature = "use_f64" => {
+		pub use std::f64::consts::{PI, FRAC_PI_2, FRAC_PI_4};
+	}
+	_ => {
+		pub use std::f32::consts::{PI, FRAC_PI_2, FRAC_PI_4};
+	}
+}
 
 /// # Examples
 ///
@@ -145,6 +150,22 @@ pub fn diff_of_products(a: Float, b: Float, c: Float, d: Float) -> Float {
 	let result = a.mul_add(b, -cd);
 	let error = (-c).mul_add(d, cd);
 	result + error
+}
+
+pub fn sample_uniform_disk_concentric(u: Vector2f) -> Vector2f {
+	let offset = 2. * u - Vector2f::new(1., 1.);
+	// handle degeneracy at the origin
+	if offset.x == 0. && offset.y == 0. {
+		return Vector2f::default();
+	}
+
+	let (r, theta) = if offset.x.abs() > offset.y.abs() {
+		(offset.x, FRAC_PI_4 * (offset.y / offset.x))
+	} else {
+		(offset.y, FRAC_PI_2 - FRAC_PI_4 * (offset.y / offset.x))
+	};
+
+	r * Vector2f::new(theta.cos(), theta.sin())
 }
 
 #[cfg(test)]

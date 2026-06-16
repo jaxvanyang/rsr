@@ -1,11 +1,11 @@
 //! Wavelengths are specified in nanometers (nm).
 
 use super::{
-	Float,
 	color::{RGB, RGBSigmoidPolynomial, XYZ},
 	colorspace::RGBColorSpace,
 	math::{fast_exp, lerp},
 };
+use crate::Float;
 use std::ops;
 
 pub const LAMBDA_MIN: Float = 360.;

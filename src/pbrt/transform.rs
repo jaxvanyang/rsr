@@ -1,10 +1,10 @@
 use super::{
-	Float,
 	color::{RGB, XYZ},
 	math::diff_of_products,
 	number::HasNaN,
 	vecmath::{Bounds3f, Vector2f, Vector3f},
 };
+use crate::Float;
 use approx::abs_diff_eq;
 use std::ops;
 
@@ -677,6 +677,22 @@ impl Transform {
 		Self { m: world_to_camera, inv: Some(camera_to_world) }
 	}
 
+	pub fn orthographic(z_near: Float, z_far: Float) -> Self {
+		Self::scale(1., 1., 1. / (z_far - z_near)) * Self::translate(Vector3f::new(0., 0., -z_near))
+	}
+
+	pub fn perspective(fov: Float, n: Float, f: Float) -> Self {
+		let persp = Transform::from([
+			[1., 0., 0., 0.],
+			[0., 1., 0., 0.],
+			[0., 0., f / (f - n), -f * n / (f - n)],
+			[0., 0., 1., 0.],
+		]);
+		let inv_tan_ang = 1. / (fov.to_radians() / 2.).tan();
+
+		Self::scale(inv_tan_ang, inv_tan_ang, 1.) * persp
+	}
+
 	/// Apply the transform to a point.
 	pub fn map_point(&self, p: Vector3f) -> Vector3f {
 		self.m.mul_point(p)
@@ -781,6 +797,14 @@ impl From<&Frame> for Transform {
 	}
 }
 
+impl ops::Mul<Transform> for Transform {
+	type Output = Transform;
+
+	fn mul(self, rhs: Transform) -> Self::Output {
+		(&self) * &rhs
+	}
+}
+
 impl ops::Mul<&Transform> for Transform {
 	type Output = Transform;
 
@@ -857,6 +881,27 @@ impl Default for Frame {
 			y: Vector3f::new(0.0, 1.0, 0.0),
 			z: Vector3f::new(0.0, 0.0, 1.0),
 		}
+	}
+}
+
+// TODO:
+#[derive(Debug)]
+pub struct AnimatedTransform {
+	pub start_transform: Transform,
+	pub end_transform: Transform,
+	pub start_time: Float,
+	pub end_time: Float,
+}
+
+impl AnimatedTransform {
+	// TBD: use value or reference
+	pub fn new(
+		start_transform: Transform,
+		start_time: Float,
+		end_transform: Transform,
+		end_time: Float,
+	) -> Self {
+		Self { start_transform, end_transform, start_time, end_time }
 	}
 }
 

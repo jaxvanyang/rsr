@@ -1,7 +1,5 @@
-use super::{
-	Float,
-	vecmath::{Vector2f, Vector3f, Vector3fi},
-};
+use super::vecmath::{Vector2f, Vector3f, Vector3fi};
+use crate::Float;
 
 pub struct Interaction {
 	/// The interaction point using interval arithmetic.

@@ -1,4 +1,6 @@
-use super::{Float, number::HasNaN, vecmath::Vector3f};
+use super::{medium::Medium, number::HasNaN, vecmath::Vector3f};
+use crate::Float;
+use std::ops;
 
 #[derive(Debug, Clone)]
 pub struct Ray {
@@ -7,12 +9,12 @@ pub struct Ray {
 	/// Direction of the ray
 	pub d: Vector3f,
 	pub time: Float,
-	// TODO: medium
+	pub medium: Medium,
 }
 
 impl Ray {
-	pub fn new(o: Vector3f, d: Vector3f, time: Float) -> Self {
-		Self { o, d, time }
+	pub fn new(o: Vector3f, d: Vector3f, time: Float, medium: Medium) -> Self {
+		Self { o, d, time, medium }
 	}
 
 	pub fn eval(&self, t: Float) -> Vector3f {
@@ -38,8 +40,8 @@ pub struct RayDifferential {
 }
 
 impl RayDifferential {
-	pub fn new(o: Vector3f, d: Vector3f, time: Float) -> Self {
-		Ray::new(o, d, time).into()
+	pub fn new(o: Vector3f, d: Vector3f, time: Float, medium: Medium) -> Self {
+		Ray::new(o, d, time, medium).into()
 	}
 
 	pub fn scale_differentials(&mut self, s: Float) {
@@ -77,5 +79,18 @@ impl HasNaN for RayDifferential {
 					|| self.ry_origin.has_nan()
 					|| self.rx_direction.has_nan()
 					|| self.ry_direction.has_nan()))
+	}
+}
+
+impl ops::Deref for RayDifferential {
+	type Target = Ray;
+	fn deref(&self) -> &Self::Target {
+		&self.ray
+	}
+}
+
+impl ops::DerefMut for RayDifferential {
+	fn deref_mut(&mut self) -> &mut Self::Target {
+		&mut self.ray
 	}
 }
