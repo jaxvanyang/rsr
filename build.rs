@@ -1,4 +1,4 @@
-use std::{env, path::PathBuf, process::Command};
+use std::{env, fs, path::PathBuf, process::Command};
 
 fn main() {
 	println!("cargo::rerun-if-changed=src/pbrt/cmd/rgb2spec_opt.cpp");
@@ -8,6 +8,7 @@ fn main() {
 }
 
 fn generate_rgbspectrums(rgb2spec_opt: PathBuf) -> Vec<PathBuf> {
+	let cmd_time = fs::metadata(&rgb2spec_opt).unwrap().modified().unwrap();
 	let mapping =
 		[("srgb", "sRGB"), ("dci_p3", "DCI_P3"), ("rec2020", "REC2020"), ("aces", "ACES2065_1")];
 	// see rsr::pbrt::color::RES
@@ -17,6 +18,12 @@ fn generate_rgbspectrums(rgb2spec_opt: PathBuf) -> Vec<PathBuf> {
 
 	for (name, gamut) in mapping {
 		let output = out_dir.join(format!("rgbspectrum_{name}.c"));
+		if output.is_file() {
+			let output_time = fs::metadata(&output).unwrap().modified().unwrap();
+			if cmd_time < output_time {
+				continue;
+			}
+		}
 		run(
 			Command::new(&rgb2spec_opt).arg(res).arg(&output).arg(gamut),
 			&format!("failed to generate {gamut} rgbspectrum"),
