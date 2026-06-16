@@ -19,7 +19,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
-      - uses: Swatinem/rust-cache@v2
+      - uses: jaxvanyang/rust-cache@jax/fix-rsr
+        env:
+          ACTIONS_STEP_DEBUG: "true"
       - name: Build
         run: cargo build --verbose
       - name: Run tests
