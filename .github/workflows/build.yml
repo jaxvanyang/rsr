@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
-      - uses: jaxvanyang/rust-cache@jax/fix-rsr
+      - uses: Swatinem/rust-cache@v2
         with:
           cache-workspace-crates: "true"
       - name: Build
