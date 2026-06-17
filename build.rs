@@ -18,7 +18,12 @@ fn generate_rgbspectrums(rgb2spec_opt: PathBuf) -> Vec<PathBuf> {
 
 	for (name, gamut) in mapping {
 		let output = out_dir.join(format!("rgbspectrum_{name}.c"));
+		ret.push(output.clone());
 		if output.is_file() {
+			if is_ci() {
+				println!("cargo::warning=skip regenerating {} in CI", output.display());
+				continue;
+			}
 			let output_time = fs::metadata(&output).unwrap().modified().unwrap();
 			if cmd_time < output_time {
 				continue;
@@ -28,7 +33,6 @@ fn generate_rgbspectrums(rgb2spec_opt: PathBuf) -> Vec<PathBuf> {
 			Command::new(&rgb2spec_opt).arg(res).arg(&output).arg(gamut),
 			&format!("failed to generate {gamut} rgbspectrum"),
 		);
-		ret.push(output);
 	}
 
 	ret
@@ -62,4 +66,14 @@ fn run(cmd: &mut Command, err_msg: &str) {
 
 fn get_out_dir() -> PathBuf {
 	PathBuf::from(env::var("OUT_DIR").unwrap())
+}
+
+fn is_ci() -> bool {
+	if let Ok(github) = env::var("GITHUB_ACTIONS")
+		&& github == "true"
+	{
+		return true;
+	}
+
+	false
 }
