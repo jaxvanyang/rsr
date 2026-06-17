@@ -1,9 +1,7 @@
-use std::time::Instant;
-
 use rsr::{
 	Float,
 	pbrt::{SquareMatrix, Transform, Vector2i, Vector3f},
-	ui::{Result, Window, color, elapsed_with_update},
+	ui::{Result, Window, color},
 };
 
 fn main() -> Result<()> {
@@ -36,10 +34,11 @@ fn main() -> Result<()> {
 		[0.0, 0.0, 0.0, 1.0],
 	]);
 	let proj = Transform::new(proj_screen * proj_ortho * world2camera.get_matrix());
-	let mut t0 = Instant::now();
+
+	window.set_target_fps(0);
 
 	while window.is_open() {
-		let dt = elapsed_with_update(&mut t0);
+		let dt = window.delta_time();
 		let rotation = Transform::rotate_y(dt * 30.);
 		for p in cube.iter_mut() {
 			*p = rotation.map_point(*p);

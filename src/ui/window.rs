@@ -62,6 +62,11 @@ impl Window {
 		ret
 	}
 
+	/// Return the delta time of the last frame in seconds.
+	pub fn delta_time(&self) -> Float {
+		self.dt
+	}
+
 	pub fn clear(&mut self) {
 		self.fill(0);
 	}
