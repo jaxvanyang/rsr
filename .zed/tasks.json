@@ -31,4 +31,8 @@
 		"label": "chroma",
 		"command": "just run chroma",
 	},
+	{
+		"label": "font",
+		"command": "just run font",
+	},
 ]

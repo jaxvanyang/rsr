@@ -1,4 +1,8 @@
-use super::shapes::*;
+use super::{
+	color,
+	font::{DEFAULT_FONT, Font},
+	shapes::*,
+};
 use crate::{
 	Float,
 	pbrt::{
@@ -26,6 +30,9 @@ pub struct Window {
 	pub height: usize,
 	pub window: minifb::Window,
 	pub buffer: Vec<u32>,
+	t0: Instant,
+	/// delta time of the last frame in seconds
+	dt: Float,
 }
 
 impl Window {
@@ -44,11 +51,15 @@ impl Window {
 			height,
 			window,
 			buffer: vec![0; width * height],
+			t0: Instant::now(),
+			dt: 0.,
 		})
 	}
 
 	pub fn update(&mut self) -> Result<()> {
-		self.window.update_with_buffer(&self.buffer, self.width, self.height)
+		let ret = self.window.update_with_buffer(&self.buffer, self.width, self.height);
+		self.dt = elapsed_with_update(&mut self.t0);
+		ret
 	}
 
 	pub fn clear(&mut self) {
@@ -142,12 +153,71 @@ impl Window {
 		self.draw_line(p2.x, p2.y, p0.x, p0.y, color);
 	}
 
+	pub fn draw_fps(&mut self, x: i32, y: i32) {
+		let text = format!("FPS:{:.1}", 1. / self.dt);
+		self.draw_text(&text, x, y, 2, color::GREEN);
+	}
+
+	pub fn draw_text(&mut self, text: &str, x: i32, y: i32, font_size: usize, color: u32) {
+		self.draw_font_text(&DEFAULT_FONT, text, x, y, font_size, color);
+	}
+
+	pub fn draw_font_text(
+		&mut self,
+		font: &Font,
+		text: &str,
+		x: i32,
+		y: i32,
+		font_size: usize,
+		color: u32,
+	) {
+		let w = ((font.width + 1) * font_size) as i32;
+		let h = ((font.height + 1) * font_size) as i32;
+		let mut x_start = x;
+		let mut y_start = y;
+		for ch in text.bytes() {
+			for dy in 0..font.height {
+				for dx in 0..font.width {
+					if !font.get_pixel(ch, dx, dy) {
+						continue;
+					}
+					self.fill_rect(
+						x_start + (dx * font_size) as i32,
+						y_start + (dy * font_size) as i32,
+						font_size,
+						font_size,
+						color,
+					);
+				}
+			}
+			if ch == b'\n' {
+				x_start = x;
+				y_start += h;
+			} else {
+				x_start += w;
+			}
+		}
+	}
+
 	/// Pixels whose center is in the rectangle are filled.
-	pub fn fill_rect(&mut self, rect: Rectangle, color: u32) {
+	pub fn fill_rectangle(&mut self, rect: Rectangle, color: u32) {
 		let x_begin = round_to_left(rect.x()).max(0.) as usize;
 		let y_begin = round_to_left(rect.y()).max(0.) as usize;
 		let x_end = round_to_right(rect.x() + rect.w).min(self.width as Float) as usize;
 		let y_end = round_to_right(rect.y() + rect.h).min(self.height as Float) as usize;
+
+		for y in y_begin..y_end {
+			for x in x_begin..x_end {
+				self[(x, y)] = color;
+			}
+		}
+	}
+
+	pub fn fill_rect(&mut self, x: i32, y: i32, w: usize, h: usize, color: u32) {
+		let x_begin = Ord::max(x, 0) as usize;
+		let y_begin = Ord::max(y, 0) as usize;
+		let x_end = Ord::min(x + w as i32, self.width as i32) as usize;
+		let y_end = Ord::min(y + h as i32, self.height as i32) as usize;
 
 		for y in y_begin..y_end {
 			for x in x_begin..x_end {

@@ -46,6 +46,7 @@ fn main() -> Result<()> {
 		}
 
 		draw_cube(&mut window, &cube, &proj);
+		window.draw_fps(2, 2);
 
 		window.update()?;
 	}
