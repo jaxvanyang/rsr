@@ -1,10 +1,6 @@
 use std::{env, fs, path::PathBuf, process::Command};
 
 fn main() {
-	if is_ci() {
-		println!("cargo::warning=running in CI");
-	}
-
 	println!("cargo::rerun-if-changed=src/pbrt/cmd/rgb2spec_opt.cpp");
 	let rgb2spec_opt = compile_cpp("src/pbrt/cmd/rgb2spec_opt.cpp", "rgb2spec_opt");
 	let files = generate_rgbspectrums(rgb2spec_opt);
@@ -22,6 +18,7 @@ fn generate_rgbspectrums(rgb2spec_opt: PathBuf) -> Vec<PathBuf> {
 
 	for (name, gamut) in mapping {
 		let output = out_dir.join(format!("rgbspectrum_{name}.c"));
+		ret.push(output.clone());
 		if output.is_file() {
 			if is_ci() {
 				println!("cargo::warning=skip regenerating {} in CI", output.display());
@@ -36,7 +33,6 @@ fn generate_rgbspectrums(rgb2spec_opt: PathBuf) -> Vec<PathBuf> {
 			Command::new(&rgb2spec_opt).arg(res).arg(&output).arg(gamut),
 			&format!("failed to generate {gamut} rgbspectrum"),
 		);
-		ret.push(output);
 	}
 
 	ret
