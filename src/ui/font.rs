@@ -5,6 +5,7 @@ const I: bool = true;
 pub const DEFAULT_FONT_WIDTH: usize = 5;
 pub const DEFAULT_FONT_HEIGHT: usize = 6;
 pub const DEFAULT_FONT_GLYPHS: [[[bool; DEFAULT_FONT_WIDTH]; DEFAULT_FONT_HEIGHT]; 128] = {
+	let empty = [[false; DEFAULT_FONT_WIDTH]; DEFAULT_FONT_HEIGHT];
 	let mut ret = [[[true; DEFAULT_FONT_WIDTH]; DEFAULT_FONT_HEIGHT]; 128];
 	// A-Z
 	ret[b'A' as usize] = [
@@ -40,20 +41,20 @@ pub const DEFAULT_FONT_GLYPHS: [[[bool; DEFAULT_FONT_WIDTH]; DEFAULT_FONT_HEIGHT
 		[I, I, I, I, O],
 	];
 	ret[b'E' as usize] = [
-		[I, I, I, I, I],
-		[I, O, O, O, O],
-		[I, O, O, O, O],
-		[I, I, I, I, O],
-		[I, O, O, O, O],
-		[I, I, I, I, I],
+		[O, I, I, I, I],
+		[O, I, O, O, O],
+		[O, I, O, O, O],
+		[O, I, I, I, I],
+		[O, I, O, O, O],
+		[O, I, I, I, I],
 	];
 	ret[b'F' as usize] = [
-		[I, I, I, I, I],
-		[I, O, O, O, O],
-		[I, O, O, O, O],
-		[I, I, I, I, O],
-		[I, O, O, O, O],
-		[I, O, O, O, O],
+		[O, I, I, I, I],
+		[O, I, O, O, O],
+		[O, I, O, O, O],
+		[O, I, I, I, I],
+		[O, I, O, O, O],
+		[O, I, O, O, O],
 	];
 	ret[b'G' as usize] = [
 		[O, I, I, I, O],
@@ -96,12 +97,12 @@ pub const DEFAULT_FONT_GLYPHS: [[[bool; DEFAULT_FONT_WIDTH]; DEFAULT_FONT_HEIGHT
 		[I, O, O, O, I],
 	];
 	ret[b'L' as usize] = [
-		[I, O, O, O, O],
-		[I, O, O, O, O],
-		[I, O, O, O, O],
-		[I, O, O, O, O],
-		[I, O, O, O, O],
-		[I, I, I, I, I],
+		[O, I, O, O, O],
+		[O, I, O, O, O],
+		[O, I, O, O, O],
+		[O, I, O, O, O],
+		[O, I, O, O, O],
+		[O, I, I, I, I],
 	];
 	ret[b'M' as usize] = [
 		[I, O, O, O, I],
@@ -125,7 +126,7 @@ pub const DEFAULT_FONT_GLYPHS: [[[bool; DEFAULT_FONT_WIDTH]; DEFAULT_FONT_HEIGHT
 		[I, O, O, O, I],
 		[I, O, O, O, I],
 		[I, O, O, O, I],
-		[O, I, I, I, I],
+		[O, I, I, I, O],
 	];
 	ret[b'P' as usize] = [
 		[I, I, I, I, O],
@@ -251,7 +252,7 @@ pub const DEFAULT_FONT_GLYPHS: [[[bool; DEFAULT_FONT_WIDTH]; DEFAULT_FONT_HEIGHT
 	ret[b'e' as usize] = [
 		[O, O, O, O, O],
 		[O, O, I, I, O],
-		[O, I, O, O, O],
+		[O, I, O, I, O],
 		[O, I, I, I, O],
 		[O, I, O, O, O],
 		[O, O, I, I, O],
@@ -505,16 +506,110 @@ pub const DEFAULT_FONT_GLYPHS: [[[bool; DEFAULT_FONT_WIDTH]; DEFAULT_FONT_HEIGHT
 		[O, O, O, O, I],
 		[O, I, I, I, I],
 	];
-	// others
-	let empty = [[false; DEFAULT_FONT_WIDTH]; DEFAULT_FONT_HEIGHT];
-	ret[b'\n' as usize] = empty;
+	// " !\"#$%&'()*+,-./"
 	ret[b' ' as usize] = empty;
-	ret[b':' as usize] = [
-		[O, O, O, O, O],
-		[O, O, O, O, O],
+	ret[b'!' as usize] = [
+		[O, O, I, O, O],
+		[O, O, I, O, O],
+		[O, O, I, O, O],
 		[O, O, I, O, O],
 		[O, O, O, O, O],
 		[O, O, I, O, O],
+	];
+	ret[b'"' as usize] = [
+		[O, O, O, O, O],
+		[O, I, O, I, O],
+		[O, I, O, I, O],
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+	];
+	ret[b'#' as usize] = [
+		[O, O, O, O, O],
+		[O, I, O, I, O],
+		[I, I, I, I, I],
+		[O, I, O, I, O],
+		[I, I, I, I, I],
+		[O, I, O, I, O],
+	];
+	ret[b'$' as usize] = [
+		[O, O, I, O, O],
+		[O, I, I, I, O],
+		[I, O, I, O, O],
+		[O, I, I, I, O],
+		[O, O, I, O, I],
+		[O, I, I, I, O],
+	];
+	ret[b'%' as usize] = [
+		[O, O, O, O, O],
+		[I, O, O, O, I],
+		[O, O, O, I, O],
+		[O, O, I, O, O],
+		[O, I, O, O, O],
+		[I, O, O, O, I],
+	];
+	ret[b'&' as usize] = [
+		[O, I, I, O, O],
+		[I, O, O, I, O],
+		[O, I, O, O, O],
+		[I, O, I, O, I],
+		[I, O, O, I, O],
+		[O, I, I, O, I],
+	];
+	ret[b'\'' as usize] = [
+		[O, O, O, O, O],
+		[O, O, I, O, O],
+		[O, O, I, O, O],
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+	];
+	ret[b'(' as usize] = [
+		[O, O, O, I, O],
+		[O, O, I, O, O],
+		[O, I, O, O, O],
+		[O, I, O, O, O],
+		[O, O, I, O, O],
+		[O, O, O, I, O],
+	];
+	ret[b')' as usize] = [
+		[O, I, O, O, O],
+		[O, O, I, O, O],
+		[O, O, O, I, O],
+		[O, O, O, I, O],
+		[O, O, I, O, O],
+		[O, I, O, O, O],
+	];
+	ret[b'*' as usize] = [
+		[O, O, O, O, O],
+		[O, O, I, O, O],
+		[O, I, I, I, O],
+		[O, O, I, O, O],
+		[O, I, O, I, O],
+		[O, O, O, O, O],
+	];
+	ret[b'+' as usize] = [
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, O, I, O, O],
+		[O, I, I, I, O],
+		[O, O, I, O, O],
+		[O, O, O, O, O],
+	];
+	ret[b',' as usize] = [
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, O, I, O, O],
+		[O, O, I, O, O],
+		[O, I, O, O, O],
+	];
+	ret[b'-' as usize] = [
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, I, I, I, O],
+		[O, O, O, O, O],
 		[O, O, O, O, O],
 	];
 	ret[b'.' as usize] = [
@@ -525,6 +620,155 @@ pub const DEFAULT_FONT_GLYPHS: [[[bool; DEFAULT_FONT_WIDTH]; DEFAULT_FONT_HEIGHT
 		[O, O, O, O, O],
 		[O, O, I, O, O],
 	];
+	ret[b'/' as usize] = [
+		[O, O, O, O, O],
+		[O, O, O, O, I],
+		[O, O, O, I, O],
+		[O, O, I, O, O],
+		[O, I, O, O, O],
+		[I, O, O, O, O],
+	];
+	// :;<=>?@
+	ret[b':' as usize] = [
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, O, I, O, O],
+		[O, O, O, O, O],
+		[O, O, I, O, O],
+		[O, O, O, O, O],
+	];
+	ret[b';' as usize] = [
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, O, I, O, O],
+		[O, O, O, O, O],
+		[O, O, I, O, O],
+		[O, I, O, O, O],
+	];
+	ret[b'<' as usize] = [
+		[O, O, O, O, O],
+		[O, O, O, I, O],
+		[O, O, I, O, O],
+		[O, I, O, O, O],
+		[O, O, I, O, O],
+		[O, O, O, I, O],
+	];
+	ret[b'=' as usize] = [
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, I, I, I, O],
+		[O, O, O, O, O],
+		[O, I, I, I, O],
+		[O, O, O, O, O],
+	];
+	ret[b'>' as usize] = [
+		[O, O, O, O, O],
+		[O, I, O, O, O],
+		[O, O, I, O, O],
+		[O, O, O, I, O],
+		[O, O, I, O, O],
+		[O, I, O, O, O],
+	];
+	ret[b'?' as usize] = [
+		[O, I, I, I, O],
+		[I, O, O, O, I],
+		[O, O, O, I, O],
+		[O, O, I, O, O],
+		[O, O, O, O, O],
+		[O, O, I, O, O],
+	];
+	ret[b'@' as usize] = [
+		[O, I, I, I, O],
+		[I, O, O, O, I],
+		[I, O, I, O, I],
+		[I, O, I, I, O],
+		[I, O, O, O, O],
+		[O, I, I, I, O],
+	];
+	// [\]^_`
+	ret[b'[' as usize] = [
+		[O, O, I, I, O],
+		[O, O, I, O, O],
+		[O, O, I, O, O],
+		[O, O, I, O, O],
+		[O, O, I, O, O],
+		[O, O, I, I, O],
+	];
+	ret[b'\\' as usize] = [
+		[O, O, O, O, O],
+		[I, O, O, O, O],
+		[O, I, O, O, O],
+		[O, O, I, O, O],
+		[O, O, O, I, O],
+		[O, O, O, O, I],
+	];
+	ret[b']' as usize] = [
+		[O, I, I, O, O],
+		[O, O, I, O, O],
+		[O, O, I, O, O],
+		[O, O, I, O, O],
+		[O, O, I, O, O],
+		[O, I, I, O, O],
+	];
+	ret[b'^' as usize] = [
+		[O, O, O, O, O],
+		[O, O, I, O, O],
+		[O, I, O, I, O],
+		[I, O, O, O, I],
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+	];
+	ret[b'_' as usize] = [
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, I, I, I, O],
+	];
+	ret[b'`' as usize] = [
+		[O, O, O, O, O],
+		[O, O, I, O, O],
+		[O, O, O, I, O],
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+	];
+	// {|}~
+	ret[b'{' as usize] = [
+		[O, O, O, O, O],
+		[O, I, I, I, O],
+		[O, I, O, O, O],
+		[I, I, O, O, O],
+		[O, I, O, O, O],
+		[O, I, I, I, O],
+	];
+	ret[b'|' as usize] = [
+		[O, O, I, O, O],
+		[O, O, I, O, O],
+		[O, O, I, O, O],
+		[O, O, I, O, O],
+		[O, O, I, O, O],
+		[O, O, I, O, O],
+	];
+	ret[b'}' as usize] = [
+		[O, O, O, O, O],
+		[O, I, I, I, O],
+		[O, O, O, I, O],
+		[O, O, O, I, I],
+		[O, O, O, I, O],
+		[O, I, I, I, O],
+	];
+	ret[b'~' as usize] = [
+		[O, O, O, O, O],
+		[O, O, O, O, O],
+		[O, I, O, O, O],
+		[I, O, I, O, I],
+		[O, O, O, I, O],
+		[O, O, O, O, O],
+	];
+	// others
+	ret[b'\n' as usize] = empty;
 
 	ret
 };
