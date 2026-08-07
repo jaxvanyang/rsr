@@ -5,6 +5,7 @@ edition = "2024"
 default-run = "circle"
 
 [dependencies]
+anyhow = "1.0.104"
 approx = "0.5.1"
 minifb = "0.28"
 
