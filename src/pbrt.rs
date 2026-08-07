@@ -8,6 +8,7 @@ pub mod math;
 pub mod medium;
 pub mod number;
 pub mod options;
+pub mod parser;
 pub mod ray;
 pub mod spectrum;
 pub mod transform;
