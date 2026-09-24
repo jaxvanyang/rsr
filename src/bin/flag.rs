@@ -1,7 +1,7 @@
 use rsr::{
 	Float,
 	pbrt::{SquareMatrix, Vector2f, math::PI},
-	ui::{Rectangle, Result, Window, elapsed_with_update},
+	ui::{Canvas, Rectangle, Result, Window, elapsed_with_update},
 };
 use std::time::Instant;
 
@@ -24,8 +24,8 @@ fn main() -> Result<()> {
 
 fn draw_china_flag(window: &mut Window, width: Float) {
 	let height = width * 2. / 3.;
-	let x = (window.width as Float - width) / 2.;
-	let y = (window.height as Float - height) / 2.;
+	let x = (window.w() as Float - width) / 2.;
+	let y = (window.h() as Float - height) / 2.;
 	let unit = width / 30.;
 	let rect = Rectangle::new(x, y, width, height);
 	let red = 0xee1c25;

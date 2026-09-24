@@ -1,5 +1,5 @@
 use rsr::ui::{
-	Result, Window, color,
+	Canvas, Result, Window, color,
 	font::{DEFAULT_FONT_HEIGHT, DEFAULT_FONT_WIDTH},
 };
 

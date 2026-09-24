@@ -1,7 +1,8 @@
+use minifb::{Key, KeyRepeat};
 use rsr::{
 	Float,
 	pbrt::{SquareMatrix, Transform, Vector2i, Vector3f},
-	ui::{Result, Window, color},
+	ui::{Canvas, Result, Window, color},
 };
 
 fn main() -> Result<()> {
@@ -28,8 +29,8 @@ fn main() -> Result<()> {
 		[0.0, 0.0, 0.0, 1.0],
 	]);
 	let proj_screen = SquareMatrix::from([
-		[1.0, 0.0, 0.0, window.width as Float / 2.0],
-		[0.0, -1.0, 0.0, window.height as Float / 2.0],
+		[1.0, 0.0, 0.0, window.w() as Float / 2.0],
+		[0.0, -1.0, 0.0, window.h() as Float / 2.0],
 		[0.0, 0.0, 1.0, 0.0],
 		[0.0, 0.0, 0.0, 1.0],
 	]);
@@ -38,6 +39,10 @@ fn main() -> Result<()> {
 	window.set_target_fps(0);
 
 	while window.is_open() {
+		if window.is_key_pressed(Key::Escape, KeyRepeat::No) {
+			return Ok(());
+		}
+
 		let dt = window.delta_time();
 		let rotation = Transform::rotate_y(dt * 30.);
 		for p in cube.iter_mut() {

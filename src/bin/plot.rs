@@ -4,12 +4,12 @@ use rsr::{
 		SquareMatrix, Vector2f, Vector2i,
 		spectrum::{Spectrum, spectra},
 	},
-	ui::{Result, Window, color},
+	ui::{Canvas, Result, Window, color},
 };
 
 fn main() -> Result<()> {
 	let mut window = Window::new("Plot", 800, 600)?;
-	let center = Vector2i::new(-200, window.height as i32 / 2);
+	let center = Vector2i::new(-200, window.h() as i32 / 2);
 
 	while window.is_open() {
 		draw_background(&mut window, center, 50);
@@ -44,11 +44,11 @@ fn draw_background(window: &mut Window, center: Vector2i, step: usize) {
 	let y_min = if y < 0 { (y % step_i) + step_i } else { y % step_i } as usize;
 
 	window.clear();
-	for y in (y_min..window.height).step_by(step) {
-		for x in (x_min..window.width).step_by(step) {
+	for y in (y_min..window.h()).step_by(step) {
+		for x in (x_min..window.w()).step_by(step) {
 			window[(x, y)] = color::BLUE_D;
 		}
 	}
-	window.draw_line(x, 0, x, window.height as i32, color::BLUE_E);
-	window.draw_line(0, y, window.width as i32, y, color::BLUE_E);
+	window.draw_line(x, 0, x, window.h() as i32, color::BLUE_E);
+	window.draw_line(0, y, window.w() as i32, y, color::BLUE_E);
 }
