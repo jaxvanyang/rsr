@@ -5,7 +5,10 @@ edition = "2024"
 default-run = "circle"
 
 [dependencies]
+anyhow = "1.0.104"
 approx = "0.5.1"
+chrono = "0.4.45"
+dirs = "7.0.0"
 minifb = "0.28"
 
 [build-dependencies]

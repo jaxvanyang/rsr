@@ -11,8 +11,13 @@ use crate::{
 		number::Number,
 	},
 };
+use chrono::Local;
+use dirs::picture_dir;
 use std::{
+	fs::File,
+	io::Write,
 	ops::{Deref, DerefMut, Index, IndexMut},
+	path::Path,
 	time::Instant,
 };
 
@@ -68,13 +73,20 @@ impl Window {
 		self.dt
 	}
 
-	pub fn fill(&mut self, color: u32) {
-		self.buffer.fill(color);
-	}
-
 	pub fn draw_fps(&mut self, x: i32, y: i32) {
 		let text = format!("FPS:{:.1}", 1. / self.dt);
 		self.draw_text(&text, x, y, 2, color::GREEN);
+	}
+
+	pub fn take_screenshot(&self) -> std::io::Result<()> {
+		let dir = picture_dir().unwrap().join("Screenshots");
+		std::fs::create_dir_all(&dir)?;
+
+		let path = dir.join(format!("Screenshot_{}.ppm", Local::now().format("%Y-%m-%d_%H-%M-%S")));
+		self.save_ppm(&path)?;
+		println!("Screenshot saved to {}", path.display());
+
+		Ok(())
 	}
 }
 
@@ -393,5 +405,32 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 				self.draw_pixel(*xs.last().unwrap(), y, color);
 			}
 		}
+	}
+
+	fn to_ppm(&self) -> Vec<u8> {
+		let mut ppm = format!("P6\n{} {}\n255\n", self.w(), self.h()).as_bytes().to_vec();
+		for y in 0..self.h() {
+			for x in 0..self.w() {
+				let color = self[(x, y)];
+				let r = ((color >> 16) & 0xFF) as u8;
+				let g = ((color >> 8) & 0xFF) as u8;
+				let b = (color & 0xFF) as u8;
+				ppm.push(r);
+				ppm.push(g);
+				ppm.push(b);
+			}
+		}
+		ppm
+	}
+
+	fn save_ppm<P>(&self, path: P) -> std::io::Result<()>
+	where
+		P: AsRef<Path>,
+	{
+		let ppm = self.to_ppm();
+		let mut file = File::create(path)?;
+		file.write_all(&ppm)?;
+
+		Ok(())
 	}
 }

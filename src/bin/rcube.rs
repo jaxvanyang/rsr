@@ -1,8 +1,9 @@
+use anyhow::Result;
 use minifb::{Key, KeyRepeat};
 use rsr::{
 	Float,
 	pbrt::{SquareMatrix, Transform, Vector2i, Vector3f},
-	ui::{Canvas, Result, Window, color},
+	ui::{Canvas, Window, color},
 };
 
 fn main() -> Result<()> {
@@ -38,9 +39,9 @@ fn main() -> Result<()> {
 
 	window.set_target_fps(0);
 
-	while window.is_open() {
-		if window.is_key_pressed(Key::Escape, KeyRepeat::No) {
-			return Ok(());
+	while window.is_open() && !window.is_key_down(Key::Escape) {
+		if window.is_key_down(Key::LeftCtrl) && window.is_key_pressed(Key::S, KeyRepeat::No) {
+			window.take_screenshot()?;
 		}
 
 		let dt = window.delta_time();
