@@ -232,6 +232,13 @@ impl<T: SubAssign> SubAssign for Vector2<T> {
 	}
 }
 
+impl<T: Mul<Output = T>> Mul<Vector2<T>> for Vector2<T> {
+	type Output = Self;
+	fn mul(self, rhs: Vector2<T>) -> Self::Output {
+		Self { x: self.x * rhs.x, y: self.y * rhs.y }
+	}
+}
+
 impl<T: Mul<Output = T> + Copy> Mul<T> for Vector2<T> {
 	type Output = Self;
 	fn mul(self, rhs: T) -> Self::Output {
@@ -602,6 +609,13 @@ impl<T: SubAssign> SubAssign for Vector3<T> {
 		self.x -= rhs.x;
 		self.y -= rhs.y;
 		self.z -= rhs.z;
+	}
+}
+
+impl<T: Mul<Output = T>> Mul<Vector3<T>> for Vector3<T> {
+	type Output = Self;
+	fn mul(self, rhs: Vector3<T>) -> Self::Output {
+		Self { x: self.x * rhs.x, y: self.y * rhs.y, z: self.z * rhs.z }
 	}
 }
 
@@ -1035,6 +1049,17 @@ mod tests {
 	fn test_out_of_bounds_v3() {
 		let v = Vector3i::default();
 		v[3];
+	}
+
+	#[test]
+	fn test_mul() {
+		let a = Vector2f::new(1.0, -2.0);
+		let b = Vector2f::new(3.0, 4.0);
+		assert_eq!(a * b, Vector2f::new(3.0, -8.0));
+
+		let a = Vector3f::new(1.0, 2.0, -3.0);
+		let b = Vector3f::new(4.0, 5.0, 6.0);
+		assert_eq!(a * b, Vector3f::new(4.0, 10.0, -18.0));
 	}
 
 	#[test]
