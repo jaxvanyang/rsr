@@ -23,6 +23,18 @@ impl<T: Number> Vector2<T> {
 		ret
 	}
 
+	pub fn zeros() -> Self {
+		Self::default()
+	}
+
+	pub fn ones() -> Self {
+		Self::sames(T::ONE)
+	}
+
+	pub fn sames(v: T) -> Self {
+		Self::new(v, v)
+	}
+
 	pub fn abs(self) -> Self {
 		Self { x: self.x.abs(), y: self.y.abs() }
 	}
@@ -308,6 +320,18 @@ impl<T: Number> Vector3<T> {
 		let ret = Self { x, y, z };
 		debug_assert!(!ret.has_nan());
 		ret
+	}
+
+	pub fn zeros() -> Self {
+		Self::default()
+	}
+
+	pub fn ones() -> Self {
+		Self::sames(T::ONE)
+	}
+
+	pub fn sames(v: T) -> Self {
+		Self::new(v, v, v)
 	}
 
 	pub fn abs(self) -> Self {
