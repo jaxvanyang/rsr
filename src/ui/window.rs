@@ -78,6 +78,11 @@ impl Window {
 		self.draw_text(&text, x, y, 2, color::GREEN);
 	}
 
+	pub fn draw_frame_time(&mut self, x: i32, y: i32) {
+		let text = format!("frame time:{:.1}ms", self.dt * 1000.0);
+		self.draw_text(&text, x, y, 2, color::GREEN);
+	}
+
 	pub fn take_screenshot(&self) -> std::io::Result<()> {
 		let dir = picture_dir().unwrap().join("Screenshots");
 		std::fs::create_dir_all(&dir)?;
