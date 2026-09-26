@@ -1,5 +1,7 @@
+use anyhow::Result;
+use minifb::{Key, KeyRepeat};
 use rsr::ui::{
-	Canvas, Result, Window, color,
+	Canvas, Window, color,
 	font::{DEFAULT_FONT_HEIGHT, DEFAULT_FONT_WIDTH},
 };
 
@@ -22,7 +24,11 @@ fn main() -> Result<()> {
 	}
 	let mut window = Window::new("Default Font", width, height)?;
 
-	while window.is_open() {
+	while window.is_open() && !window.is_key_down(Key::Escape) {
+		if window.is_key_down(Key::LeftCtrl) && window.is_key_pressed(Key::S, KeyRepeat::No) {
+			window.take_screenshot()?;
+		}
+
 		window.fill(color::WHITE);
 		window.draw_text(&text, margin, margin, font_size, color::BLACK);
 		window.update()?;
