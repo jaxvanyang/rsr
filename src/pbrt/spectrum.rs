@@ -185,7 +185,7 @@ impl Spectrum for PiecewiseLinearSpectrum {
 		}
 		let t = (lambda - self.lambdas[i - 1]) / (self.lambdas[i] - self.lambdas[i - 1]);
 
-		lerp(t, self.values[i - 1], self.values[i])
+		lerp(self.values[i - 1], self.values[i], t)
 	}
 
 	fn max_value(&self) -> Float {
@@ -334,7 +334,7 @@ pub struct SampledWavelengths {
 impl SampledWavelengths {
 	pub fn uniform(u: Float, lambda_min: Float, lambda_max: Float) -> Self {
 		let mut lambdas = [0.; SPECTRUM_SAMPLES];
-		lambdas[0] = lerp(u, lambda_min, lambda_max);
+		lambdas[0] = lerp(lambda_min, lambda_max, u);
 		let width = lambda_max - lambda_min;
 		let delta = width / SPECTRUM_SAMPLES as Float;
 		for i in 1..SPECTRUM_SAMPLES {

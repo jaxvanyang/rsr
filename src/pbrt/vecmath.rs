@@ -135,7 +135,7 @@ impl Vector2f {
 		Self { x: self.x.floor(), y: self.y.floor() }
 	}
 
-	pub fn lerp(t: Float, a: Self, b: Self) -> Self {
+	pub fn lerp(a: Self, b: Self, t: Float) -> Self {
 		debug_assert!((0.0..=1.0).contains(&t));
 		a + t * (b - a)
 	}
@@ -480,7 +480,7 @@ impl Vector3f {
 		Self { x: self.x.floor(), y: self.y.floor(), z: self.z.floor() }
 	}
 
-	pub fn lerp(t: Float, a: Self, b: Self) -> Self {
+	pub fn lerp(a: Self, b: Self, t: Float) -> Self {
 		debug_assert!((0.0..=1.0).contains(&t));
 		a + t * (b - a)
 	}
@@ -783,7 +783,7 @@ impl<T: Number> Bounds2<T> {
 
 impl Bounds2f {
 	pub fn lerp(&self, t: Vector2f) -> Vector2f {
-		Vector2f::new(lerp(t.x, self.min.x, self.max.x), lerp(t.y, self.min.y, self.max.y))
+		Vector2f::new(lerp(self.min.x, self.max.x, t.x), lerp(self.min.y, self.max.y, t.y))
 	}
 
 	/// Inverse of `lerp()`.
@@ -958,9 +958,9 @@ impl<T: Number> Bounds3<T> {
 impl Bounds3f {
 	pub fn lerp(&self, t: Vector3f) -> Vector3f {
 		Vector3f::new(
-			lerp(t.x, self.min.x, self.max.x),
-			lerp(t.y, self.min.y, self.max.y),
-			lerp(t.z, self.min.z, self.max.z),
+			lerp(self.min.x, self.max.x, t.x),
+			lerp(self.min.y, self.max.y, t.y),
+			lerp(self.min.z, self.max.z, t.z),
 		)
 	}
 
@@ -1096,11 +1096,11 @@ mod tests {
 	fn test_lerp() {
 		let a = Vector2f::new(1.0, 2.0);
 		let b = Vector2f::new(4.0, 5.0);
-		assert_eq!(Vector2f::lerp(0.25, a, b), Vector2f::new(1.75, 2.75));
+		assert_eq!(Vector2f::lerp(a, b, 0.25), Vector2f::new(1.75, 2.75));
 
 		let a = Vector3f::new(1.0, 2.0, 3.0);
 		let b = Vector3f::new(4.0, 5.0, 6.0);
-		assert_eq!(Vector3f::lerp(0.25, a, b), Vector3f::new(1.75, 2.75, 3.75));
+		assert_eq!(Vector3f::lerp(a, b, 0.25), Vector3f::new(1.75, 2.75, 3.75));
 	}
 
 	#[test]

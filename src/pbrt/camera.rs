@@ -191,8 +191,8 @@ impl<'a> Camera for CameraBase<'a> {
 		&self.camera_transform
 	}
 
-	fn sample_time(&self, u: Float) -> Float {
-		lerp(u, self.shutter_open, self.shutter_close)
+	fn sample_time(&self, t: Float) -> Float {
+		lerp(self.shutter_open, self.shutter_close, t)
 	}
 
 	fn generate_ray(

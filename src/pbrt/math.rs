@@ -36,9 +36,9 @@ macro_rules! polynomial {
 ///
 /// ```
 /// # use rsr::pbrt::math::lerp;
-/// assert_eq!(lerp(0.3, 0.0, 1.0), 0.3);
+/// assert_eq!(lerp(0.0, 1.0, 0.3), 0.3);
 /// ```
-pub fn lerp(t: Float, a: Float, b: Float) -> Float {
+pub fn lerp(a: Float, b: Float, t: Float) -> Float {
 	debug_assert!((0.0..=1.0).contains(&t));
 	a + t * (b - a)
 }

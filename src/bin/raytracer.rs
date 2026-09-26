@@ -9,7 +9,10 @@ use std::f32::consts::PI;
 use anyhow::Result;
 use approx::assert_abs_diff_eq;
 use minifb::{Key, KeyRepeat};
-use rsr::{pbrt::*, ui::*};
+use rsr::{
+	pbrt::{math::lerp, *},
+	ui::*,
+};
 
 fn main() -> Result<()> {
 	let spheres = vec![
@@ -121,8 +124,8 @@ fn trace(rayorig: Vector3f, raydir: Vector3f, spheres: &[Sphere], depth: u32) ->
 		false
 	};
 	let facingratio = -raydir.dot(nhit);
-	// change the mix value to tweak the effect
-	let fresneleffect = lerp(0.1, (1.0 - facingratio).powi(3), 1.0);
+	// change t to tweak the effect
+	let fresneleffect = lerp((1.0 - facingratio).powi(3), 1.0, 0.1);
 	let refldir = raydir - nhit * 2.0 * raydir.dot(nhit);
 	#[cfg(debug_assertions)]
 	assert_abs_diff_eq!(refldir.length(), 1.0);
@@ -146,10 +149,6 @@ fn trace(rayorig: Vector3f, raydir: Vector3f, spheres: &[Sphere], depth: u32) ->
 	surface_color.z = sphere.surface_color.z * v.z;
 
 	surface_color + sphere.emission_color
-}
-
-fn lerp(t: f32, a: f32, b: f32) -> f32 {
-	a + t * (b - a)
 }
 
 struct Sphere {
