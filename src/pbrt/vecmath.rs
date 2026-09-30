@@ -239,6 +239,13 @@ impl<T: Mul<Output = T>> Mul<Vector2<T>> for Vector2<T> {
 	}
 }
 
+impl<T: MulAssign + Copy> MulAssign<Vector2<T>> for Vector2<T> {
+	fn mul_assign(&mut self, rhs: Vector2<T>) {
+		self.x *= rhs.x;
+		self.y *= rhs.y;
+	}
+}
+
 impl<T: Mul<Output = T> + Copy> Mul<T> for Vector2<T> {
 	type Output = Self;
 	fn mul(self, rhs: T) -> Self::Output {
@@ -616,6 +623,14 @@ impl<T: Mul<Output = T>> Mul<Vector3<T>> for Vector3<T> {
 	type Output = Self;
 	fn mul(self, rhs: Vector3<T>) -> Self::Output {
 		Self { x: self.x * rhs.x, y: self.y * rhs.y, z: self.z * rhs.z }
+	}
+}
+
+impl<T: MulAssign + Copy> MulAssign<Vector3<T>> for Vector3<T> {
+	fn mul_assign(&mut self, rhs: Vector3<T>) {
+		self.x *= rhs.x;
+		self.y *= rhs.y;
+		self.z *= rhs.z;
 	}
 }
 
