@@ -28,12 +28,12 @@ fn main() -> Result<()> {
 		Sphere::builder(Vector3f::new(5.0, 0.0, -25.0), 3.0, Vector3f::new(0.65, 0.77, 0.97))
 			.reflection(1.0)
 			.build(),
-		Sphere::builder(Vector3f::new(-5.5, 0.0, -15.0), 3.0, Vector3f::new(1.00, 1.00, 1.00))
+		Sphere::builder(Vector3f::new(-5.5, 0.0, -15.0), 3.0, Vector3f::ones())
 			.reflection(1.0)
 			.build(),
 		// light
-		Sphere::builder(Vector3f::new(0.0, 20.0, -30.0), 3.0, Vector3f::new(0.00, 0.00, 0.00))
-			.emission_color(Vector3f::new(3.0, 3.0, 3.0))
+		Sphere::builder(Vector3f::new(0.0, 20.0, -30.0), 3.0, Vector3f::zeros())
+			.emission_color(Vector3f::sames(3.0))
 			.build(),
 	];
 
@@ -52,6 +52,7 @@ fn main() -> Result<()> {
 fn draw(window: &mut Window, spheres: &[Sphere]) -> Result<()> {
 	render(&mut window.buffer, &spheres);
 	window.draw_fps(2, 2);
+	window.draw_frame_time(2, 16);
 
 	window.update()?;
 	Ok(())
@@ -64,15 +65,20 @@ fn render(buffer: &mut ScreenBuffer, spheres: &[Sphere]) {
 	let invh = 1.0 / h as f32;
 	let fov = 30.0;
 	let aspectratio = w as f32 / h as f32;
-	let angle = PI * 0.5 * fov / 180.0;
+	let angle = (PI * 0.5 * fov / 180.0).tan();
+	let screen_to_camera = SquareMatrix::<4>::from([
+		[2.0 * invw * angle * aspectratio, 0.0, 0.0, (invw - 1.0) * angle * aspectratio],
+		[0.0, -2.0 * invh * angle, 0.0, (-invh + 1.0) * angle],
+		[0.0, 0.0, 1.0, 0.0],
+		[0.0, 0.0, 0.0, 1.0],
+	]);
 
 	// trace rays
 	let mut i = 0;
 	for y in 0..h {
 		for x in 0..w {
-			let x_ = (2.0 * ((x as f32 + 0.5) * invw) - 1.0) * angle * aspectratio;
-			let y_ = (1.0 - 2.0 * ((y as f32 + 0.5) * invh)) * angle;
-			let dir = Vector3f::new(x_, y_, -1.0).normalized();
+			let dir = Vector3f::new(x as f32, y as f32, -1.0);
+			let dir = screen_to_camera.mul_point(dir).normalized();
 			buffer.buffer[i] = to_color(trace(Vector3f::new(0.0, 0.0, 0.0), dir, spheres, 5));
 			i += 1;
 		}
@@ -111,7 +117,6 @@ fn trace(rayorig: Vector3f, raydir: Vector3f, spheres: &[Sphere], depth: u32) ->
 		return sphere.emission_color;
 	}
 
-	let mut surface_color = Vector3f::default();
 	let phit = rayorig + raydir * tnear;
 	let bias = 1e-4; // add some bias to the point from which we will be tracing
 	let mut nhit = (phit - sphere.center).normalized();
@@ -140,11 +145,8 @@ fn trace(rayorig: Vector3f, raydir: Vector3f, spheres: &[Sphere], depth: u32) ->
 		Vector3f::default()
 	};
 
-	// TODO: vector component-wise multiplication
 	let v = reflection * fresneleffect + refraction * (1.0 - fresneleffect) * sphere.transparency;
-	surface_color.x = sphere.surface_color.x * v.x;
-	surface_color.y = sphere.surface_color.y * v.y;
-	surface_color.z = sphere.surface_color.z * v.z;
+	let surface_color = sphere.surface_color * v;
 
 	surface_color + sphere.emission_color
 }
