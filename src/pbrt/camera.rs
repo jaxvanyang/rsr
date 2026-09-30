@@ -8,12 +8,11 @@ use super::{
 	transform::{AnimatedTransform, Transform},
 	vecmath::{Bounds2f, Vector2f, Vector3f},
 };
-use crate::Float;
 use std::ops;
 
 pub trait Camera {
 	fn get_film(&self) -> &dyn Film;
-	fn sample_time(&self, u: Float) -> Float;
+	fn sample_time(&self, u: f32) -> f32;
 	// TODO:
 	// fn init_metadata(&self, metadata: &mut ImageMetadata);
 	fn get_camera_transform(&self) -> &CameraTransform;
@@ -35,8 +34,8 @@ pub trait Camera {
 pub struct CameraSample {
 	pub p_film: Vector2f,
 	pub p_lens: Vector2f,
-	pub time: Float,
-	pub filter_weight: Float,
+	pub time: f32,
+	pub filter_weight: f32,
 }
 
 #[derive(Debug)]
@@ -98,8 +97,8 @@ impl CameraTransform {
 #[derive(Debug)]
 pub struct CameraBase<'a> {
 	camera_transform: CameraTransform,
-	shutter_open: Float,
-	shutter_close: Float,
+	shutter_open: f32,
+	shutter_close: f32,
 	film: &'a dyn Film,
 	medium: Medium,
 	min_pos_differential_x: Vector3f,
@@ -111,8 +110,8 @@ pub struct CameraBase<'a> {
 #[derive(Debug)]
 pub struct CameraBaseParameters<'a> {
 	pub camera_transform: CameraTransform,
-	pub shutter_open: Float,
-	pub shutter_close: Float,
+	pub shutter_open: f32,
+	pub shutter_close: f32,
 	pub film: &'a dyn Film,
 	pub medium: Medium,
 }
@@ -191,7 +190,7 @@ impl<'a> Camera for CameraBase<'a> {
 		&self.camera_transform
 	}
 
-	fn sample_time(&self, t: Float) -> Float {
+	fn sample_time(&self, t: f32) -> f32 {
 		lerp(self.shutter_open, self.shutter_close, t)
 	}
 
@@ -219,8 +218,8 @@ pub struct ProjectiveCamera<'a> {
 	camera_from_raster: Transform,
 	raster_from_screen: Transform,
 	screen_from_raster: Transform,
-	lens_radius: Float,
-	focal_distance: Float,
+	lens_radius: f32,
+	focal_distance: f32,
 }
 
 impl<'a> ProjectiveCamera<'a> {
@@ -228,8 +227,8 @@ impl<'a> ProjectiveCamera<'a> {
 		base_parameters: CameraBaseParameters<'a>,
 		screen_from_camera: &Transform,
 		screen_window: Bounds2f,
-		len_radius: Float,
-		focal_distance: Float,
+		len_radius: f32,
+		focal_distance: f32,
 	) -> Self {
 		let base = CameraBase::new(base_parameters);
 		let ndc_from_screen =
@@ -239,8 +238,8 @@ impl<'a> ProjectiveCamera<'a> {
 				1.,
 			) * Transform::translate(Vector3f::new(-screen_window.min.x, -screen_window.min.y, 0.));
 		let raster_from_ndc = Transform::scale(
-			base.film.full_resolution().x as Float,
-			-base.film.full_resolution().y as Float,
+			base.film.full_resolution().x as f32,
+			-base.film.full_resolution().y as f32,
 			1.,
 		);
 		let raster_from_screen = raster_from_ndc * ndc_from_screen;
@@ -283,8 +282,8 @@ impl<'a> OrthographicCamera<'a> {
 	pub fn new(
 		base_parameters: CameraBaseParameters<'a>,
 		screen_window: Bounds2f,
-		len_radius: Float,
-		focal_distance: Float,
+		len_radius: f32,
+		focal_distance: f32,
 	) -> Self {
 		let mut proj = ProjectiveCamera::new(
 			base_parameters,
@@ -311,7 +310,7 @@ impl<'a> Camera for OrthographicCamera<'a> {
 		self.proj.get_camera_transform()
 	}
 
-	fn sample_time(&self, u: Float) -> Float {
+	fn sample_time(&self, u: f32) -> f32 {
 		self.proj.sample_time(u)
 	}
 
@@ -397,16 +396,16 @@ pub struct PerspectiveCamera<'a> {
 	proj: ProjectiveCamera<'a>,
 	dx_camera: Vector3f,
 	dy_camera: Vector3f,
-	cos_total_width: Float,
+	cos_total_width: f32,
 }
 
 impl<'a> PerspectiveCamera<'a> {
 	pub fn new(
 		base_parameters: CameraBaseParameters<'a>,
-		fov: Float,
+		fov: f32,
 		screen_window: Bounds2f,
-		len_radius: Float,
-		focal_distance: Float,
+		len_radius: f32,
+		focal_distance: f32,
 	) -> Self {
 		let proj = ProjectiveCamera::new(
 			base_parameters,
@@ -439,7 +438,7 @@ impl<'a> Camera for PerspectiveCamera<'a> {
 		self.proj.get_camera_transform()
 	}
 
-	fn sample_time(&self, u: Float) -> Float {
+	fn sample_time(&self, u: f32) -> f32 {
 		self.proj.sample_time(u)
 	}
 

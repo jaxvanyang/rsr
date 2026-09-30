@@ -1,5 +1,4 @@
 use super::{medium::Medium, number::HasNaN, vecmath::Vector3f};
-use crate::Float;
 use std::ops;
 
 #[derive(Debug, Clone)]
@@ -8,16 +7,16 @@ pub struct Ray {
 	pub o: Vector3f,
 	/// Direction of the ray
 	pub d: Vector3f,
-	pub time: Float,
+	pub time: f32,
 	pub medium: Medium,
 }
 
 impl Ray {
-	pub fn new(o: Vector3f, d: Vector3f, time: Float, medium: Medium) -> Self {
+	pub fn new(o: Vector3f, d: Vector3f, time: f32, medium: Medium) -> Self {
 		Self { o, d, time, medium }
 	}
 
-	pub fn eval(&self, t: Float) -> Vector3f {
+	pub fn eval(&self, t: f32) -> Vector3f {
 		self.o + self.d * t
 	}
 }
@@ -40,11 +39,11 @@ pub struct RayDifferential {
 }
 
 impl RayDifferential {
-	pub fn new(o: Vector3f, d: Vector3f, time: Float, medium: Medium) -> Self {
+	pub fn new(o: Vector3f, d: Vector3f, time: f32, medium: Medium) -> Self {
 		Ray::new(o, d, time, medium).into()
 	}
 
-	pub fn scale_differentials(&mut self, s: Float) {
+	pub fn scale_differentials(&mut self, s: f32) {
 		self.rx_origin *= s;
 		self.rx_direction *= s;
 		self.ry_origin *= s;

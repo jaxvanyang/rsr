@@ -1,5 +1,4 @@
 use rsr::{
-	Float,
 	pbrt::{SquareMatrix, Vector2f, math::PI},
 	ui::{Canvas, Rectangle, Result, Window, elapsed_with_update},
 };
@@ -22,10 +21,10 @@ fn main() -> Result<()> {
 	Ok(())
 }
 
-fn draw_china_flag(window: &mut Window, width: Float) {
+fn draw_china_flag(window: &mut Window, width: f32) {
 	let height = width * 2. / 3.;
-	let x = (window.w() as Float - width) / 2.;
-	let y = (window.h() as Float - height) / 2.;
+	let x = (window.w() as f32 - width) / 2.;
+	let y = (window.h() as f32 - height) / 2.;
 	let unit = width / 30.;
 	let rect = Rectangle::new(x, y, width, height);
 	let red = 0xee1c25;
@@ -33,22 +32,22 @@ fn draw_china_flag(window: &mut Window, width: Float) {
 	window.clear();
 	window.fill_rectangle(rect, red);
 	draw_star(window, x + unit * 5., y + unit * 5., unit * 3., 0.);
-	draw_star(window, x + unit * 10., y + unit * 2., unit, Float::atan2(5., 3.) + PI);
-	draw_star(window, x + unit * 12., y + unit * 4., unit, Float::atan2(7., 1.) + PI);
-	draw_star(window, x + unit * 12., y + unit * 7., unit, Float::atan2(7., -2.) + PI);
-	draw_star(window, x + unit * 10., y + unit * 9., unit, Float::atan2(5., -4.) + PI);
+	draw_star(window, x + unit * 10., y + unit * 2., unit, f32::atan2(5., 3.) + PI);
+	draw_star(window, x + unit * 12., y + unit * 4., unit, f32::atan2(7., 1.) + PI);
+	draw_star(window, x + unit * 12., y + unit * 7., unit, f32::atan2(7., -2.) + PI);
+	draw_star(window, x + unit * 10., y + unit * 9., unit, f32::atan2(5., -4.) + PI);
 }
 
-fn draw_star(window: &mut Window, x: Float, y: Float, radius: Float, theta: Float) {
+fn draw_star(window: &mut Window, x: f32, y: f32, radius: f32, theta: f32) {
 	let yellow = 0xffff00;
 	let center = Vector2f::new(x, y);
 	let (sin, cos) = theta.sin_cos();
 	let rotation = SquareMatrix::from([[cos, -sin], [sin, cos]]);
-	let inner_radius = radius * Float::to_radians(18.).sin() / Float::to_radians(126.).sin();
+	let inner_radius = radius * f32::to_radians(18.).sin() / f32::to_radians(126.).sin();
 	let mut points = [Vector2f::default(); 10];
 	for i in 0..5 {
-		let t0 = i as Float * 72. - 90.;
-		let t1 = i as Float * 72. - 54.;
+		let t0 = i as f32 * 72. - 90.;
+		let t1 = i as f32 * 72. - 54.;
 		let (sin0, cos0) = t0.to_radians().sin_cos();
 		let (sin1, cos1) = t1.to_radians().sin_cos();
 		points[i * 2] = Vector2f::new(cos0, sin0) * radius;

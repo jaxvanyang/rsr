@@ -5,15 +5,14 @@ use super::{
 	colorspace::RGBColorSpace,
 	math::{fast_exp, lerp},
 };
-use crate::Float;
 use std::ops;
 
-pub const LAMBDA_MIN: Float = 360.;
-pub const LAMBDA_MAX: Float = 830.;
+pub const LAMBDA_MIN: f32 = 360.;
+pub const LAMBDA_MAX: f32 = 830.;
 pub const LAMBDA_MIN_I: usize = 360;
 pub const LAMBDA_MAX_I: usize = 830;
 pub const SPECTRUM_SAMPLES: usize = 4;
-pub const CIE_Y_INTEGRAL: Float = 106.856895;
+pub const CIE_Y_INTEGRAL: f32 = 106.856895;
 
 pub fn get_named_spectrum(name: &str) -> Option<&dyn Spectrum> {
 	match name {
@@ -25,9 +24,9 @@ pub fn get_named_spectrum(name: &str) -> Option<&dyn Spectrum> {
 
 pub trait Spectrum {
 	/// Evaluates the spectrum at the given wavelength.
-	fn eval(&self, lambda: Float) -> Float;
+	fn eval(&self, lambda: f32) -> f32;
 
-	fn max_value(&self) -> Float;
+	fn max_value(&self) -> f32;
 
 	fn sample(&self, swl: &SampledWavelengths) -> SampledSpectrum {
 		SampledSpectrum::new(
@@ -35,7 +34,7 @@ pub trait Spectrum {
 		)
 	}
 
-	fn inner_product(&self, rhs: &dyn Spectrum) -> Float {
+	fn inner_product(&self, rhs: &dyn Spectrum) -> f32 {
 		let mut ret = 0.;
 		let mut lambda = LAMBDA_MIN;
 		while lambda <= LAMBDA_MAX {
@@ -49,21 +48,21 @@ pub trait Spectrum {
 
 #[derive(Debug, Clone, Copy)]
 pub struct ConstantSpectrum {
-	c: Float,
+	c: f32,
 }
 
 impl ConstantSpectrum {
-	pub fn new(c: Float) -> Self {
+	pub fn new(c: f32) -> Self {
 		Self { c }
 	}
 }
 
 impl Spectrum for ConstantSpectrum {
-	fn eval(&self, _: Float) -> Float {
+	fn eval(&self, _: f32) -> f32 {
 		self.c
 	}
 
-	fn max_value(&self) -> Float {
+	fn max_value(&self) -> f32 {
 		self.c
 	}
 
@@ -76,7 +75,7 @@ impl Spectrum for ConstantSpectrum {
 pub struct DenselySampledSpectrum {
 	lambda_min: usize,
 	lambda_max: usize,
-	values: Vec<Float>,
+	values: Vec<f32>,
 }
 
 impl DenselySampledSpectrum {
@@ -86,19 +85,19 @@ impl DenselySampledSpectrum {
 
 	pub fn new_with_lambdas(spec: &dyn Spectrum, lambda_min: usize, lambda_max: usize) -> Self {
 		let values =
-			(lambda_min..=lambda_max).map(|lambda| spec.eval(lambda as Float)).collect::<Vec<_>>();
+			(lambda_min..=lambda_max).map(|lambda| spec.eval(lambda as f32)).collect::<Vec<_>>();
 
 		Self { lambda_min, lambda_max, values }
 	}
 
-	pub fn new_with_values(lambda_min: usize, values: &[Float]) -> Self {
+	pub fn new_with_values(lambda_min: usize, values: &[f32]) -> Self {
 		debug_assert!(!values.is_empty());
 		Self { lambda_min, lambda_max: lambda_min + values.len() - 1, values: values.to_vec() }
 	}
 }
 
 impl Spectrum for DenselySampledSpectrum {
-	fn eval(&self, lambda: Float) -> Float {
+	fn eval(&self, lambda: f32) -> f32 {
 		debug_assert!(lambda > 0.);
 		let lambda = lambda.round() as usize;
 		if lambda < self.lambda_min || lambda > self.lambda_max {
@@ -108,26 +107,26 @@ impl Spectrum for DenselySampledSpectrum {
 		}
 	}
 
-	fn max_value(&self) -> Float {
+	fn max_value(&self) -> f32 {
 		self.values.iter().fold(0., |ret, v| ret.max(*v))
 	}
 }
 
 #[derive(Debug, Clone)]
 pub struct PiecewiseLinearSpectrum {
-	lambdas: Vec<Float>,
-	values: Vec<Float>,
+	lambdas: Vec<f32>,
+	values: Vec<f32>,
 }
 
 impl PiecewiseLinearSpectrum {
-	pub fn new(lambdas: &[Float], values: &[Float]) -> Self {
+	pub fn new(lambdas: &[f32], values: &[f32]) -> Self {
 		assert!(lambdas.is_sorted());
 		assert!(lambdas.len() == values.len());
 
 		Self { lambdas: lambdas.to_vec(), values: values.to_vec() }
 	}
 
-	pub fn from_interleaved(samples: &[Float], normalize: bool) -> Self {
+	pub fn from_interleaved(samples: &[f32], normalize: bool) -> Self {
 		assert_eq!(samples.len() % 2, 0);
 
 		let n = samples.len() / 2;
@@ -159,7 +158,7 @@ impl PiecewiseLinearSpectrum {
 		ret
 	}
 
-	pub fn scale(&mut self, s: Float) {
+	pub fn scale(&mut self, s: f32) {
 		for v in self.values.iter_mut() {
 			*v *= s;
 		}
@@ -167,7 +166,7 @@ impl PiecewiseLinearSpectrum {
 }
 
 impl Spectrum for PiecewiseLinearSpectrum {
-	fn eval(&self, lambda: Float) -> Float {
+	fn eval(&self, lambda: f32) -> f32 {
 		if self.lambdas.is_empty()
 			|| lambda < *self.lambdas.first().unwrap()
 			|| lambda > *self.lambdas.last().unwrap()
@@ -188,14 +187,14 @@ impl Spectrum for PiecewiseLinearSpectrum {
 		lerp(self.values[i - 1], self.values[i], t)
 	}
 
-	fn max_value(&self) -> Float {
+	fn max_value(&self) -> f32 {
 		self.values.iter().fold(0., |ret, v| ret.max(*v))
 	}
 }
 
 /// Returns the blackbody spectrum value at the given wavelength (nm) and temperature (K).
 #[allow(clippy::excessive_precision)]
-pub fn blackbody(lambda: Float, t: Float) -> Float {
+pub fn blackbody(lambda: f32, t: f32) -> f32 {
 	if t <= 0. {
 		return 0.;
 	}
@@ -206,21 +205,21 @@ pub fn blackbody(lambda: Float, t: Float) -> Float {
 	let l = lambda * 1e-9;
 
 	#[cfg(feature = "use_f64")]
-	return (2. * h * c * c) / l.powi(5) * (fast_exp((h * c / (l * kb * t)) as f32) as Float - 1.);
+	return (2. * h * c * c) / l.powi(5) * (fast_exp((h * c / (l * kb * t)) as f32) as f32 - 1.);
 	#[cfg(not(feature = "use_f64"))]
 	return (2. * h * c * c) / l.powi(5) * (fast_exp(h * c / (l * kb * t)) - 1.);
 }
 
 #[derive(Debug, Clone, Copy)]
 pub struct BlackbodySpectrum {
-	t: Float,
-	norm_factor: Float,
+	t: f32,
+	norm_factor: f32,
 }
 
 impl BlackbodySpectrum {
 	/// Creates a new blackbody spectrum with the given temperature in Kelvin.
 	#[allow(clippy::excessive_precision)]
-	pub fn new(t: Float) -> Self {
+	pub fn new(t: f32) -> Self {
 		let lambda_max = 2.8977721e-3 / t;
 		let norm_factor = 1. / blackbody(lambda_max * 1e9, t);
 
@@ -229,26 +228,26 @@ impl BlackbodySpectrum {
 }
 
 impl Spectrum for BlackbodySpectrum {
-	fn eval(&self, lambda: Float) -> Float {
+	fn eval(&self, lambda: f32) -> f32 {
 		blackbody(lambda, self.t) * self.norm_factor
 	}
 
-	fn max_value(&self) -> Float {
+	fn max_value(&self) -> f32 {
 		1.
 	}
 }
 
 #[derive(Debug, Clone)]
 pub struct SampledSpectrum {
-	values: [Float; SPECTRUM_SAMPLES],
+	values: [f32; SPECTRUM_SAMPLES],
 }
 
 impl SampledSpectrum {
-	pub fn new(v: &[Float]) -> Self {
+	pub fn new(v: &[f32]) -> Self {
 		Self { values: v[..SPECTRUM_SAMPLES].try_into().unwrap() }
 	}
 
-	pub fn new_with_const(c: Float) -> Self {
+	pub fn new_with_const(c: f32) -> Self {
 		Self { values: [c; SPECTRUM_SAMPLES] }
 	}
 
@@ -274,8 +273,8 @@ impl SampledSpectrum {
 		cs.to_rgb(xyz)
 	}
 
-	pub fn average(&self) -> Float {
-		self.values.iter().sum::<Float>() / SPECTRUM_SAMPLES as Float
+	pub fn average(&self) -> f32 {
+		self.values.iter().sum::<f32>() / SPECTRUM_SAMPLES as f32
 	}
 
 	pub fn safe_div(&self, rhs: &Self) -> Self {
@@ -292,7 +291,7 @@ impl SampledSpectrum {
 }
 
 impl ops::Index<usize> for SampledSpectrum {
-	type Output = Float;
+	type Output = f32;
 
 	fn index(&self, index: usize) -> &Self::Output {
 		&self.values[index]
@@ -327,16 +326,16 @@ impl ops::Mul<&Self> for SampledSpectrum {
 
 #[derive(Debug, Clone)]
 pub struct SampledWavelengths {
-	lambdas: [Float; SPECTRUM_SAMPLES],
-	pdf: [Float; SPECTRUM_SAMPLES],
+	lambdas: [f32; SPECTRUM_SAMPLES],
+	pdf: [f32; SPECTRUM_SAMPLES],
 }
 
 impl SampledWavelengths {
-	pub fn uniform(u: Float, lambda_min: Float, lambda_max: Float) -> Self {
+	pub fn uniform(u: f32, lambda_min: f32, lambda_max: f32) -> Self {
 		let mut lambdas = [0.; SPECTRUM_SAMPLES];
 		lambdas[0] = lerp(lambda_min, lambda_max, u);
 		let width = lambda_max - lambda_min;
-		let delta = width / SPECTRUM_SAMPLES as Float;
+		let delta = width / SPECTRUM_SAMPLES as f32;
 		for i in 1..SPECTRUM_SAMPLES {
 			lambdas[i] = lambdas[i - 1] + delta;
 			if lambdas[i] > lambda_max {
@@ -367,7 +366,7 @@ impl SampledWavelengths {
 }
 
 impl ops::Index<usize> for SampledWavelengths {
-	type Output = Float;
+	type Output = f32;
 
 	fn index(&self, index: usize) -> &Self::Output {
 		&self.lambdas[index]
@@ -395,18 +394,18 @@ impl RGBAlbedoSpectrum {
 }
 
 impl Spectrum for RGBAlbedoSpectrum {
-	fn eval(&self, lambda: Float) -> Float {
+	fn eval(&self, lambda: f32) -> f32 {
 		self.rsp.eval(lambda)
 	}
 
-	fn max_value(&self) -> Float {
+	fn max_value(&self) -> f32 {
 		self.rsp.max_value()
 	}
 }
 
 #[derive(Debug)]
 pub struct RGBUnboundedSpectrum {
-	scale: Float,
+	scale: f32,
 	rsp: RGBSigmoidPolynomial,
 }
 
@@ -421,18 +420,18 @@ impl RGBUnboundedSpectrum {
 }
 
 impl Spectrum for RGBUnboundedSpectrum {
-	fn eval(&self, lambda: Float) -> Float {
+	fn eval(&self, lambda: f32) -> f32 {
 		self.scale * self.rsp.eval(lambda)
 	}
 
-	fn max_value(&self) -> Float {
+	fn max_value(&self) -> f32 {
 		self.scale * self.rsp.max_value()
 	}
 }
 
 #[derive(Debug)]
 pub struct RGBIlluminantSpectrum<'a> {
-	scale: Float,
+	scale: f32,
 	rsp: RGBSigmoidPolynomial,
 	illuminant: &'a DenselySampledSpectrum,
 }
@@ -448,11 +447,11 @@ impl<'a> RGBIlluminantSpectrum<'a> {
 }
 
 impl<'a> Spectrum for RGBIlluminantSpectrum<'a> {
-	fn eval(&self, lambda: Float) -> Float {
+	fn eval(&self, lambda: f32) -> f32 {
 		self.scale * self.rsp.eval(lambda) * self.illuminant.eval(lambda)
 	}
 
-	fn max_value(&self) -> Float {
+	fn max_value(&self) -> f32 {
 		self.scale * self.rsp.max_value() * self.illuminant.max_value()
 	}
 }
@@ -489,7 +488,7 @@ pub mod spectra {
 	use std::sync::LazyLock;
 
 	const CIE_SAMPLES: usize = 471;
-	const CIE_LAMBDAS: [Float; CIE_SAMPLES] = [
+	const CIE_LAMBDAS: [f32; CIE_SAMPLES] = [
 		360., 361., 362., 363., 364., 365., 366., 367., 368., 369., 370., 371., 372., 373., 374.,
 		375., 376., 377., 378., 379., 380., 381., 382., 383., 384., 385., 386., 387., 388., 389.,
 		390., 391., 392., 393., 394., 395., 396., 397., 398., 399., 400., 401., 402., 403., 404.,
@@ -523,7 +522,7 @@ pub mod spectra {
 		810., 811., 812., 813., 814., 815., 816., 817., 818., 819., 820., 821., 822., 823., 824.,
 		825., 826., 827., 828., 829., 830.,
 	];
-	const CIE_X: [Float; CIE_SAMPLES] = [
+	const CIE_X: [f32; CIE_SAMPLES] = [
 		0.0001299000, 0.0001458470, 0.0001638021, 0.0001840037, 0.0002066902, 0.0002321000,
 		0.0002607280, 0.0002930750, 0.0003293880, 0.0003699140, 0.0004149000, 0.0004641587,
 		0.0005189860, 0.0005818540, 0.0006552347, 0.0007416000, 0.0008450296, 0.0009645268,
@@ -593,7 +592,7 @@ pub mod spectra {
 		0.000001905497, 0.000001776509, 0.000001656215, 0.000001544022, 0.000001439440,
 		0.000001341977, 0.000001251141,
 	];
-	const CIE_Y: [Float; CIE_SAMPLES] = [
+	const CIE_Y: [f32; CIE_SAMPLES] = [
 		0.000003917000, 0.000004393581, 0.000004929604, 0.000005532136, 0.000006208245,
 		0.000006965000, 0.000007813219, 0.000008767336, 0.000009839844, 0.00001104323,
 		0.00001239000, 0.00001388641, 0.00001555728, 0.00001744296, 0.00001958375, 0.00002202000,
@@ -665,7 +664,7 @@ pub mod spectra {
 		0.0000007917212, 0.0000007380904, 0.0000006881098, 0.0000006415300, 0.0000005980895,
 		0.0000005575746, 0.0000005198080, 0.0000004846123, 0.0000004518100,
 	];
-	const CIE_Z: [Float; CIE_SAMPLES] = [
+	const CIE_Z: [f32; CIE_SAMPLES] = [
 		0.0006061000, 0.0006808792, 0.0007651456, 0.0008600124, 0.0009665928, 0.001086000,
 		0.001220586, 0.001372729, 0.001543579, 0.001734286, 0.001946000, 0.002177777, 0.002435809,
 		0.002731953, 0.003078064, 0.003486000, 0.003975227, 0.004540880, 0.005158320, 0.005802907,
@@ -745,7 +744,7 @@ pub mod spectra {
 		0.000000000000, 0.000000000000, 0.000000000000, 0.000000000000, 0.000000000000,
 		0.000000000000,
 	];
-	const CIE_ILLUM_D6500: [Float; 214] = [
+	const CIE_ILLUM_D6500: [f32; 214] = [
 		300.000000, 0.034100, 305.000000, 1.664300, 310.000000, 3.294500, 315.000000, 11.765200,
 		320.000000, 20.236000, 325.000000, 28.644699, 330.000000, 37.053501, 335.000000, 38.501099,
 		340.000000, 39.948799, 345.000000, 42.430199, 350.000000, 44.911701, 355.000000, 45.775002,
@@ -780,7 +779,7 @@ pub mod spectra {
 	// <    cct = 6000
 	// --
 	// >    cct = 6000.
-	const ACES_ILLUM_D60: [Float; 214] = [
+	const ACES_ILLUM_D60: [f32; 214] = [
 		300.0, 0.02928, 305.0, 1.28964, 310.0, 2.55, 315.0, 9.0338, 320.0, 15.5176, 325.0,
 		21.94705, 330.0, 28.3765, 335.0, 29.93335, 340.0, 31.4902, 345.0, 33.75765, 350.0, 36.0251,
 		355.0, 37.2032, 360.0, 38.3813, 365.0, 40.6445, 370.0, 42.9077, 375.0, 42.05735, 380.0,

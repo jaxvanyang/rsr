@@ -2,7 +2,6 @@ use super::{
 	math::lerp,
 	number::{HasNaN, Interval, Number},
 };
-use crate::Float;
 use approx::{AbsDiffEq, abs_diff_eq};
 use std::fmt::Display;
 use std::ops::*;
@@ -13,7 +12,7 @@ pub struct Vector2<T> {
 	pub y: T,
 }
 
-pub type Vector2f = Vector2<Float>;
+pub type Vector2f = Vector2<f32>;
 pub type Vector2i = Vector2<i32>;
 
 impl<T: Number> Vector2<T> {
@@ -101,17 +100,17 @@ impl Vector2f {
 		abs_diff_eq!(self.length(), 1.0)
 	}
 
-	pub fn length(self) -> Float {
+	pub fn length(self) -> f32 {
 		self.length_squared().sqrt()
 	}
 
 	/// Return the distance to `rhs`.
-	pub fn distance(self, rhs: Self) -> Float {
+	pub fn distance(self, rhs: Self) -> f32 {
 		(self - rhs).length()
 	}
 
 	/// Return the squared distance to `rhs`.
-	pub fn distance_squared(self, rhs: Self) -> Float {
+	pub fn distance_squared(self, rhs: Self) -> f32 {
 		(self - rhs).length_squared()
 	}
 
@@ -135,7 +134,7 @@ impl Vector2f {
 		Self { x: self.x.floor(), y: self.y.floor() }
 	}
 
-	pub fn lerp(a: Self, b: Self, t: Float) -> Self {
+	pub fn lerp(a: Self, b: Self, t: f32) -> Self {
 		debug_assert!((0.0..=1.0).contains(&t));
 		a + t * (b - a)
 	}
@@ -154,7 +153,7 @@ impl<T: Default> Default for Vector2<T> {
 
 impl From<Vector2i> for Vector2f {
 	fn from(v: Vector2i) -> Self {
-		Self::new(v.x as Float, v.y as Float)
+		Self::new(v.x as f32, v.y as f32)
 	}
 }
 
@@ -260,7 +259,7 @@ impl<T: MulAssign + Copy> MulAssign<T> for Vector2<T> {
 	}
 }
 
-impl Mul<Vector2f> for Float {
+impl Mul<Vector2f> for f32 {
 	type Output = Vector2f;
 	fn mul(self, rhs: Vector2f) -> Self::Output {
 		rhs * self
@@ -274,9 +273,9 @@ impl Mul<Vector2i> for i32 {
 	}
 }
 
-impl Div<Float> for Vector2f {
+impl Div<f32> for Vector2f {
 	type Output = Self;
-	fn div(self, rhs: Float) -> Self::Output {
+	fn div(self, rhs: f32) -> Self::Output {
 		let inv = 1.0 / rhs;
 		Self { x: self.x * inv, y: self.y * inv }
 	}
@@ -285,13 +284,13 @@ impl Div<Float> for Vector2f {
 impl Div<i32> for Vector2i {
 	type Output = Self;
 	fn div(self, rhs: i32) -> Self::Output {
-		let inv = 1.0 / rhs as Float;
-		Self { x: (self.x as Float * inv) as i32, y: (self.y as Float * inv) as i32 }
+		let inv = 1.0 / rhs as f32;
+		Self { x: (self.x as f32 * inv) as i32, y: (self.y as f32 * inv) as i32 }
 	}
 }
 
-impl DivAssign<Float> for Vector2f {
-	fn div_assign(&mut self, rhs: Float) {
+impl DivAssign<f32> for Vector2f {
+	fn div_assign(&mut self, rhs: f32) {
 		let inv = 1.0 / rhs;
 		self.x *= inv;
 		self.y *= inv;
@@ -300,17 +299,17 @@ impl DivAssign<Float> for Vector2f {
 
 impl DivAssign<i32> for Vector2i {
 	fn div_assign(&mut self, rhs: i32) {
-		let inv = 1.0 / rhs as Float;
-		self.x = (self.x as Float * inv) as i32;
-		self.y = (self.y as Float * inv) as i32;
+		let inv = 1.0 / rhs as f32;
+		self.x = (self.x as f32 * inv) as i32;
+		self.y = (self.y as f32 * inv) as i32;
 	}
 }
 
 impl AbsDiffEq for Vector2f {
-	type Epsilon = Float;
+	type Epsilon = f32;
 
 	fn default_epsilon() -> Self::Epsilon {
-		Float::EPSILON
+		f32::EPSILON
 	}
 
 	fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
@@ -325,7 +324,7 @@ pub struct Vector3<T> {
 	pub z: T,
 }
 
-pub type Vector3f = Vector3<Float>;
+pub type Vector3f = Vector3<f32>;
 pub type Vector3i = Vector3<i32>;
 pub type Vector3fi = Vector3<Interval>;
 
@@ -436,17 +435,17 @@ impl Vector3f {
 		abs_diff_eq!(self.length(), 1.0)
 	}
 
-	pub fn length(self) -> Float {
+	pub fn length(self) -> f32 {
 		self.length_squared().sqrt()
 	}
 
 	/// Return the distance to `rhs`.
-	pub fn distance(self, rhs: Self) -> Float {
+	pub fn distance(self, rhs: Self) -> f32 {
 		(self - rhs).length()
 	}
 
 	/// Return the squared distance to `rhs`.
-	pub fn distance_squared(self, rhs: Self) -> Float {
+	pub fn distance_squared(self, rhs: Self) -> f32 {
 		(self - rhs).length_squared()
 	}
 
@@ -473,9 +472,9 @@ impl Vector3f {
 		let v2z = rhs.z as f64;
 
 		Self {
-			x: (v1y * v2z - v1z * v2y) as Float,
-			y: (v1z * v2x - v1x * v2z) as Float,
-			z: (v1x * v2y - v1y * v2x) as Float,
+			x: (v1y * v2z - v1z * v2y) as f32,
+			y: (v1z * v2x - v1x * v2z) as f32,
+			z: (v1x * v2y - v1y * v2x) as f32,
 		}
 	}
 
@@ -487,7 +486,7 @@ impl Vector3f {
 		Self { x: self.x.floor(), y: self.y.floor(), z: self.z.floor() }
 	}
 
-	pub fn lerp(a: Self, b: Self, t: Float) -> Self {
+	pub fn lerp(a: Self, b: Self, t: f32) -> Self {
 		debug_assert!((0.0..=1.0).contains(&t));
 		a + t * (b - a)
 	}
@@ -502,7 +501,7 @@ impl Vector3f {
 	pub fn coordinate_system(self) -> (Self, Self) {
 		debug_assert!(self.is_normalized());
 
-		let sign = (1.0 as Float).copysign(self.z);
+		let sign = (1.0 as f32).copysign(self.z);
 		let a = -1.0 / (sign + self.z);
 		let b = self.x * self.y * a;
 		let v2 = Self { x: 1.0 + sign * self.x * self.x * a, y: sign * b, z: -sign * self.x };
@@ -649,7 +648,7 @@ impl<T: MulAssign + Copy> MulAssign<T> for Vector3<T> {
 	}
 }
 
-impl Mul<Vector3f> for Float {
+impl Mul<Vector3f> for f32 {
 	type Output = Vector3f;
 	fn mul(self, rhs: Vector3f) -> Self::Output {
 		rhs * self
@@ -663,9 +662,9 @@ impl Mul<Vector3i> for i32 {
 	}
 }
 
-impl Div<Float> for Vector3f {
+impl Div<f32> for Vector3f {
 	type Output = Self;
-	fn div(self, rhs: Float) -> Self::Output {
+	fn div(self, rhs: f32) -> Self::Output {
 		let inv = 1.0 / rhs;
 		Self { x: self.x * inv, y: self.y * inv, z: self.z * inv }
 	}
@@ -674,17 +673,17 @@ impl Div<Float> for Vector3f {
 impl Div<i32> for Vector3i {
 	type Output = Self;
 	fn div(self, rhs: i32) -> Self::Output {
-		let inv = 1.0 / rhs as Float;
+		let inv = 1.0 / rhs as f32;
 		Self {
-			x: (self.x as Float * inv) as i32,
-			y: (self.y as Float * inv) as i32,
-			z: (self.z as Float * inv) as i32,
+			x: (self.x as f32 * inv) as i32,
+			y: (self.y as f32 * inv) as i32,
+			z: (self.z as f32 * inv) as i32,
 		}
 	}
 }
 
-impl DivAssign<Float> for Vector3f {
-	fn div_assign(&mut self, rhs: Float) {
+impl DivAssign<f32> for Vector3f {
+	fn div_assign(&mut self, rhs: f32) {
 		let inv = 1.0 / rhs;
 		self.x *= inv;
 		self.y *= inv;
@@ -694,18 +693,18 @@ impl DivAssign<Float> for Vector3f {
 
 impl DivAssign<i32> for Vector3i {
 	fn div_assign(&mut self, rhs: i32) {
-		let inv = 1.0 / rhs as Float;
-		self.x = (self.x as Float * inv) as i32;
-		self.y = (self.y as Float * inv) as i32;
-		self.z = (self.z as Float * inv) as i32;
+		let inv = 1.0 / rhs as f32;
+		self.x = (self.x as f32 * inv) as i32;
+		self.y = (self.y as f32 * inv) as i32;
+		self.z = (self.z as f32 * inv) as i32;
 	}
 }
 
 impl AbsDiffEq for Vector3f {
-	type Epsilon = Float;
+	type Epsilon = f32;
 
 	fn default_epsilon() -> Self::Epsilon {
-		Float::EPSILON
+		f32::EPSILON
 	}
 
 	fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
@@ -721,7 +720,7 @@ pub struct Bounds2<T> {
 	pub max: Vector2<T>,
 }
 
-pub type Bounds2f = Bounds2<Float>;
+pub type Bounds2f = Bounds2<f32>;
 pub type Bounds2i = Bounds2<i32>;
 
 impl<T: Number> Bounds2<T> {
@@ -764,8 +763,8 @@ impl<T: Number> Bounds2<T> {
 	}
 
 	/// Return the distance to point `p`.
-	pub fn distance(&self, p: Vector2<T>) -> Float {
-		self.distance_squared(p).as_float().sqrt()
+	pub fn distance(&self, p: Vector2<T>) -> f32 {
+		self.distance_squared(p).as_f32().sqrt()
 	}
 
 	/// Return a new bounding box expanded by `delta` in all dimensions.
@@ -881,7 +880,7 @@ pub struct Bounds3<T> {
 	pub max: Vector3<T>,
 }
 
-pub type Bounds3f = Bounds3<Float>;
+pub type Bounds3f = Bounds3<f32>;
 pub type Bounds3i = Bounds3<i32>;
 
 impl<T: Number> Bounds3<T> {
@@ -926,8 +925,8 @@ impl<T: Number> Bounds3<T> {
 	}
 
 	/// Return the distance to point `p`.
-	pub fn distance(&self, p: Vector3<T>) -> Float {
-		self.distance_squared(p).as_float().sqrt()
+	pub fn distance(&self, p: Vector3<T>) -> f32 {
+		self.distance_squared(p).as_f32().sqrt()
 	}
 
 	/// Return a new bounding box expanded by `delta` in all dimensions.
@@ -995,7 +994,7 @@ impl Bounds3f {
 		o
 	}
 
-	pub fn bounding_sphere(&self) -> (Vector3f, Float) {
+	pub fn bounding_sphere(&self) -> (Vector3f, f32) {
 		let center = (self.min + self.max) / 2.0;
 		let radius = if center.inside(self) { center.distance(self.max) } else { 0.0 };
 

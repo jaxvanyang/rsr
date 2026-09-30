@@ -1,14 +1,6 @@
 use super::vecmath::Vector2f;
-use crate::Float;
 
-cfg_select! {
-	feature = "use_f64" => {
-		pub use std::f64::consts::{PI, FRAC_PI_2, FRAC_PI_4};
-	}
-	_ => {
-		pub use std::f32::consts::{PI, FRAC_PI_2, FRAC_PI_4};
-	}
-}
+pub use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, PI};
 
 /// # Examples
 ///
@@ -38,7 +30,7 @@ macro_rules! polynomial {
 /// # use rsr::pbrt::math::lerp;
 /// assert_eq!(lerp(0.0, 1.0, 0.3), 0.3);
 /// ```
-pub fn lerp(a: Float, b: Float, t: Float) -> Float {
+pub fn lerp(a: f32, b: f32, t: f32) -> f32 {
 	debug_assert!((0.0..=1.0).contains(&t));
 	a + t * (b - a)
 }
@@ -95,7 +87,7 @@ fn get_exponent(v: f32) -> i32 {
 /// assert_eq!(round_to_left(0.6), 1.);
 /// assert_eq!(round_to_left(-0.6), -1.);
 /// ```
-pub fn round_to_left(v: Float) -> Float {
+pub fn round_to_left(v: f32) -> f32 {
 	if v.fract().abs() == 0.5 { v.floor() } else { v.round() }
 }
 
@@ -112,7 +104,7 @@ pub fn round_to_left(v: Float) -> Float {
 /// assert_eq!(round_to_right(0.6), 1.);
 /// assert_eq!(round_to_right(-0.6), -1.);
 /// ```
-pub fn round_to_right(v: Float) -> Float {
+pub fn round_to_right(v: f32) -> f32 {
 	if v.fract().abs() == 0.5 { v.ceil() } else { v.round() }
 }
 
@@ -145,7 +137,7 @@ pub fn find_interval(size: usize, pred: impl Fn(usize) -> bool) -> usize {
 	if l == size - 1 { size - 2 } else { l }
 }
 
-pub fn diff_of_products(a: Float, b: Float, c: Float, d: Float) -> Float {
+pub fn diff_of_products(a: f32, b: f32, c: f32, d: f32) -> f32 {
 	let cd = c * d;
 	let result = a.mul_add(b, -cd);
 	let error = (-c).mul_add(d, cd);

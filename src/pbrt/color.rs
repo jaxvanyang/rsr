@@ -1,22 +1,21 @@
 use super::{
 	math::{find_interval, lerp},
-	number::{HasNaN, Number},
+	number::HasNaN,
 	spectrum::{LAMBDA_MAX, LAMBDA_MIN, Spectrum, spectra},
 	{Vector2f, spectrum::CIE_Y_INTEGRAL},
 };
-use crate::Float;
 use crate::{polynomial, ui::Color};
 use std::ops;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct XYZ {
-	pub x: Float,
-	pub y: Float,
-	pub z: Float,
+	pub x: f32,
+	pub y: f32,
+	pub z: f32,
 }
 
 impl XYZ {
-	pub fn new(x: Float, y: Float, z: Float) -> Self {
+	pub fn new(x: f32, y: f32, z: f32) -> Self {
 		let ret = Self { x, y, z };
 		debug_assert!(!ret.has_nan());
 		ret
@@ -27,7 +26,7 @@ impl XYZ {
 	}
 
 	#[allow(non_snake_case)]
-	pub fn from_xyY(xy: Vector2f, Y: Float) -> Self {
+	pub fn from_xyY(xy: Vector2f, Y: f32) -> Self {
 		if xy.y == 0. {
 			Self::default()
 		} else {
@@ -100,7 +99,7 @@ impl ops::SubAssign for XYZ {
 	}
 }
 
-impl ops::Sub<XYZ> for Float {
+impl ops::Sub<XYZ> for f32 {
 	type Output = XYZ;
 
 	fn sub(self, rhs: XYZ) -> Self::Output {
@@ -126,18 +125,18 @@ impl ops::MulAssign for XYZ {
 	}
 }
 
-impl ops::Mul<Float> for XYZ {
+impl ops::Mul<f32> for XYZ {
 	type Output = Self;
 
-	fn mul(self, rhs: Float) -> Self::Output {
+	fn mul(self, rhs: f32) -> Self::Output {
 		let mut ret = self;
 		ret *= rhs;
 		ret
 	}
 }
 
-impl ops::MulAssign<Float> for XYZ {
-	fn mul_assign(&mut self, rhs: Float) {
+impl ops::MulAssign<f32> for XYZ {
+	fn mul_assign(&mut self, rhs: f32) {
 		debug_assert!(!rhs.is_nan());
 		self.x *= rhs;
 		self.y *= rhs;
@@ -163,25 +162,25 @@ impl ops::DivAssign for XYZ {
 	}
 }
 
-impl ops::Div<Float> for XYZ {
+impl ops::Div<f32> for XYZ {
 	type Output = Self;
 
-	fn div(self, rhs: Float) -> Self::Output {
+	fn div(self, rhs: f32) -> Self::Output {
 		let mut ret = self;
 		ret /= rhs;
 		ret
 	}
 }
 
-impl ops::DivAssign<Float> for XYZ {
-	fn div_assign(&mut self, rhs: Float) {
+impl ops::DivAssign<f32> for XYZ {
+	fn div_assign(&mut self, rhs: f32) {
 		debug_assert!(!rhs.is_nan());
 		*self *= 1. / rhs;
 	}
 }
 
 impl ops::Index<usize> for XYZ {
-	type Output = Float;
+	type Output = f32;
 	fn index(&self, index: usize) -> &Self::Output {
 		match index {
 			0 => &self.x,
@@ -205,9 +204,9 @@ impl ops::IndexMut<usize> for XYZ {
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct RGB {
-	pub r: Float,
-	pub g: Float,
-	pub b: Float,
+	pub r: f32,
+	pub g: f32,
+	pub b: f32,
 }
 
 impl RGB {
@@ -215,13 +214,13 @@ impl RGB {
 	pub const GREEN: Self = Self { r: 0., g: 1., b: 0. };
 	pub const BLUE: Self = Self { r: 0., g: 0., b: 1. };
 
-	pub fn new(r: Float, g: Float, b: Float) -> Self {
+	pub fn new(r: f32, g: f32, b: f32) -> Self {
 		let ret = Self { r, g, b };
 		debug_assert!(!ret.has_nan());
 		ret
 	}
 
-	pub fn avg(&self) -> Float {
+	pub fn avg(&self) -> f32 {
 		(self.r + self.g + self.b) / 3.
 	}
 
@@ -235,7 +234,7 @@ impl RGB {
 		}
 	}
 
-	pub fn clamp(&self, min: Float, max: Float) -> Self {
+	pub fn clamp(&self, min: f32, max: f32) -> Self {
 		Self::new(self.r.clamp(min, max), self.g.clamp(min, max), self.b.clamp(min, max))
 	}
 
@@ -246,9 +245,9 @@ impl RGB {
 
 impl From<u32> for RGB {
 	fn from(c: u32) -> Self {
-		let r = c.r() as Float / 255.;
-		let g = c.g() as Float / 255.;
-		let b = c.b() as Float / 255.;
+		let r = c.r() as f32 / 255.;
+		let g = c.g() as f32 / 255.;
+		let b = c.b() as f32 / 255.;
 
 		Self { r, g, b }
 	}
@@ -317,7 +316,7 @@ impl ops::SubAssign for RGB {
 	}
 }
 
-impl ops::Sub<RGB> for Float {
+impl ops::Sub<RGB> for f32 {
 	type Output = RGB;
 
 	fn sub(self, rhs: RGB) -> Self::Output {
@@ -343,18 +342,18 @@ impl ops::MulAssign for RGB {
 	}
 }
 
-impl ops::Mul<Float> for RGB {
+impl ops::Mul<f32> for RGB {
 	type Output = Self;
 
-	fn mul(self, rhs: Float) -> Self::Output {
+	fn mul(self, rhs: f32) -> Self::Output {
 		let mut ret = self;
 		ret *= rhs;
 		ret
 	}
 }
 
-impl ops::MulAssign<Float> for RGB {
-	fn mul_assign(&mut self, rhs: Float) {
+impl ops::MulAssign<f32> for RGB {
+	fn mul_assign(&mut self, rhs: f32) {
 		debug_assert!(!rhs.is_nan());
 		self.r *= rhs;
 		self.g *= rhs;
@@ -380,25 +379,25 @@ impl ops::DivAssign for RGB {
 	}
 }
 
-impl ops::Div<Float> for RGB {
+impl ops::Div<f32> for RGB {
 	type Output = Self;
 
-	fn div(self, rhs: Float) -> Self::Output {
+	fn div(self, rhs: f32) -> Self::Output {
 		let mut ret = self;
 		ret /= rhs;
 		ret
 	}
 }
 
-impl ops::DivAssign<Float> for RGB {
-	fn div_assign(&mut self, rhs: Float) {
+impl ops::DivAssign<f32> for RGB {
+	fn div_assign(&mut self, rhs: f32) {
 		debug_assert!(!rhs.is_nan());
 		*self *= 1. / rhs;
 	}
 }
 
 impl ops::Index<usize> for RGB {
-	type Output = Float;
+	type Output = f32;
 	fn index(&self, index: usize) -> &Self::Output {
 		match index {
 			0 => &self.r,
@@ -422,22 +421,22 @@ impl ops::IndexMut<usize> for RGB {
 
 #[derive(Debug)]
 pub struct RGBSigmoidPolynomial {
-	c0: Float,
-	c1: Float,
-	c2: Float,
+	c0: f32,
+	c1: f32,
+	c2: f32,
 }
 
 impl RGBSigmoidPolynomial {
 	/// Create a function: `sigmoid(c0 * x^2 + c1 * x + c2)`.
-	pub fn new(c0: Float, c1: Float, c2: Float) -> Self {
+	pub fn new(c0: f32, c1: f32, c2: f32) -> Self {
 		Self { c0, c1, c2 }
 	}
 
-	pub fn eval(&self, lambda: Float) -> Float {
+	pub fn eval(&self, lambda: f32) -> f32 {
 		Self::s(polynomial!(lambda, self.c2, self.c1, self.c0))
 	}
 
-	pub fn max_value(&self) -> Float {
+	pub fn max_value(&self) -> f32 {
 		let mut ret = self.eval(LAMBDA_MIN).max(self.eval(LAMBDA_MAX));
 		let lambda = -self.c1 / (2. * self.c0);
 		if LAMBDA_MIN < lambda && lambda < LAMBDA_MAX {
@@ -447,7 +446,7 @@ impl RGBSigmoidPolynomial {
 		ret
 	}
 
-	fn s(x: Float) -> Float {
+	fn s(x: f32) -> f32 {
 		if x.is_infinite() {
 			if x > 0. { 1. } else { 0. }
 		} else {
@@ -507,22 +506,20 @@ impl<'a> RGBToSpectrumTable<'a> {
 		// find maximum component and compute remapped component values
 		let maxc = rgb.max_dimension();
 		let z = rgb[maxc];
-		let x = rgb[(maxc + 1) % 3] * (RES as Float - 1.) / z;
-		let y = rgb[(maxc + 2) % 3] * (RES as Float - 1.) / z;
+		let x = rgb[(maxc + 1) % 3] * (RES as f32 - 1.) / z;
+		let y = rgb[(maxc + 2) % 3] * (RES as f32 - 1.) / z;
 		// compute integer indices and offsets for coefficient interpolation
 		let xi = (x as usize).min(RES - 2);
 		let yi = (y as usize).min(RES - 2);
-		let zi = find_interval(RES, |i| self.z_nodes[i].as_float() < z);
-		let dx = x - xi as Float;
-		let dy = y - yi as Float;
-		let dz = (z - self.z_nodes[zi].as_float())
-			/ (self.z_nodes[zi + 1] - self.z_nodes[zi]).as_float();
+		let zi = find_interval(RES, |i| self.z_nodes[i] < z);
+		let dx = x - xi as f32;
+		let dy = y - yi as f32;
+		let dz = (z - self.z_nodes[zi]) / (self.z_nodes[zi + 1] - self.z_nodes[zi]);
 		// trilinearly interpolate sigmoid polynomial coefficients c
 		let mut c = [0.; 3];
 		for (i, ci) in c.iter_mut().enumerate() {
-			let co = |dx: usize, dy: usize, dz: usize| {
-				self.coeffs[maxc][zi + dz][yi + dy][xi + dx][i].as_float()
-			};
+			let co =
+				|dx: usize, dy: usize, dz: usize| self.coeffs[maxc][zi + dz][yi + dy][xi + dx][i];
 			*ci = lerp(
 				lerp(lerp(co(0, 0, 0), co(1, 0, 0), dx), lerp(co(0, 1, 0), co(1, 1, 0), dx), dy),
 				lerp(lerp(co(0, 0, 1), co(1, 0, 1), dx), lerp(co(0, 1, 1), co(1, 1, 1), dx), dy),

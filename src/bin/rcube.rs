@@ -1,7 +1,6 @@
 use anyhow::Result;
 use minifb::Key;
 use rsr::{
-	Float,
 	pbrt::{SquareMatrix, Transform, Vector2i, Vector3f},
 	ui::{Canvas, Window, color},
 };
@@ -30,8 +29,8 @@ fn main() -> Result<()> {
 		[0.0, 0.0, 0.0, 1.0],
 	]);
 	let proj_screen = SquareMatrix::from([
-		[1.0, 0.0, 0.0, window.w() as Float / 2.0],
-		[0.0, -1.0, 0.0, window.h() as Float / 2.0],
+		[1.0, 0.0, 0.0, window.w() as f32 / 2.0],
+		[0.0, -1.0, 0.0, window.h() as f32 / 2.0],
 		[0.0, 0.0, 1.0, 0.0],
 		[0.0, 0.0, 0.0, 1.0],
 	]);

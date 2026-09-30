@@ -3,13 +3,9 @@ use super::{
 	font::{DEFAULT_FONT, Font},
 	shapes::*,
 };
-use crate::{
-	Float,
-	pbrt::{
-		Vector2f, Vector2i,
-		math::{round_to_left, round_to_right},
-		number::Number,
-	},
+use crate::pbrt::{
+	Vector2f, Vector2i,
+	math::{round_to_left, round_to_right},
 };
 use chrono::Local;
 use dirs::picture_dir;
@@ -25,9 +21,9 @@ use std::{
 pub use minifb::{Result, WindowOptions};
 
 /// Return the time in seconds elapsed from an instant and update it to now.
-pub fn elapsed_with_update(t0: &mut Instant) -> Float {
+pub fn elapsed_with_update(t0: &mut Instant) -> f32 {
 	let t1 = Instant::now();
-	let ret = t1.duration_since(*t0).as_secs_f64().as_float();
+	let ret = t1.duration_since(*t0).as_secs_f64() as f32;
 	*t0 = t1;
 
 	ret
@@ -39,7 +35,7 @@ pub struct Window {
 	pub buffer: ScreenBuffer,
 	t0: Instant,
 	/// delta time of the last frame in seconds
-	dt: Float,
+	dt: f32,
 }
 
 impl Window {
@@ -70,7 +66,7 @@ impl Window {
 	}
 
 	/// Return the delta time of the last frame in seconds.
-	pub fn delta_time(&self) -> Float {
+	pub fn delta_time(&self) -> f32 {
 		self.dt
 	}
 
@@ -217,7 +213,7 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 	/// Draw a pixel according to its top-left corner coordinates.
 	fn draw_pixel(&mut self, x: i32, y: i32, color: u32);
 
-	fn draw_pixel_f(&mut self, x: Float, y: Float, color: u32) {
+	fn draw_pixel_f(&mut self, x: f32, y: f32, color: u32) {
 		self.draw_pixel(x as i32, y as i32, color);
 	}
 
@@ -334,8 +330,8 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 	fn fill_rectangle(&mut self, rect: Rectangle, color: u32) {
 		let x_begin = round_to_left(rect.x()).max(0.) as usize;
 		let y_begin = round_to_left(rect.y()).max(0.) as usize;
-		let x_end = round_to_right(rect.x() + rect.w).min(self.w() as Float) as usize;
-		let y_end = round_to_right(rect.y() + rect.h).min(self.h() as Float) as usize;
+		let x_end = round_to_right(rect.x() + rect.w).min(self.w() as f32) as usize;
+		let y_end = round_to_right(rect.y() + rect.h).min(self.h() as f32) as usize;
 
 		for y in y_begin..y_end {
 			for x in x_begin..x_end {
@@ -362,14 +358,14 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 	fn fill_circle(&mut self, circle: Circle, color: u32) {
 		let x_begin = round_to_left(circle.x() - circle.r).max(0.) as usize;
 		let y_begin = round_to_left(circle.y() - circle.r).max(0.) as usize;
-		let x_end = round_to_right(circle.x() + circle.r).min(self.w() as Float) as usize;
-		let y_end = round_to_right(circle.y() + circle.r).min(self.h() as Float) as usize;
+		let x_end = round_to_right(circle.x() + circle.r).min(self.w() as f32) as usize;
+		let y_end = round_to_right(circle.y() + circle.r).min(self.h() as f32) as usize;
 		let r2 = circle.r.powi(2);
 
 		for y in y_begin..y_end {
 			for x in x_begin..x_end {
-				let dx = x as Float + 0.5 - circle.x();
-				let dy = y as Float + 0.5 - circle.y();
+				let dx = x as f32 + 0.5 - circle.x();
+				let dy = y as f32 + 0.5 - circle.y();
 				if dx.powi(2) + dy.powi(2) <= r2 {
 					self[(x, y)] = color;
 				}
@@ -401,7 +397,7 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 				}
 
 				let (dx, dy) = (q.x - p.x, q.y - p.y);
-				// no need to convert to float because we have to round to integer anyway
+				// no need to convert to f32 because we have to round to integer anyway
 				let x = dx * (y - p.y) / dy + p.x;
 				xs.push(x);
 			}

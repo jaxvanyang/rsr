@@ -1,6 +1,5 @@
 use minifb::Key;
 use rsr::{
-	Float,
 	pbrt::Vector2f,
 	ui::{Canvas, Circle, Result, Window, color},
 };
@@ -16,11 +15,11 @@ fn main() -> Result<()> {
 
 	while window.is_open() && !window.is_key_down(Key::Escape) {
 		circle.c += v * window.delta_time();
-		if circle.x() + circle.r > window.w() as Float || circle.x() < circle.r {
+		if circle.x() + circle.r > window.w() as f32 || circle.x() < circle.r {
 			v.x = -v.x;
 			c = (c + 1) % colors.len();
 		}
-		if circle.y() + circle.r > window.h() as Float || circle.y() < circle.r {
+		if circle.y() + circle.r > window.h() as f32 || circle.y() < circle.r {
 			v.y = -v.y;
 			c = (c + 1) % colors.len();
 		}

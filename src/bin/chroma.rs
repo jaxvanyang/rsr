@@ -1,6 +1,5 @@
 use minifb::{Key, KeyRepeat};
 use rsr::{
-	Float,
 	pbrt::{
 		Vector2f, Vector2i,
 		color::{RGB, XYZ},
@@ -40,16 +39,16 @@ fn draw_diagram(window: &mut Window, boundary: &[Vector2i], cs: &RGBColorSpace) 
 	window.fill(color::GRAY_A);
 	window.fill_polygon(boundary, color::BLACK);
 
-	let w = (window.w() - 1) as Float;
-	let h = (window.h() - 1) as Float;
+	let w = (window.w() - 1) as f32;
+	let h = (window.h() - 1) as f32;
 	for j in 0..window.h() {
 		for i in 0..window.w() {
 			if window[(i, j)] != color::BLACK {
 				continue;
 			}
 
-			let x = i as Float / w;
-			let y = (window.h() - j) as Float / h;
+			let x = i as f32 / w;
+			let y = (window.h() - j) as f32 / h;
 			let xyz = XYZ::from_xy(Vector2f::new(x, y));
 			let rgb = cs.to_rgb(xyz);
 
@@ -65,14 +64,14 @@ fn draw_diagram(window: &mut Window, boundary: &[Vector2i], cs: &RGBColorSpace) 
 }
 
 fn to_screen(point: Vector2f, width: usize, height: usize) -> Vector2i {
-	let w = (width - 1) as Float;
-	let h = (height - 1) as Float;
+	let w = (width - 1) as f32;
+	let h = (height - 1) as f32;
 	let x = point.x * w;
 	let y = (1. - point.y) * h;
 
 	Vector2f::new(x, y).into()
 }
 
-fn new_light(lambda: usize, intensity: Float) -> DenselySampledSpectrum {
+fn new_light(lambda: usize, intensity: f32) -> DenselySampledSpectrum {
 	DenselySampledSpectrum::new_with_values(lambda, &[intensity])
 }

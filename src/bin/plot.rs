@@ -1,5 +1,4 @@
 use rsr::{
-	Float,
 	pbrt::{
 		SquareMatrix, Vector2f, Vector2i,
 		spectrum::{Spectrum, spectra},
@@ -23,13 +22,13 @@ fn main() -> Result<()> {
 	Ok(())
 }
 
-fn plot(window: &mut Window, center: Vector2i, f: fn(Float) -> Float, color: u32) {
+fn plot(window: &mut Window, center: Vector2i, f: fn(f32) -> f32, color: u32) {
 	let flip = SquareMatrix::<2>::from([[1., 0.], [0., -1.]]);
 	let scale = SquareMatrix::<2>::from([[1., 0.], [0., 110.]]);
 	let transform = flip * scale;
 	let offset = Vector2f::from(center);
 	for x in 360..=830 {
-		let x = x as Float;
+		let x = x as f32;
 		let p = Vector2f::new(x, f(x));
 		let p = &transform * p + offset;
 		window.draw_pixel_vf(p, color);

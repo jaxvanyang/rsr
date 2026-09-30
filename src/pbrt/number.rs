@@ -1,8 +1,7 @@
-use crate::Float;
 use approx::AbsDiffEq;
 use std::ops::*;
 
-fn next_float_up(mut v: Float) -> Float {
+fn next_f32_up(mut v: f32) -> f32 {
 	if v.is_infinite() && v > 0.0 {
 		return v;
 	}
@@ -17,10 +16,10 @@ fn next_float_up(mut v: Float) -> Float {
 		bits -= 1;
 	}
 
-	Float::from_bits(bits)
+	f32::from_bits(bits)
 }
 
-fn next_float_down(mut v: Float) -> Float {
+fn next_f32_down(mut v: f32) -> f32 {
 	if v.is_infinite() && v < 0.0 {
 		return v;
 	}
@@ -35,7 +34,7 @@ fn next_float_down(mut v: Float) -> Float {
 		bits += 1;
 	}
 
-	Float::from_bits(bits)
+	f32::from_bits(bits)
 }
 
 pub trait Number:
@@ -64,7 +63,7 @@ pub trait Number:
 		if self < Self::default() { -self } else { self }
 	}
 
-	fn as_float(self) -> Float;
+	fn as_f32(self) -> f32;
 	fn min(self, rhs: Self) -> Self;
 	fn max(self, rhs: Self) -> Self;
 }
@@ -74,8 +73,8 @@ impl Number for i32 {
 	const MIN: Self = i32::MIN;
 	const MAX: Self = i32::MAX;
 
-	fn as_float(self) -> Float {
-		self as Float
+	fn as_f32(self) -> f32 {
+		self as f32
 	}
 
 	fn min(self, rhs: Self) -> Self {
@@ -96,8 +95,8 @@ impl Number for f32 {
 		self.is_nan()
 	}
 
-	fn as_float(self) -> Float {
-		self as Float
+	fn as_f32(self) -> f32 {
+		self as f32
 	}
 
 	fn min(self, rhs: Self) -> Self {
@@ -118,8 +117,8 @@ impl Number for f64 {
 		self.is_nan()
 	}
 
-	fn as_float(self) -> Float {
-		self as Float
+	fn as_f32(self) -> f32 {
+		self as f32
 	}
 
 	fn min(self, rhs: Self) -> Self {
@@ -139,8 +138,8 @@ pub trait HasNaN {
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Interval {
-	low: Float,
-	high: Float,
+	low: f32,
+	high: f32,
 }
 
 // TODO: floor(), celi(), quadratic()
@@ -152,17 +151,17 @@ impl Interval {
 	/// assert_eq!(Interval::new(1.0, 2.0), Interval::new(1.0, 2.0));
 	/// assert_eq!(Interval::new(2.0, 1.0), Interval::new(1.0, 2.0));
 	/// ```
-	pub const fn new(low: Float, high: Float) -> Self {
+	pub const fn new(low: f32, high: f32) -> Self {
 		Self { low: low.min(high), high: high.max(low) }
 	}
 
-	pub fn new_with_error(value: Float, error: Float) -> Self {
+	pub fn new_with_error(value: f32, error: f32) -> Self {
 		debug_assert!(error >= 0.0);
 
 		if error == 0.0 {
 			Self { low: value, high: value }
 		} else {
-			Self { low: next_float_down(value - error), high: next_float_up(value + error) }
+			Self { low: next_f32_down(value - error), high: next_f32_up(value + error) }
 		}
 	}
 
@@ -170,12 +169,12 @@ impl Interval {
 		other.low <= self.low && self.high <= other.high
 	}
 
-	pub fn contains(self, value: Float) -> bool {
+	pub fn contains(self, value: f32) -> bool {
 		(self.low..=self.high).contains(&value)
 	}
 
 	pub fn sqrt(self) -> Interval {
-		Interval { low: next_float_down(self.low.sqrt()), high: next_float_up(self.high.sqrt()) }
+		Interval { low: next_f32_down(self.low.sqrt()), high: next_f32_up(self.high.sqrt()) }
 	}
 
 	pub fn fma(self, b: Interval, c: Interval) -> Interval {
@@ -194,7 +193,7 @@ impl Interval {
 		let low = lows.into_iter().reduce(|a, b| a.min(b)).unwrap();
 		let high = highs.into_iter().reduce(|a, b| a.max(b)).unwrap();
 
-		Interval { low: next_float_down(low), high: next_float_up(high) }
+		Interval { low: next_f32_down(low), high: next_f32_up(high) }
 	}
 
 	pub fn square(self) -> Interval {
@@ -205,36 +204,36 @@ impl Interval {
 		}
 
 		if self.contains(0.0) {
-			Self::new(0.0, next_float_up(high * high))
+			Self::new(0.0, next_f32_up(high * high))
 		} else {
-			Self::new(next_float_down(low * low), next_float_up(high * high))
+			Self::new(next_f32_down(low * low), next_f32_up(high * high))
 		}
 	}
 
-	pub fn lower_bound(&self) -> Float {
+	pub fn lower_bound(&self) -> f32 {
 		self.low
 	}
 
-	pub fn upper_bound(&self) -> Float {
+	pub fn upper_bound(&self) -> f32 {
 		self.high
 	}
 
-	pub fn midpoint(self) -> Float {
+	pub fn midpoint(self) -> f32 {
 		(self.low + self.high) / 2.0
 	}
 
-	pub fn width(self) -> Float {
+	pub fn width(self) -> f32 {
 		self.high - self.low
 	}
 }
 
-impl From<Float> for Interval {
-	fn from(v: Float) -> Self {
+impl From<f32> for Interval {
+	fn from(v: f32) -> Self {
 		Self { low: v, high: v }
 	}
 }
 
-impl From<Interval> for Float {
+impl From<Interval> for f32 {
 	fn from(v: Interval) -> Self {
 		v.midpoint()
 	}
@@ -242,8 +241,8 @@ impl From<Interval> for Float {
 
 impl Number for Interval {
 	const ONE: Self = Self::new(1.0, 1.0);
-	const MIN: Self = Self::new(Float::MIN, Float::MIN);
-	const MAX: Self = Self::new(Float::MAX, Float::MAX);
+	const MIN: Self = Self::new(f32::MIN, f32::MIN);
+	const MAX: Self = Self::new(f32::MAX, f32::MAX);
 
 	fn is_nan(self) -> bool {
 		self.low.is_nan() || self.high.is_nan()
@@ -267,7 +266,7 @@ impl Number for Interval {
 		}
 	}
 
-	fn as_float(self) -> Float {
+	fn as_f32(self) -> f32 {
 		self.into()
 	}
 
@@ -298,10 +297,7 @@ impl Add<Interval> for Interval {
 	type Output = Interval;
 
 	fn add(self, rhs: Interval) -> Interval {
-		Interval {
-			low: next_float_down(self.low + rhs.low),
-			high: next_float_up(self.high + rhs.high),
-		}
+		Interval { low: next_f32_down(self.low + rhs.low), high: next_f32_up(self.high + rhs.high) }
 	}
 }
 
@@ -315,10 +311,7 @@ impl Sub<Interval> for Interval {
 	type Output = Interval;
 
 	fn sub(self, rhs: Interval) -> Interval {
-		Interval {
-			low: next_float_down(self.low - rhs.high),
-			high: next_float_up(self.high - rhs.low),
-		}
+		Interval { low: next_f32_down(self.low - rhs.high), high: next_f32_up(self.high - rhs.low) }
 	}
 }
 
@@ -337,7 +330,7 @@ impl Mul<Interval> for Interval {
 		let low = results.into_iter().reduce(|a, b| a.min(b)).unwrap();
 		let high = results.into_iter().reduce(|a, b| a.max(b)).unwrap();
 
-		Interval { low: next_float_down(low), high: next_float_up(high) }
+		Interval { low: next_f32_down(low), high: next_f32_up(high) }
 	}
 }
 
@@ -352,7 +345,7 @@ impl Div<Interval> for Interval {
 
 	fn div(self, rhs: Interval) -> Interval {
 		if rhs.low <= 0.0 && 0.0 <= rhs.high {
-			return Interval { low: Float::NEG_INFINITY, high: Float::INFINITY };
+			return Interval { low: f32::NEG_INFINITY, high: f32::INFINITY };
 		}
 
 		let results =
@@ -360,7 +353,7 @@ impl Div<Interval> for Interval {
 		let low = results.into_iter().reduce(|a, b| a.min(b)).unwrap();
 		let high = results.into_iter().reduce(|a, b| a.max(b)).unwrap();
 
-		Interval { low: next_float_down(low), high: next_float_up(high) }
+		Interval { low: next_f32_down(low), high: next_f32_up(high) }
 	}
 }
 
@@ -371,10 +364,10 @@ impl DivAssign<Interval> for Interval {
 }
 
 impl AbsDiffEq for Interval {
-	type Epsilon = Float;
+	type Epsilon = f32;
 
 	fn default_epsilon() -> Self::Epsilon {
-		Float::EPSILON
+		f32::EPSILON
 	}
 
 	fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
@@ -388,13 +381,13 @@ mod tests {
 	use approx::assert_abs_diff_eq;
 
 	#[test]
-	fn test_next_float() {
-		assert!(next_float_up(0.0) > 0.0);
-		assert!(next_float_down(0.0) < 0.0);
-		assert!(next_float_up(1.0) > 1.0);
-		assert!(next_float_down(1.0) < 1.0);
-		assert!(next_float_up(-1.0) > -1.0);
-		assert!(next_float_down(-1.0) < -1.0);
+	fn test_next_f32() {
+		assert!(next_f32_up(0.0) > 0.0);
+		assert!(next_f32_down(0.0) < 0.0);
+		assert!(next_f32_up(1.0) > 1.0);
+		assert!(next_f32_down(1.0) < 1.0);
+		assert!(next_f32_up(-1.0) > -1.0);
+		assert!(next_f32_down(-1.0) < -1.0);
 	}
 
 	#[test]

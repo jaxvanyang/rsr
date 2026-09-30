@@ -1,10 +1,9 @@
 use super::vecmath::{Vector2f, Vector3f, Vector3fi};
-use crate::Float;
 
 pub struct Interaction {
 	/// The interaction point using interval arithmetic.
 	pub pi: Vector3fi,
-	pub time: Float,
+	pub time: f32,
 	/// `omega_o`, the negative ray direction.
 	pub wo: Vector3f,
 	/// The surface normal.
@@ -15,7 +14,7 @@ pub struct Interaction {
 }
 
 impl Interaction {
-	pub fn new(pi: Vector3fi, n: Vector3f, uv: Vector2f, wo: Vector3f, time: Float) -> Self {
+	pub fn new(pi: Vector3fi, n: Vector3f, uv: Vector2f, wo: Vector3f, time: f32) -> Self {
 		Self { pi, time, wo, n, uv }
 	}
 
@@ -52,10 +51,10 @@ pub struct SurfaceInteraction {
 	// TODO: material, area_light
 	pub dpdx: Vector3f,
 	pub dpdy: Vector3f,
-	pub dudx: Float,
-	pub dvdx: Float,
-	pub dudy: Float,
-	pub dvdy: Float,
+	pub dudx: f32,
+	pub dvdx: f32,
+	pub dudy: f32,
+	pub dvdy: f32,
 }
 
 impl SurfaceInteraction {
@@ -68,7 +67,7 @@ impl SurfaceInteraction {
 		dpdv: Vector3f,
 		dndu: Vector3f,
 		dndv: Vector3f,
-		time: Float,
+		time: f32,
 		flip_normal: bool,
 	) -> Self {
 		let mut interaction = Interaction::new(pi, dpdu.cross(dpdv).normalized(), uv, wo, time);

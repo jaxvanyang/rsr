@@ -4,13 +4,12 @@ use super::{
 	number::HasNaN,
 	vecmath::{Bounds3f, Vector2f, Vector3f},
 };
-use crate::Float;
 use approx::abs_diff_eq;
 use std::ops;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct SquareMatrix<const N: usize> {
-	m: [[Float; N]; N],
+	m: [[f32; N]; N],
 }
 
 impl<const N: usize> SquareMatrix<N> {
@@ -18,7 +17,7 @@ impl<const N: usize> SquareMatrix<N> {
 		Self { m: [[0.0; N]; N] }
 	}
 
-	pub fn diag(values: [Float; N]) -> Self {
+	pub fn diag(values: [f32; N]) -> Self {
 		let mut ret = Self::zero();
 		for (i, row) in ret.m.iter_mut().enumerate() {
 			row[i] = values[i];
@@ -52,8 +51,8 @@ impl<const N: usize> SquareMatrix<N> {
 
 	pub fn mul<Output, V>(&self, v: V) -> Output
 	where
-		Output: Default + ops::IndexMut<usize, Output = Float>,
-		V: ops::Index<usize, Output = Float>,
+		Output: Default + ops::IndexMut<usize, Output = f32>,
+		V: ops::Index<usize, Output = f32>,
 	{
 		let mut ret = Output::default();
 
@@ -70,7 +69,7 @@ impl<const N: usize> SquareMatrix<N> {
 }
 
 impl SquareMatrix<1> {
-	pub fn det(&self) -> Float {
+	pub fn det(&self) -> f32 {
 		self[0][0]
 	}
 
@@ -84,7 +83,7 @@ impl SquareMatrix<1> {
 }
 
 impl SquareMatrix<2> {
-	pub fn det(&self) -> Float {
+	pub fn det(&self) -> f32 {
 		diff_of_products(self[0][0], self[1][1], self[0][1], self[1][0])
 	}
 
@@ -105,7 +104,7 @@ impl SquareMatrix<2> {
 }
 
 impl SquareMatrix<3> {
-	pub fn det(&self) -> Float {
+	pub fn det(&self) -> f32 {
 		let c00 = diff_of_products(self[1][1], self[2][2], self[1][2], self[2][1]);
 		let c01 = diff_of_products(self[1][0], self[2][2], self[1][2], self[2][0]);
 		let c02 = diff_of_products(self[1][0], self[2][1], self[1][1], self[2][0]);
@@ -137,7 +136,7 @@ impl SquareMatrix<3> {
 }
 
 impl SquareMatrix<4> {
-	pub fn det(&self) -> Float {
+	pub fn det(&self) -> f32 {
 		let s0 = diff_of_products(self[0][0], self[1][1], self[1][0], self[0][1]);
 		let s1 = diff_of_products(self[0][0], self[1][2], self[1][0], self[0][2]);
 		let s2 = diff_of_products(self[0][0], self[1][3], self[1][0], self[0][3]);
@@ -255,8 +254,8 @@ impl<const N: usize> Default for SquareMatrix<N> {
 	}
 }
 
-impl<const N: usize> From<[[Float; N]; N]> for SquareMatrix<N> {
-	fn from(m: [[Float; N]; N]) -> Self {
+impl<const N: usize> From<[[f32; N]; N]> for SquareMatrix<N> {
+	fn from(m: [[f32; N]; N]) -> Self {
 		let ret = Self { m };
 		debug_assert!(!ret.has_nan());
 
@@ -284,10 +283,10 @@ impl<const N: usize> ops::Add<&Self> for SquareMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::Mul<Float> for SquareMatrix<N> {
+impl<const N: usize> ops::Mul<f32> for SquareMatrix<N> {
 	type Output = Self;
 
-	fn mul(self, rhs: Float) -> Self {
+	fn mul(self, rhs: f32) -> Self {
 		let mut ret = self.clone();
 		for i in 0..N {
 			for j in 0..N {
@@ -298,7 +297,7 @@ impl<const N: usize> ops::Mul<Float> for SquareMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::Mul<&SquareMatrix<N>> for Float {
+impl<const N: usize> ops::Mul<&SquareMatrix<N>> for f32 {
 	type Output = SquareMatrix<N>;
 
 	fn mul(self, rhs: &SquareMatrix<N>) -> SquareMatrix<N> {
@@ -339,10 +338,10 @@ impl<const N: usize> ops::Mul<&SquareMatrix<N>> for &SquareMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::Div<Float> for SquareMatrix<N> {
+impl<const N: usize> ops::Div<f32> for SquareMatrix<N> {
 	type Output = Self;
 
-	fn div(self, rhs: Float) -> Self {
+	fn div(self, rhs: f32) -> Self {
 		debug_assert_ne!(rhs, 0.0);
 
 		let mut ret = self.clone();
@@ -357,15 +356,15 @@ impl<const N: usize> ops::Div<Float> for SquareMatrix<N> {
 }
 
 impl<const N: usize> ops::Index<usize> for SquareMatrix<N> {
-	type Output = [Float; N];
+	type Output = [f32; N];
 
-	fn index(&self, index: usize) -> &[Float; N] {
+	fn index(&self, index: usize) -> &[f32; N] {
 		&self.m[index]
 	}
 }
 
 impl<const N: usize> ops::IndexMut<usize> for SquareMatrix<N> {
-	fn index_mut(&mut self, index: usize) -> &mut [Float; N] {
+	fn index_mut(&mut self, index: usize) -> &mut [f32; N] {
 		&mut self.m[index]
 	}
 }
@@ -506,7 +505,7 @@ impl Transform {
 		Self { m, inv: Some(inv) }
 	}
 
-	pub fn scale(x: Float, y: Float, z: Float) -> Self {
+	pub fn scale(x: f32, y: f32, z: f32) -> Self {
 		let m = SquareMatrix::from([
 			[x, 0.0, 0.0, 0.0],
 			[0.0, y, 0.0, 0.0],
@@ -536,7 +535,7 @@ impl Transform {
 	}
 
 	/// Return a rotation transform around the x-axis, `theta` is in degrees.
-	pub fn rotate_x(theta: Float) -> Self {
+	pub fn rotate_x(theta: f32) -> Self {
 		let theta = theta.to_radians();
 		let sin = theta.sin();
 		let cos = theta.cos();
@@ -552,7 +551,7 @@ impl Transform {
 	}
 
 	/// Return a rotation transform around the y-axis, `theta` is in degrees.
-	pub fn rotate_y(theta: Float) -> Self {
+	pub fn rotate_y(theta: f32) -> Self {
 		let theta = theta.to_radians();
 		let sin = theta.sin();
 		let cos = theta.cos();
@@ -568,7 +567,7 @@ impl Transform {
 	}
 
 	/// Return a rotation transform around the y-axis, `theta` is in degrees.
-	pub fn rotate_z(theta: Float) -> Self {
+	pub fn rotate_z(theta: f32) -> Self {
 		let theta = theta.to_radians();
 		let sin = theta.sin();
 		let cos = theta.cos();
@@ -584,13 +583,13 @@ impl Transform {
 	}
 
 	/// Return a rotation transform around `axis`, `theta` is in degrees.
-	pub fn rotate(axis: Vector3f, theta: Float) -> Self {
+	pub fn rotate(axis: Vector3f, theta: f32) -> Self {
 		let theta = theta.to_radians();
 		Self::rotate_with_sin_cos(axis, theta.sin(), theta.cos())
 	}
 
 	/// Return a rotation transform around `axis` with precomputed `sin(theta)` and `cos(theta)` values.
-	pub fn rotate_with_sin_cos(axis: Vector3f, sin: Float, cos: Float) -> Self {
+	pub fn rotate_with_sin_cos(axis: Vector3f, sin: f32, cos: f32) -> Self {
 		let a = axis.normalized();
 		let mut m = SquareMatrix::zero();
 		m[3][3] = 1.0;
@@ -677,11 +676,11 @@ impl Transform {
 		Self { m: world_to_camera, inv: Some(camera_to_world) }
 	}
 
-	pub fn orthographic(z_near: Float, z_far: Float) -> Self {
+	pub fn orthographic(z_near: f32, z_far: f32) -> Self {
 		Self::scale(1., 1., 1. / (z_far - z_near)) * Self::translate(Vector3f::new(0., 0., -z_near))
 	}
 
-	pub fn perspective(fov: Float, n: Float, f: Float) -> Self {
+	pub fn perspective(fov: f32, n: f32, f: f32) -> Self {
 		let persp = Transform::from([
 			[1., 0., 0., 0.],
 			[0., 1., 0., 0.],
@@ -774,8 +773,8 @@ impl Default for Transform {
 	}
 }
 
-impl From<[[Float; 4]; 4]> for Transform {
-	fn from(m: [[Float; 4]; 4]) -> Self {
+impl From<[[f32; 4]; 4]> for Transform {
+	fn from(m: [[f32; 4]; 4]) -> Self {
 		let m = SquareMatrix::from(m);
 		let inv = m.inv();
 
@@ -889,17 +888,17 @@ impl Default for Frame {
 pub struct AnimatedTransform {
 	pub start_transform: Transform,
 	pub end_transform: Transform,
-	pub start_time: Float,
-	pub end_time: Float,
+	pub start_time: f32,
+	pub end_time: f32,
 }
 
 impl AnimatedTransform {
 	// TBD: use value or reference
 	pub fn new(
 		start_transform: Transform,
-		start_time: Float,
+		start_time: f32,
 		end_transform: Transform,
-		end_time: Float,
+		end_time: f32,
 	) -> Self {
 		Self { start_transform, end_transform, start_time, end_time }
 	}
@@ -1067,8 +1066,8 @@ mod tests {
 			Vector3f::new(-1.0, 0.0, -1.0),
 		);
 		let p = Vector3f::new(1.0, 1.0, 1.0);
-		let q = Vector3f::new(0.0, 0.0, (3.0 as Float).sqrt());
-		let v = Vector3f::new(0.0, 0.0, -(3.0 as Float).sqrt());
+		let q = Vector3f::new(0.0, 0.0, 3.0f32.sqrt());
+		let v = Vector3f::new(0.0, 0.0, -3.0f32.sqrt());
 		assert_abs_diff_eq!(t.map_point(p), q, epsilon = 1e-6);
 		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p);
 		assert_abs_diff_eq!(t.map_vector(p), v);
