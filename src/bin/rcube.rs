@@ -1,5 +1,5 @@
 use anyhow::Result;
-use minifb::{Key, KeyRepeat};
+use minifb::Key;
 use rsr::{
 	Float,
 	pbrt::{SquareMatrix, Transform, Vector2i, Vector3f},
@@ -40,9 +40,7 @@ fn main() -> Result<()> {
 	window.set_target_fps(0);
 
 	while window.is_open() && !window.is_key_down(Key::Escape) {
-		if window.is_key_down(Key::LeftCtrl) && window.is_key_pressed(Key::S, KeyRepeat::No) {
-			window.take_screenshot()?;
-		}
+		window.enable_screenshot()?;
 
 		let dt = window.delta_time();
 		let rotation = Transform::rotate_y(dt * 30.);

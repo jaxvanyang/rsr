@@ -8,7 +8,7 @@ use std::f32::consts::PI;
 
 use anyhow::Result;
 use approx::assert_abs_diff_eq;
-use minifb::{Key, KeyRepeat};
+use minifb::Key;
 use rsr::{
 	pbrt::{math::lerp, *},
 	ui::*,
@@ -41,9 +41,7 @@ fn main() -> Result<()> {
 	window.set_target_fps(0);
 
 	while window.is_open() && !window.is_key_down(Key::Escape) {
-		if window.is_key_down(Key::LeftCtrl) && window.is_key_pressed(Key::S, KeyRepeat::No) {
-			window.take_screenshot()?;
-		}
+		window.enable_screenshot()?;
 
 		draw(&mut window, &spheres)?;
 	}

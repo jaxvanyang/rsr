@@ -13,6 +13,7 @@ use crate::{
 };
 use chrono::Local;
 use dirs::picture_dir;
+use minifb::{Key, KeyRepeat};
 use std::{
 	fs::File,
 	io::Write,
@@ -81,6 +82,14 @@ impl Window {
 	pub fn draw_frame_time(&mut self, x: i32, y: i32) {
 		let text = format!("frame time:{:.1}ms", self.dt * 1000.0);
 		self.draw_text(&text, x, y, 2, color::GREEN);
+	}
+
+	pub fn enable_screenshot(&self) -> std::io::Result<()> {
+		if self.is_key_down(Key::LeftCtrl) && self.is_key_pressed(Key::S, KeyRepeat::No) {
+			self.take_screenshot()
+		} else {
+			Ok(())
+		}
 	}
 
 	pub fn take_screenshot(&self) -> std::io::Result<()> {
