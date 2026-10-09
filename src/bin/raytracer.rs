@@ -11,6 +11,7 @@ use approx::assert_abs_diff_eq;
 use minifb::Key;
 use rsr::{
 	pbrt::{math::lerp, *},
+	sys::nproc,
 	ui::{color, *},
 };
 
@@ -173,7 +174,7 @@ fn render(buffer: &mut ScreenBuffer, game: &Game) {
 		game.spheres.iter().map(|s| s.apply(&game.world_to_camera)).collect();
 
 	// trace rays
-	let n_thread = 8;
+	let n_thread = nproc();
 	let rows_per_thread = h.div_ceil(n_thread);
 	let buffer = buffer.buffer.as_mut_slice();
 	thread::scope(|s| {
