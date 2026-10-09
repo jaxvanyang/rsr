@@ -501,7 +501,7 @@ impl Vector3f {
 	pub fn coordinate_system(self) -> (Self, Self) {
 		debug_assert!(self.is_normalized());
 
-		let sign = (1.0 as f32).copysign(self.z);
+		let sign = 1.0_f32.copysign(self.z);
 		let a = -1.0 / (sign + self.z);
 		let b = self.x * self.y * a;
 		let v2 = Self { x: 1.0 + sign * self.x * self.x * a, y: sign * b, z: -sign * self.x };

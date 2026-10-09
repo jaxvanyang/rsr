@@ -96,7 +96,7 @@ impl Number for f32 {
 	}
 
 	fn as_f32(self) -> f32 {
-		self as f32
+		self
 	}
 
 	fn min(self, rhs: Self) -> Self {

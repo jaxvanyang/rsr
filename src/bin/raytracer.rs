@@ -11,31 +11,31 @@ use approx::assert_abs_diff_eq;
 use minifb::Key;
 use rsr::{
 	pbrt::{math::lerp, *},
-	ui::*,
+	ui::{color, *},
 };
 
+struct Game {
+	pub spheres: Vec<Sphere>,
+	pub world_to_camera: Transform,
+	pub pos: Vector3f,
+	pub x_rot: f32,
+	pub y_rot: f32,
+}
+
+struct Sphere {
+	pub center: Vector3f,
+	pub radius: f32,
+	pub radius2: f32,
+	pub surface_color: Vector3f,
+	pub emission_color: Vector3f,
+	pub transparency: f32,
+	pub reflection: f32,
+}
+
+struct SphereBuilder(Sphere);
+
 fn main() -> Result<()> {
-	let spheres = vec![
-		Sphere::builder(Vector3f::new(0.0, -10004.0, -20.0), 10000.0, Vector3f::new(0.2, 0.2, 0.2))
-			.build(),
-		Sphere::builder(Vector3f::new(0.0, 0.0, -20.0), 4.0, Vector3f::new(1.00, 0.32, 0.36))
-			.reflection(1.0)
-			.transparency(0.5)
-			.build(),
-		Sphere::builder(Vector3f::new(5.0, -1.0, -15.0), 2.0, Vector3f::new(0.90, 0.76, 0.46))
-			.reflection(1.0)
-			.build(),
-		Sphere::builder(Vector3f::new(5.0, 0.0, -25.0), 3.0, Vector3f::new(0.65, 0.77, 0.97))
-			.reflection(1.0)
-			.build(),
-		Sphere::builder(Vector3f::new(-5.5, 0.0, -15.0), 3.0, Vector3f::ones())
-			.reflection(1.0)
-			.build(),
-		// light
-		Sphere::builder(Vector3f::new(0.0, 20.0, -30.0), 3.0, Vector3f::zeros())
-			.emission_color(Vector3f::sames(3.0))
-			.build(),
-	];
+	let mut game = Game::new();
 
 	let mut window = Window::new("Ray Tracer", 640, 480)?;
 	window.set_target_fps(0);
@@ -43,22 +43,118 @@ fn main() -> Result<()> {
 	while window.is_open() && !window.is_key_down(Key::Escape) {
 		window.enable_screenshot()?;
 
-		draw(&mut window, &spheres)?;
+		update(&window, &mut game);
+		draw(&mut window, &game)?;
 	}
 
 	Ok(())
 }
 
-fn draw(window: &mut Window, spheres: &[Sphere]) -> Result<()> {
-	render(&mut window.buffer, &spheres);
+fn update(window: &Window, game: &mut Game) {
+	let dt = window.delta_time();
+	let d_pos = dt * 5.0;
+	let d_rot = dt * 15.0;
+	let y_rot = Transform::rotate_y(game.y_rot);
+	let x = y_rot.map_vector(Vector3f::new(1.0, 0.0, 0.0));
+	let x_rot = Transform::rotate(x, game.x_rot);
+	let z = y_rot.map_vector(Vector3f::new(0.0, 0.0, 1.0));
+
+	if window.is_key_down(Key::Space) {
+		game.pos.y += d_pos;
+	}
+	if window.is_key_down(Key::LeftShift) {
+		game.pos.y -= d_pos;
+	}
+	if window.is_key_down(Key::W) {
+		game.pos -= z * d_pos;
+	}
+	if window.is_key_down(Key::S) {
+		game.pos += z * d_pos;
+	}
+	if window.is_key_down(Key::A) {
+		game.pos -= x * d_pos;
+	}
+	if window.is_key_down(Key::D) {
+		game.pos += x * d_pos;
+	}
+
+	if window.is_key_down(Key::Up) {
+		game.x_rot -= d_rot;
+	}
+	if window.is_key_down(Key::Down) {
+		game.x_rot += d_rot;
+	}
+	if window.is_key_down(Key::Left) {
+		game.y_rot += d_rot;
+	}
+	if window.is_key_down(Key::Right) {
+		game.y_rot -= d_rot;
+	}
+
+	game.world_to_camera = (x_rot * y_rot).inv().unwrap() * Transform::translate(-game.pos);
+}
+
+impl Game {
+	pub fn new() -> Self {
+		Self {
+			spheres: vec![
+				Sphere::builder(
+					Vector3f::new(0.0, -10004.0, -20.0),
+					10000.0,
+					Vector3f::new(0.2, 0.2, 0.2),
+				)
+				.build(),
+				Sphere::builder(
+					Vector3f::new(0.0, 0.0, -20.0),
+					4.0,
+					Vector3f::new(1.00, 0.32, 0.36),
+				)
+				.reflection(1.0)
+				.transparency(0.5)
+				.build(),
+				Sphere::builder(
+					Vector3f::new(5.0, -1.0, -15.0),
+					2.0,
+					Vector3f::new(0.90, 0.76, 0.46),
+				)
+				.reflection(1.0)
+				.build(),
+				Sphere::builder(
+					Vector3f::new(5.0, 0.0, -25.0),
+					3.0,
+					Vector3f::new(0.65, 0.77, 0.97),
+				)
+				.reflection(1.0)
+				.build(),
+				Sphere::builder(Vector3f::new(-5.5, 0.0, -15.0), 3.0, Vector3f::ones())
+					.reflection(1.0)
+					.build(),
+				// light
+				Sphere::builder(Vector3f::new(0.0, 20.0, -30.0), 3.0, Vector3f::zeros())
+					.emission_color(Vector3f::sames(3.0))
+					.build(),
+			],
+			world_to_camera: Transform::default(),
+			pos: Vector3f::zeros(),
+			x_rot: 0.0,
+			y_rot: 0.0,
+		}
+	}
+}
+
+fn draw(window: &mut Window, game: &Game) -> Result<()> {
+	render(&mut window.buffer, game);
 	window.draw_fps(2, 2);
 	window.draw_frame_time(2, 16);
+	window.draw_text(&format!("pos: {}", game.pos), 2, 30, 2, color::GREEN);
+	window.draw_text(&format!("x_rot: {}", game.x_rot), 2, 44, 2, color::GREEN);
+	window.draw_text(&format!("y_rot: {}", game.y_rot), 2, 58, 2, color::GREEN);
 
 	window.update()?;
 	Ok(())
 }
 
-fn render(buffer: &mut ScreenBuffer, spheres: &[Sphere]) {
+fn render(buffer: &mut ScreenBuffer, game: &Game) {
 	let w = buffer.w();
 	let h = buffer.h();
 	let invw = 1.0 / w as f32;
@@ -72,6 +168,8 @@ fn render(buffer: &mut ScreenBuffer, spheres: &[Sphere]) {
 		[0.0, 0.0, 1.0, 0.0],
 		[0.0, 0.0, 0.0, 1.0],
 	]);
+	let spheres: Vec<Sphere> =
+		game.spheres.iter().map(|s| s.apply(&game.world_to_camera)).collect();
 
 	// trace rays
 	let mut i = 0;
@@ -79,7 +177,7 @@ fn render(buffer: &mut ScreenBuffer, spheres: &[Sphere]) {
 		for x in 0..w {
 			let dir = Vector3f::new(x as f32, y as f32, -1.0);
 			let dir = screen_to_camera.mul_point(dir).normalized();
-			buffer.buffer[i] = to_color(trace(Vector3f::new(0.0, 0.0, 0.0), dir, spheres, 5));
+			buffer.buffer[i] = to_color(trace(Vector3f::new(0.0, 0.0, 0.0), dir, &spheres, 5));
 			i += 1;
 		}
 	}
@@ -151,16 +249,6 @@ fn trace(rayorig: Vector3f, raydir: Vector3f, spheres: &[Sphere], depth: u32) ->
 	surface_color + sphere.emission_color
 }
 
-struct Sphere {
-	pub center: Vector3f,
-	pub radius: f32,
-	pub radius2: f32,
-	pub surface_color: Vector3f,
-	pub emission_color: Vector3f,
-	pub transparency: f32,
-	pub reflection: f32,
-}
-
 impl Sphere {
 	pub fn new(center: Vector3f, radius: f32, surface_color: Vector3f) -> Self {
 		Sphere {
@@ -202,9 +290,11 @@ impl Sphere {
 			None
 		}
 	}
-}
 
-struct SphereBuilder(Sphere);
+	pub fn apply(&self, m: &Transform) -> Self {
+		Self { center: m.map_point(self.center), ..*self }
+	}
+}
 
 impl SphereBuilder {
 	pub fn build(self) -> Sphere {
