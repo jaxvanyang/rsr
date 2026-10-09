@@ -4,7 +4,7 @@
 //! - https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-ray-tracing//how-does-it-work.html
 //! - https://github.com/scratchapixel/scratchapixel-code/blob/main/introduction-to-ray-tracing/raytracer.cpp
 
-use std::f32::consts::PI;
+use std::{f32::consts::PI, thread};
 
 use anyhow::Result;
 use approx::assert_abs_diff_eq;
@@ -24,6 +24,7 @@ struct Game {
 
 struct Sphere {
 	pub center: Vector3f,
+	#[allow(dead_code)]
 	pub radius: f32,
 	pub radius2: f32,
 	pub surface_color: Vector3f,
@@ -172,15 +173,26 @@ fn render(buffer: &mut ScreenBuffer, game: &Game) {
 		game.spheres.iter().map(|s| s.apply(&game.world_to_camera)).collect();
 
 	// trace rays
-	let mut i = 0;
-	for y in 0..h {
-		for x in 0..w {
-			let dir = Vector3f::new(x as f32, y as f32, -1.0);
-			let dir = screen_to_camera.mul_point(dir).normalized();
-			buffer.buffer[i] = to_color(trace(Vector3f::new(0.0, 0.0, 0.0), dir, &spheres, 5));
-			i += 1;
+	let n_thread = 8;
+	let rows_per_thread = h.div_ceil(n_thread);
+	let buffer = buffer.buffer.as_mut_slice();
+	thread::scope(|s| {
+		for (t, chunk) in buffer.chunks_mut(rows_per_thread * w).enumerate() {
+			let screen_to_camera = &screen_to_camera;
+			let spheres = &spheres;
+
+			s.spawn(move || {
+				for (i, row) in chunk.chunks_mut(w).enumerate() {
+					let y = t * rows_per_thread + i;
+					for (x, pixel) in row.iter_mut().enumerate() {
+						let dir = Vector3f::new(x as f32, y as f32, -1.0);
+						let dir = screen_to_camera.mul_point(dir).normalized();
+						*pixel = to_color(trace(Vector3f::new(0.0, 0.0, 0.0), dir, spheres, 5));
+					}
+				}
+			});
 		}
-	}
+	});
 }
 
 fn to_color(v: Vector3f) -> u32 {
