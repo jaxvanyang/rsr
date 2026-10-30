@@ -1,8 +1,8 @@
 //! A simple ray tracer demo.
 //!
 //! References:
-//! - https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-ray-tracing//how-does-it-work.html
-//! - https://github.com/scratchapixel/scratchapixel-code/blob/main/introduction-to-ray-tracing/raytracer.cpp
+//! - <https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-ray-tracing//how-does-it-work.html>
+//! - <https://github.com/scratchapixel/scratchapixel-code/blob/main/introduction-to-ray-tracing/raytracer.cpp>
 
 use std::{f32::consts::PI, thread};
 
