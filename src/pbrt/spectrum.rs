@@ -204,10 +204,7 @@ pub fn blackbody(lambda: f32, t: f32) -> f32 {
 	let kb = 1.3806488e-23;
 	let l = lambda * 1e-9;
 
-	#[cfg(feature = "use_f64")]
-	return (2. * h * c * c) / l.powi(5) * (fast_exp((h * c / (l * kb * t)) as f32) as f32 - 1.);
-	#[cfg(not(feature = "use_f64"))]
-	return (2. * h * c * c) / l.powi(5) * (fast_exp(h * c / (l * kb * t)) - 1.);
+	(2. * h * c * c) / l.powi(5) * (fast_exp(h * c / (l * kb * t)) - 1.)
 }
 
 #[derive(Debug, Clone, Copy)]
