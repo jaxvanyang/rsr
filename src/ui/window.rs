@@ -4,8 +4,9 @@ use super::{
 	shapes::*,
 };
 use crate::pbrt::{
-	Vector2f, Vector2i,
+	Vector2, Vector2i,
 	math::{round_to_left, round_to_right},
+	number::Number,
 };
 use chrono::Local;
 use dirs::picture_dir;
@@ -141,7 +142,7 @@ impl Canvas for Window {
 		self.buffer.fill(color);
 	}
 
-	fn draw_pixel(&mut self, x: i32, y: i32, color: u32) {
+	fn draw_pixel<T: Number>(&mut self, x: T, y: T, color: u32) {
 		self.buffer.draw_pixel(x, y, color);
 	}
 }
@@ -187,7 +188,9 @@ impl Canvas for ScreenBuffer {
 	}
 
 	/// Draw a pixel according to its top-left corner coordinates.
-	fn draw_pixel(&mut self, x: i32, y: i32, color: u32) {
+	fn draw_pixel<T: Number>(&mut self, x: T, y: T, color: u32) {
+		let x = x.as_i32();
+		let y = y.as_i32();
 		if x < 0 || y < 0 {
 			return;
 		}
@@ -211,23 +214,15 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 	fn fill(&mut self, color: u32);
 
 	/// Draw a pixel according to its top-left corner coordinates.
-	fn draw_pixel(&mut self, x: i32, y: i32, color: u32);
+	fn draw_pixel<T: Number>(&mut self, x: T, y: T, color: u32);
 
-	fn draw_pixel_f(&mut self, x: f32, y: f32, color: u32) {
-		self.draw_pixel(x as i32, y as i32, color);
-	}
-
-	fn draw_pixel_vf(&mut self, p: Vector2f, color: u32) {
-		self.draw_pixel(p.x as i32, p.y as i32, color);
-	}
-
-	fn draw_pixel_vi(&mut self, p: Vector2i, color: u32) {
-		self.draw_pixel(p.x, p.y, color);
+	fn draw_pixel_v<T: Number>(&mut self, p: Vector2<T>, color: u32) {
+		self.draw_pixel(p.x.as_i32(), p.y.as_i32(), color);
 	}
 
 	/// Draw a line from pixel `(x0, y0)` to `(x1, y1)`, use Bresenham's line algorithm.
-	fn draw_line(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, color: u32) {
-		let (mut x0, mut y0, mut x1, mut y1) = (x0, y0, x1, y1);
+	fn draw_line<T: Number>(&mut self, x0: T, y0: T, x1: T, y1: T, color: u32) {
+		let (mut x0, mut y0, mut x1, mut y1) = (x0.as_i32(), y0.as_i32(), x1.as_i32(), y1.as_i32());
 		let steep = (y1 - y0).abs() > (x1 - x0).abs();
 		if steep {
 			(x0, y0) = (y0, x0);
@@ -257,7 +252,7 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 		}
 	}
 
-	fn draw_lines(&mut self, points: &[Vector2i], color: u32) {
+	fn draw_lines<T: Number>(&mut self, points: &[Vector2<T>], color: u32) {
 		if points.len() < 2 {
 			return;
 		}
@@ -268,7 +263,7 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 		}
 	}
 
-	fn draw_polygon(&mut self, points: &[Vector2i], color: u32) {
+	fn draw_polygon<T: Number>(&mut self, points: &[Vector2<T>], color: u32) {
 		if points.len() < 2 {
 			return;
 		}
@@ -279,27 +274,34 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 		}
 	}
 
-	fn draw_triangle(&mut self, p0: Vector2i, p1: Vector2i, p2: Vector2i, color: u32) {
+	fn draw_triangle<T: Number>(
+		&mut self,
+		p0: Vector2<T>,
+		p1: Vector2<T>,
+		p2: Vector2<T>,
+		color: u32,
+	) {
 		self.draw_line(p0.x, p0.y, p1.x, p1.y, color);
 		self.draw_line(p1.x, p1.y, p2.x, p2.y, color);
 		self.draw_line(p2.x, p2.y, p0.x, p0.y, color);
 	}
 
-	fn draw_text(&mut self, text: &str, x: i32, y: i32, font_size: usize, color: u32) {
+	fn draw_text<T: Number>(&mut self, text: &str, x: T, y: T, font_size: usize, color: u32) {
 		self.draw_font_text(&DEFAULT_FONT, text, x, y, font_size, color);
 	}
 
-	fn draw_font_text(
+	fn draw_font_text<T: Number>(
 		&mut self,
 		font: &Font,
 		text: &str,
-		x: i32,
-		y: i32,
+		x: T,
+		y: T,
 		font_size: usize,
 		color: u32,
 	) {
 		let w = ((font.width + 1) * font_size) as i32;
 		let h = ((font.height + 1) * font_size) as i32;
+		let (x, y) = (x.as_i32(), y.as_i32());
 		let mut x_start = x;
 		let mut y_start = y;
 		for ch in text.bytes() {
@@ -340,7 +342,8 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 		}
 	}
 
-	fn fill_rect(&mut self, x: i32, y: i32, w: usize, h: usize, color: u32) {
+	fn fill_rect<T: Number>(&mut self, x: T, y: T, w: usize, h: usize, color: u32) {
+		let (x, y) = (x.as_i32(), y.as_i32());
 		let x_begin = Ord::max(x, 0) as usize;
 		let y_begin = Ord::max(y, 0) as usize;
 		let x_end = Ord::min(x + w as i32, self.w() as i32) as usize;
@@ -373,6 +376,7 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 		}
 	}
 
+	// TODO: use generic data types
 	/// # Note
 	///
 	/// This might go wrong with concave polygon.

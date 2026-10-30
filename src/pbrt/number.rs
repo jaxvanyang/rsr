@@ -64,6 +64,7 @@ pub trait Number:
 	}
 
 	fn as_f32(self) -> f32;
+	fn as_i32(self) -> i32;
 	fn min(self, rhs: Self) -> Self;
 	fn max(self, rhs: Self) -> Self;
 }
@@ -75,6 +76,10 @@ impl Number for i32 {
 
 	fn as_f32(self) -> f32 {
 		self as f32
+	}
+
+	fn as_i32(self) -> i32 {
+		self
 	}
 
 	fn min(self, rhs: Self) -> Self {
@@ -99,6 +104,10 @@ impl Number for f32 {
 		self
 	}
 
+	fn as_i32(self) -> i32 {
+		self as i32
+	}
+
 	fn min(self, rhs: Self) -> Self {
 		f32::min(self, rhs)
 	}
@@ -119,6 +128,10 @@ impl Number for f64 {
 
 	fn as_f32(self) -> f32 {
 		self as f32
+	}
+
+	fn as_i32(self) -> i32 {
+		self as i32
 	}
 
 	fn min(self, rhs: Self) -> Self {
@@ -268,6 +281,10 @@ impl Number for Interval {
 
 	fn as_f32(self) -> f32 {
 		self.into()
+	}
+
+	fn as_i32(self) -> i32 {
+		self.as_f32() as i32
 	}
 
 	fn min(self, rhs: Self) -> Self {

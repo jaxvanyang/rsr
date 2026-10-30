@@ -27,13 +27,12 @@ fn plot(window: &mut Window, center: Vector2i, f: fn(f32) -> f32, color: u32) {
 	let scale = SquareMatrix::<2>::from([[1., 0.], [0., 110.]]);
 	let transform = flip * scale;
 	let offset = Vector2f::from(center);
+	let mut points = Vec::new();
 	for x in 360..=830 {
 		let x = x as f32;
-		let p = Vector2f::new(x, f(x));
-		let p = &transform * p + offset;
-		window.draw_pixel_vf(p, color);
+		points.push(&transform * Vector2f::new(x, f(x)) + offset);
 	}
-	println!();
+	window.draw_lines(&points, color);
 }
 
 fn draw_background(window: &mut Window, center: Vector2i, step: usize) {
