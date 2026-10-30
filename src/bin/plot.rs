@@ -3,7 +3,7 @@ use rsr::{
 		SquareMatrix, Vector2f, Vector2i,
 		spectrum::{Spectrum, spectra},
 	},
-	ui::{Canvas, Result, Window, color},
+	ui::{Canvas, Result, Window, color::manim::*},
 };
 
 fn main() -> Result<()> {
@@ -12,9 +12,9 @@ fn main() -> Result<()> {
 
 	while window.is_open() {
 		draw_background(&mut window, center, 50);
-		plot(&mut window, center, |x| spectra::x().eval(x), color::RED);
-		plot(&mut window, center, |x| spectra::y().eval(x), color::GREEN);
-		plot(&mut window, center, |x| spectra::z().eval(x), color::BLUE);
+		plot(&mut window, center, |x| spectra::x().eval(x), RED);
+		plot(&mut window, center, |x| spectra::y().eval(x), GREEN);
+		plot(&mut window, center, |x| spectra::z().eval(x), BLUE);
 
 		window.update()?;
 	}
@@ -45,9 +45,9 @@ fn draw_background(window: &mut Window, center: Vector2i, step: usize) {
 	window.clear();
 	for y in (y_min..window.h()).step_by(step) {
 		for x in (x_min..window.w()).step_by(step) {
-			window[(x, y)] = color::BLUE_D;
+			window[(x, y)] = BLUE_D;
 		}
 	}
-	window.draw_line(x, 0, x, window.h() as i32, color::BLUE_E);
-	window.draw_line(0, y, window.w() as i32, y, color::BLUE_E);
+	window.draw_line(x, 0, x, window.h() as i32, BLUE_E);
+	window.draw_line(0, y, window.w() as i32, y, BLUE_E);
 }

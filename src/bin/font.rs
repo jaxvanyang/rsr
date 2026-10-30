@@ -1,7 +1,8 @@
 use anyhow::Result;
 use minifb::Key;
 use rsr::ui::{
-	Canvas, Window, color,
+	Canvas, Window,
+	color::raylib::*,
 	font::{DEFAULT_FONT_HEIGHT, DEFAULT_FONT_WIDTH},
 };
 
@@ -27,8 +28,8 @@ fn main() -> Result<()> {
 	while window.is_open() && !window.is_key_down(Key::Escape) {
 		window.enable_screenshot()?;
 
-		window.fill(color::WHITE);
-		window.draw_text(&text, margin, margin, font_size, color::BLACK);
+		window.fill(WHITE);
+		window.draw_text(&text, margin, margin, font_size, BLACK);
 		window.update()?;
 	}
 

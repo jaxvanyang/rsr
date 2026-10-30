@@ -1,5 +1,5 @@
 use super::{
-	color,
+	color::raylib::*,
 	font::{DEFAULT_FONT, Font},
 	shapes::*,
 };
@@ -72,12 +72,12 @@ impl Window {
 
 	pub fn draw_fps(&mut self, x: i32, y: i32) {
 		let text = format!("FPS:{:.1}", 1. / self.dt);
-		self.draw_text(&text, x, y, 2, color::GREEN);
+		self.draw_text(&text, x, y, 2, GREEN);
 	}
 
 	pub fn draw_frame_time(&mut self, x: i32, y: i32) {
 		let text = format!("frame time:{:.1}ms", self.dt * 1000.0);
-		self.draw_text(&text, x, y, 2, color::GREEN);
+		self.draw_text(&text, x, y, 2, GREEN);
 	}
 
 	pub fn enable_screenshot(&self) -> std::io::Result<()> {

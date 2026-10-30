@@ -1,14 +1,14 @@
 use minifb::Key;
 use rsr::{
 	pbrt::Vector2f,
-	ui::{Canvas, Circle, Result, Window, color},
+	ui::{Canvas, Circle, Result, Window, color::raylib::*},
 };
 
 fn main() -> Result<()> {
 	let mut window = Window::new("Test - ESC to exit", 640, 360)?;
 	let mut circle = Circle::new(50.0, 50.0, 25.0);
 	let mut v = Vector2f::new(250., 150.);
-	let colors = [color::RED, color::GREEN, color::BLUE];
+	let colors = [RED, GREEN, BLUE];
 	let mut c = 0;
 
 	window.set_target_fps(0);

@@ -6,7 +6,7 @@ use rsr::{
 		colorspace::{self as cs, RGBColorSpace},
 		spectrum::{DenselySampledSpectrum, LAMBDA_MAX_I, LAMBDA_MIN_I, Spectrum},
 	},
-	ui::{Canvas, Result, Window, color},
+	ui::{Canvas, Result, Window, color::raylib::*},
 };
 
 fn main() -> Result<()> {
@@ -36,14 +36,14 @@ fn main() -> Result<()> {
 }
 
 fn draw_diagram(window: &mut Window, boundary: &[Vector2i], cs: &RGBColorSpace) {
-	window.fill(color::GRAY_A);
-	window.fill_polygon(boundary, color::BLACK);
+	window.fill(GRAY);
+	window.fill_polygon(boundary, BLACK);
 
 	let w = (window.w() - 1) as f32;
 	let h = (window.h() - 1) as f32;
 	for j in 0..window.h() {
 		for i in 0..window.w() {
-			if window[(i, j)] != color::BLACK {
+			if window[(i, j)] != BLACK {
 				continue;
 			}
 
@@ -60,7 +60,7 @@ fn draw_diagram(window: &mut Window, boundary: &[Vector2i], cs: &RGBColorSpace) 
 	let g = cs.to_xyz(RGB::GREEN).xy();
 	let b = cs.to_xyz(RGB::BLUE).xy();
 	let f = |p| to_screen(p, window.w(), window.h());
-	window.draw_triangle(f(r), f(g), f(b), color::BLACK);
+	window.draw_triangle(f(r), f(g), f(b), BLACK);
 }
 
 fn to_screen(point: Vector2f, width: usize, height: usize) -> Vector2i {

@@ -12,7 +12,7 @@ use minifb::Key;
 use rsr::{
 	pbrt::{math::lerp, *},
 	sys::nproc,
-	ui::{color, *},
+	ui::{color::raylib::*, *},
 };
 
 struct Game {
@@ -148,9 +148,9 @@ fn draw(window: &mut Window, game: &Game) -> Result<()> {
 	render(&mut window.buffer, game);
 	window.draw_fps(2, 2);
 	window.draw_frame_time(2, 16);
-	window.draw_text(&format!("pos: {}", game.pos), 2, 30, 2, color::GREEN);
-	window.draw_text(&format!("x_rot: {}", game.x_rot), 2, 44, 2, color::GREEN);
-	window.draw_text(&format!("y_rot: {}", game.y_rot), 2, 58, 2, color::GREEN);
+	window.draw_text(&format!("pos: {}", game.pos), 2, 30, 2, GREEN);
+	window.draw_text(&format!("x_rot: {}", game.x_rot), 2, 44, 2, GREEN);
+	window.draw_text(&format!("y_rot: {}", game.y_rot), 2, 58, 2, GREEN);
 
 	window.update()?;
 	Ok(())

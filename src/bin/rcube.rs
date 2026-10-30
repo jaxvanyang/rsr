@@ -2,7 +2,7 @@ use anyhow::Result;
 use minifb::Key;
 use rsr::{
 	pbrt::{SquareMatrix, Transform, Vector2i, Vector3f},
-	ui::{Canvas, Window, color},
+	ui::{Canvas, Window, color::raylib::*},
 };
 
 fn main() -> Result<()> {
@@ -66,10 +66,10 @@ fn draw_cube(window: &mut Window, cube: &[Vector3f; 8], projection: &Transform) 
 		.collect::<Vec<_>>();
 
 	window.clear();
-	window.draw_polygon(&cube[..4], color::BLUE);
-	window.draw_polygon(&cube[4..], color::BLUE);
+	window.draw_polygon(&cube[..4], BLUE);
+	window.draw_polygon(&cube[4..], BLUE);
 	for (i, p) in cube.iter().enumerate().take(4) {
 		let q = cube[i + 4];
-		window.draw_line(p.x, p.y, q.x, q.y, color::BLUE);
+		window.draw_line(p.x, p.y, q.x, q.y, BLUE);
 	}
 }
