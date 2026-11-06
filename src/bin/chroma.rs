@@ -20,6 +20,7 @@ fn main() -> Result<()> {
 		boundary.push(to_screen(xy, width, height));
 	}
 	let colorspaces = [&cs::sRGB, &cs::DCI_P3, &cs::Rec2020, &cs::ACES2065_1];
+	let names = ["sRGB", "DCI_P3", "Rec2020", "ACES2065_1"];
 	let mut i = 0;
 
 	while window.is_open() {
@@ -28,6 +29,8 @@ fn main() -> Result<()> {
 		}
 
 		draw_diagram(&mut window, &boundary, colorspaces[i]);
+		window.draw_text(names[i], 2, 2, 2, BLACK);
+		window.draw_text("Press space to switch color space", 2, 16, 2, BLACK);
 
 		window.update()?;
 	}
