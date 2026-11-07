@@ -7,6 +7,7 @@
 use std::{f32::consts::PI, thread};
 
 use anyhow::Result;
+#[cfg(debug_assertions)]
 use approx::assert_abs_diff_eq;
 use minifb::Key;
 use rsr::{
