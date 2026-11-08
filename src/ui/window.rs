@@ -263,17 +263,6 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 		}
 	}
 
-	fn draw_polygon<T: Number>(&mut self, points: &[Vector2<T>], color: u32) {
-		if points.len() < 2 {
-			return;
-		}
-
-		for (i, p) in points.iter().enumerate() {
-			let q = points[(i + 1) % points.len()];
-			self.draw_line(p.x, p.y, q.x, q.y, color);
-		}
-	}
-
 	fn draw_triangle<T: Number>(
 		&mut self,
 		p0: Vector2<T>,
@@ -284,6 +273,39 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 		self.draw_line(p0.x, p0.y, p1.x, p1.y, color);
 		self.draw_line(p1.x, p1.y, p2.x, p2.y, color);
 		self.draw_line(p2.x, p2.y, p0.x, p0.y, color);
+	}
+
+	fn draw_rectangle<T: Number>(
+		&mut self,
+		x: T,
+		y: T,
+		w: usize,
+		h: usize,
+		thick: usize,
+		color: u32,
+	) {
+		if w <= 2 * thick || h <= 2 * thick {
+			self.fill_rectangle(x, y, w, h, color);
+			return;
+		}
+
+		let (x, y) = (x.as_i32(), y.as_i32());
+		let t = h - 2 * thick;
+		self.fill_rectangle(x, y, w, thick, color);
+		self.fill_rectangle(x, y + thick as i32, thick, t, color);
+		self.fill_rectangle(x + (w - thick) as i32, y + thick as i32, thick, t, color);
+		self.fill_rectangle(x, y + (h - thick) as i32, w, thick, color);
+	}
+
+	fn draw_polygon<T: Number>(&mut self, points: &[Vector2<T>], color: u32) {
+		if points.len() < 2 {
+			return;
+		}
+
+		for (i, p) in points.iter().enumerate() {
+			let q = points[(i + 1) % points.len()];
+			self.draw_line(p.x, p.y, q.x, q.y, color);
+		}
 	}
 
 	fn draw_text<T: Number>(&mut self, text: &str, x: T, y: T, font_size: usize, color: u32) {
