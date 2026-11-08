@@ -372,22 +372,19 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 		self.fill_circle_shape(Circle::new(x.as_f32(), y.as_f32(), r.as_f32()), color);
 	}
 
-	// TODO: improve performance
 	/// Pixels whose center is in the circle are filled.
 	fn fill_circle_shape(&mut self, circle: Circle, color: u32) {
-		let x_begin = round_to_left(circle.x() - circle.r).max(0.) as usize;
 		let y_begin = round_to_left(circle.y() - circle.r).max(0.) as usize;
-		let x_end = round_to_right(circle.x() + circle.r).min(self.w() as f32) as usize;
 		let y_end = round_to_right(circle.y() + circle.r).min(self.h() as f32) as usize;
 		let r2 = circle.r.powi(2);
 
 		for y in y_begin..y_end {
-			for x in x_begin..x_end {
-				let dx = x as f32 + 0.5 - circle.x();
-				let dy = y as f32 + 0.5 - circle.y();
-				if dx.powi(2) + dy.powi(2) <= r2 {
-					self[(x, y)] = color;
-				}
+			let dy = y as f32 + 0.5 - circle.y();
+			let dx = (r2 - dy.powi(2)).sqrt();
+			let x0 = round_to_left(circle.x() - dx).max(0.0) as usize;
+			let x1 = round_to_right(circle.x() + dx).min((self.w() - 1) as f32) as usize;
+			for x in x0..=x1 {
+				self[(x, y)] = color;
 			}
 		}
 	}
