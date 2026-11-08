@@ -427,12 +427,12 @@ pub const DEFAULT_FONT_GLYPHS: [[[bool; DEFAULT_FONT_WIDTH]; DEFAULT_FONT_HEIGHT
 	];
 	// 0-9
 	ret[b'0' as usize] = [
-		[O, I, I, I, O],
-		[O, I, O, I, O],
-		[O, I, O, I, O],
-		[O, I, O, I, O],
-		[O, I, O, I, O],
-		[O, I, I, I, O],
+		[O, I, I, I, I],
+		[O, I, O, O, I],
+		[O, I, O, O, I],
+		[O, I, O, O, I],
+		[O, I, O, O, I],
+		[O, I, I, I, I],
 	];
 	ret[b'1' as usize] = [
 		[O, O, I, O, O],
@@ -443,20 +443,20 @@ pub const DEFAULT_FONT_GLYPHS: [[[bool; DEFAULT_FONT_WIDTH]; DEFAULT_FONT_HEIGHT
 		[O, I, I, I, O],
 	];
 	ret[b'2' as usize] = [
-		[O, I, I, I, O],
-		[O, O, O, I, O],
-		[O, I, I, I, O],
+		[O, I, I, I, I],
+		[O, O, O, O, I],
+		[O, I, I, I, I],
 		[O, I, O, O, O],
 		[O, I, O, O, O],
-		[O, I, I, I, O],
+		[O, I, I, I, I],
 	];
 	ret[b'3' as usize] = [
-		[O, I, I, I, O],
-		[O, O, O, I, O],
-		[O, I, I, I, O],
-		[O, O, O, I, O],
-		[O, O, O, I, O],
-		[O, I, I, I, O],
+		[O, I, I, I, I],
+		[O, O, O, O, I],
+		[O, I, I, I, I],
+		[O, O, O, O, I],
+		[O, O, O, O, I],
+		[O, I, I, I, I],
 	];
 	ret[b'4' as usize] = [
 		[O, I, O, I, O],
