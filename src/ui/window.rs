@@ -297,6 +297,10 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 		self.fill_rectangle(x, y + (h - thick) as i32, w, thick, color);
 	}
 
+	fn draw_rectangle_shape(&mut self, rect: Rectangle, thick: usize, color: u32) {
+		self.draw_rectangle(rect.x(), rect.y(), rect.w as usize, rect.h as usize, thick, color);
+	}
+
 	fn draw_polygon<T: Number>(&mut self, points: &[Vector2<T>], color: u32) {
 		if points.len() < 2 {
 			return;
