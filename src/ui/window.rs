@@ -310,7 +310,7 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 					if !font.get_pixel(ch, dx, dy) {
 						continue;
 					}
-					self.fill_rect(
+					self.fill_rectangle(
 						x_start + (dx * font_size) as i32,
 						y_start + (dy * font_size) as i32,
 						font_size,
@@ -328,21 +328,7 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 		}
 	}
 
-	/// Pixels whose center is in the rectangle are filled.
-	fn fill_rectangle(&mut self, rect: Rectangle, color: u32) {
-		let x_begin = round_to_left(rect.x()).max(0.) as usize;
-		let y_begin = round_to_left(rect.y()).max(0.) as usize;
-		let x_end = round_to_right(rect.x() + rect.w).min(self.w() as f32) as usize;
-		let y_end = round_to_right(rect.y() + rect.h).min(self.h() as f32) as usize;
-
-		for y in y_begin..y_end {
-			for x in x_begin..x_end {
-				self[(x, y)] = color;
-			}
-		}
-	}
-
-	fn fill_rect<T: Number>(&mut self, x: T, y: T, w: usize, h: usize, color: u32) {
+	fn fill_rectangle<T: Number>(&mut self, x: T, y: T, w: usize, h: usize, color: u32) {
 		let (x, y) = (x.as_i32(), y.as_i32());
 		let x_begin = Ord::max(x, 0) as usize;
 		let y_begin = Ord::max(y, 0) as usize;
@@ -356,9 +342,17 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 		}
 	}
 
+	fn fill_rectangle_shape(&mut self, rect: Rectangle, color: u32) {
+		self.fill_rectangle(rect.x(), rect.y(), rect.w as usize, rect.h as usize, color);
+	}
+
+	fn fill_circle<T: Number>(&mut self, x: T, y: T, r: T, color: u32) {
+		self.fill_circle_shape(Circle::new(x.as_f32(), y.as_f32(), r.as_f32()), color);
+	}
+
 	// TODO: improve performance
 	/// Pixels whose center is in the circle are filled.
-	fn fill_circle(&mut self, circle: Circle, color: u32) {
+	fn fill_circle_shape(&mut self, circle: Circle, color: u32) {
 		let x_begin = round_to_left(circle.x() - circle.r).max(0.) as usize;
 		let y_begin = round_to_left(circle.y() - circle.r).max(0.) as usize;
 		let x_end = round_to_right(circle.x() + circle.r).min(self.w() as f32) as usize;
@@ -376,7 +370,6 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 		}
 	}
 
-	// TODO: use generic data types
 	/// # Note
 	///
 	/// This might go wrong with concave polygon.

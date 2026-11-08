@@ -221,7 +221,7 @@ fn main() -> Result<()> {
 			let (r, c) = palettes[selected].get_row_col(i);
 			let x = (c * width) as i32;
 			let y = (r * height) as i32;
-			window.fill_rect(x, y, width, height, *color);
+			window.fill_rectangle(x, y, width, height, *color);
 			window.draw_text(
 				&format!("{name}\n{:06X}", color),
 				x + font_size as i32,

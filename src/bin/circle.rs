@@ -25,7 +25,7 @@ fn main() -> Result<()> {
 		}
 
 		window.clear();
-		window.fill_circle(circle, colors[c]);
+		window.fill_circle_shape(circle, colors[c]);
 		window.draw_fps(2, 2);
 		window.update()?;
 	}

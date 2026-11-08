@@ -30,7 +30,7 @@ fn draw_china_flag(window: &mut Window, width: f32) {
 	let red = 0xee1c25;
 
 	window.clear();
-	window.fill_rectangle(rect, red);
+	window.fill_rectangle_shape(rect, red);
 	draw_star(window, x + unit * 5., y + unit * 5., unit * 3., 0.);
 	draw_star(window, x + unit * 10., y + unit * 2., unit, f32::atan2(5., 3.) + PI);
 	draw_star(window, x + unit * 12., y + unit * 4., unit, f32::atan2(7., 1.) + PI);
