@@ -7,8 +7,6 @@
 use std::{f32::consts::PI, thread};
 
 use anyhow::Result;
-#[cfg(debug_assertions)]
-use approx::assert_abs_diff_eq;
 use minifb::Key;
 use rsr::{
 	pbrt::{math::lerp, *},
@@ -205,9 +203,6 @@ fn to_color(v: Vector3f) -> u32 {
 }
 
 fn trace(rayorig: Vector3f, raydir: Vector3f, spheres: &[Sphere], depth: u32) -> Vector3f {
-	#[cfg(debug_assertions)]
-	assert_abs_diff_eq!(raydir.length(), 1.0);
-
 	let mut tnear = f32::MAX;
 	let mut sphere: Option<&Sphere> = None;
 	// find intersection of this ray with the sphere in the scene
@@ -241,9 +236,7 @@ fn trace(rayorig: Vector3f, raydir: Vector3f, spheres: &[Sphere], depth: u32) ->
 	let facingratio = -raydir.dot(nhit);
 	// change t to tweak the effect
 	let fresneleffect = lerp((1.0 - facingratio).powi(3), 1.0, 0.1);
-	let refldir = raydir - nhit * 2.0 * raydir.dot(nhit);
-	#[cfg(debug_assertions)]
-	assert_abs_diff_eq!(refldir.length(), 1.0);
+	let refldir = (raydir - nhit * 2.0 * raydir.dot(nhit)).normalized();
 	let reflection = trace(phit + nhit * bias, refldir, spheres, depth - 1);
 	let refraction = if sphere.transparency > 0.0 {
 		let ior = 1.1;
