@@ -1,6 +1,6 @@
 use super::{
 	color::raylib::*,
-	font::{DEFAULT_FONT, Font},
+	font::{DEFAULT_FONT, DEFAULT_FONT_HEIGHT, Font},
 	shapes::*,
 };
 use crate::pbrt::{
@@ -352,6 +352,30 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 				x_start += w;
 			}
 		}
+	}
+
+	fn draw_progress(&mut self, prompt: &str, progress: f32) {
+		let w = (self.w() as f32 * 0.9) as usize;
+		let h = 24;
+		let thick = 3;
+		let x = ((self.w() - w) / 2) as i32;
+		let y = (self.h() as f32 * 0.9) as i32;
+		self.draw_rectangle(x, y, w, h, thick, RAYWHITE);
+
+		let font_size = 3;
+		self.draw_text(
+			&format!("{prompt}:{:.1}%", progress * 100.0),
+			x,
+			y - (font_size * (DEFAULT_FONT_HEIGHT + 1)) as i32,
+			font_size,
+			RAYWHITE,
+		);
+
+		let w = w - 2 * thick - 4;
+		let h = h - 2 * thick - 4;
+		let x = x + thick as i32 + 2;
+		let y = y + thick as i32 + 2;
+		self.fill_rectangle(x, y, (w as f32 * progress.min(1.0)) as usize, h, RAYWHITE);
 	}
 
 	fn fill_rectangle<T: Number>(&mut self, x: T, y: T, w: usize, h: usize, color: u32) {
