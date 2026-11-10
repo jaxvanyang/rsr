@@ -95,11 +95,11 @@ impl CameraTransform {
 }
 
 #[derive(Debug)]
-pub struct CameraBase<'a> {
+pub struct CameraBase {
 	camera_transform: CameraTransform,
 	shutter_open: f32,
 	shutter_close: f32,
-	film: &'a dyn Film,
+	film: Box<dyn Film>,
 	medium: Medium,
 	min_pos_differential_x: Vector3f,
 	min_pos_differential_y: Vector3f,
@@ -108,16 +108,16 @@ pub struct CameraBase<'a> {
 }
 
 #[derive(Debug)]
-pub struct CameraBaseParameters<'a> {
+pub struct CameraBaseParameters {
 	pub camera_transform: CameraTransform,
 	pub shutter_open: f32,
 	pub shutter_close: f32,
-	pub film: &'a dyn Film,
+	pub film: Box<dyn Film>,
 	pub medium: Medium,
 }
 
-impl<'a> CameraBase<'a> {
-	pub fn new(p: CameraBaseParameters<'a>) -> Self {
+impl CameraBase {
+	pub fn new(p: CameraBaseParameters) -> Self {
 		Self {
 			camera_transform: p.camera_transform,
 			shutter_open: p.shutter_open,
@@ -181,9 +181,9 @@ impl<'a> CameraBase<'a> {
 	// TODO: other protected methods
 }
 
-impl<'a> Camera for CameraBase<'a> {
+impl Camera for CameraBase {
 	fn get_film(&self) -> &dyn Film {
-		self.film as &dyn Film
+		self.film.as_ref()
 	}
 
 	fn get_camera_transform(&self) -> &CameraTransform {
@@ -212,8 +212,8 @@ impl<'a> Camera for CameraBase<'a> {
 }
 
 #[derive(Debug)]
-pub struct ProjectiveCamera<'a> {
-	base: CameraBase<'a>,
+pub struct ProjectiveCamera {
+	base: CameraBase,
 	screen_from_camera: Transform,
 	camera_from_raster: Transform,
 	raster_from_screen: Transform,
@@ -222,9 +222,9 @@ pub struct ProjectiveCamera<'a> {
 	focal_distance: f32,
 }
 
-impl<'a> ProjectiveCamera<'a> {
+impl ProjectiveCamera {
 	pub fn new(
-		base_parameters: CameraBaseParameters<'a>,
+		base_parameters: CameraBaseParameters,
 		screen_from_camera: &Transform,
 		screen_window: Bounds2f,
 		len_radius: f32,
@@ -258,29 +258,29 @@ impl<'a> ProjectiveCamera<'a> {
 	}
 }
 
-impl<'a> ops::Deref for ProjectiveCamera<'a> {
-	type Target = CameraBase<'a>;
+impl ops::Deref for ProjectiveCamera {
+	type Target = CameraBase;
 	fn deref(&self) -> &Self::Target {
 		&self.base
 	}
 }
 
-impl<'a> ops::DerefMut for ProjectiveCamera<'a> {
+impl ops::DerefMut for ProjectiveCamera {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.base
 	}
 }
 
 #[derive(Debug)]
-pub struct OrthographicCamera<'a> {
-	proj: ProjectiveCamera<'a>,
+pub struct OrthographicCamera {
+	proj: ProjectiveCamera,
 	dx_camera: Vector3f,
 	dy_camera: Vector3f,
 }
 
-impl<'a> OrthographicCamera<'a> {
+impl OrthographicCamera {
 	pub fn new(
-		base_parameters: CameraBaseParameters<'a>,
+		base_parameters: CameraBaseParameters,
 		screen_window: Bounds2f,
 		len_radius: f32,
 		focal_distance: f32,
@@ -301,7 +301,7 @@ impl<'a> OrthographicCamera<'a> {
 	}
 }
 
-impl<'a> Camera for OrthographicCamera<'a> {
+impl Camera for OrthographicCamera {
 	fn get_film(&self) -> &dyn Film {
 		self.proj.get_film()
 	}
@@ -378,30 +378,30 @@ impl<'a> Camera for OrthographicCamera<'a> {
 	}
 }
 
-impl<'a> ops::Deref for OrthographicCamera<'a> {
-	type Target = ProjectiveCamera<'a>;
+impl ops::Deref for OrthographicCamera {
+	type Target = ProjectiveCamera;
 	fn deref(&self) -> &Self::Target {
 		&self.proj
 	}
 }
 
-impl<'a> ops::DerefMut for OrthographicCamera<'a> {
+impl ops::DerefMut for OrthographicCamera {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.proj
 	}
 }
 
 #[derive(Debug)]
-pub struct PerspectiveCamera<'a> {
-	proj: ProjectiveCamera<'a>,
+pub struct PerspectiveCamera {
+	proj: ProjectiveCamera,
 	dx_camera: Vector3f,
 	dy_camera: Vector3f,
-	cos_total_width: f32,
+	// cos_total_width: f32,
 }
 
-impl<'a> PerspectiveCamera<'a> {
+impl PerspectiveCamera {
 	pub fn new(
-		base_parameters: CameraBaseParameters<'a>,
+		base_parameters: CameraBaseParameters,
 		fov: f32,
 		screen_window: Bounds2f,
 		len_radius: f32,
@@ -429,7 +429,7 @@ impl<'a> PerspectiveCamera<'a> {
 	}
 }
 
-impl<'a> Camera for PerspectiveCamera<'a> {
+impl Camera for PerspectiveCamera {
 	fn get_film(&self) -> &dyn Film {
 		self.proj.get_film()
 	}
@@ -505,14 +505,14 @@ impl<'a> Camera for PerspectiveCamera<'a> {
 	}
 }
 
-impl<'a> ops::Deref for PerspectiveCamera<'a> {
-	type Target = ProjectiveCamera<'a>;
+impl ops::Deref for PerspectiveCamera {
+	type Target = ProjectiveCamera;
 	fn deref(&self) -> &Self::Target {
 		&self.proj
 	}
 }
 
-impl<'a> ops::DerefMut for PerspectiveCamera<'a> {
+impl ops::DerefMut for PerspectiveCamera {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.proj
 	}
