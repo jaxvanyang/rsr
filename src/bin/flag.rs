@@ -1,5 +1,5 @@
 use rsr::{
-	pbrt::{SquareMatrix, Vector2f, math::PI},
+	pbrt::{SMatrix, Vector2f, math::PI},
 	ui::{Canvas, Rectangle, Result, Window, elapsed_with_update},
 };
 use std::time::Instant;
@@ -42,7 +42,7 @@ fn draw_star(window: &mut Window, x: f32, y: f32, radius: f32, theta: f32) {
 	let yellow = 0xffff00;
 	let center = Vector2f::new(x, y);
 	let (sin, cos) = theta.sin_cos();
-	let rotation = SquareMatrix::from([[cos, -sin], [sin, cos]]);
+	let rotation = SMatrix::from([[cos, -sin], [sin, cos]]);
 	let inner_radius = radius * f32::to_radians(18.).sin() / f32::to_radians(126.).sin();
 	let mut points = [Vector2f::default(); 10];
 	for i in 0..5 {

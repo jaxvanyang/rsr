@@ -1,6 +1,6 @@
 use rsr::{
 	pbrt::{
-		SquareMatrix, Vector2f, Vector2i,
+		SMatrix, Vector2f, Vector2i,
 		spectrum::{Spectrum, spectra},
 	},
 	ui::{Canvas, Result, Window, color::manim::*},
@@ -23,8 +23,8 @@ fn main() -> Result<()> {
 }
 
 fn plot(window: &mut Window, center: Vector2i, f: fn(f32) -> f32, color: u32) {
-	let flip = SquareMatrix::<2>::from([[1., 0.], [0., -1.]]);
-	let scale = SquareMatrix::<2>::from([[1., 0.], [0., 110.]]);
+	let flip = SMatrix::<2>::from([[1., 0.], [0., -1.]]);
+	let scale = SMatrix::<2>::from([[1., 0.], [0., 110.]]);
 	let transform = flip * scale;
 	let offset = Vector2f::from(center);
 	let mut points = Vec::new();

@@ -1,7 +1,7 @@
 use super::{
 	color::{RGB, RGBSigmoidPolynomial, RGBToSpectrumTable, XYZ},
 	spectrum::{DenselySampledSpectrum, Spectrum, get_named_spectrum},
-	transform::SquareMatrix,
+	transform::SMatrix,
 	vecmath::Vector2f,
 };
 use std::sync::LazyLock;
@@ -56,8 +56,8 @@ pub struct RGBColorSpace<'a> {
 	pub w: Vector2f,
 	pub illuminant: DenselySampledSpectrum,
 	pub rgb2spec: &'a RGBToSpectrumTable<'a>,
-	pub rgb2xyz: SquareMatrix<3>,
-	pub xyz2rgb: SquareMatrix<3>,
+	pub rgb2xyz: SMatrix<3>,
+	pub xyz2rgb: SMatrix<3>,
 }
 
 impl<'a> RGBColorSpace<'a> {
@@ -73,10 +73,10 @@ impl<'a> RGBColorSpace<'a> {
 		let w = W.xy();
 		#[allow(non_snake_case)]
 		let (R, G, B) = (XYZ::from_xy(r), XYZ::from_xy(g), XYZ::from_xy(b));
-		let rgb = SquareMatrix::from([[R.x, G.x, B.x], [R.y, G.y, B.y], [R.z, G.z, B.z]]);
+		let rgb = SMatrix::from([[R.x, G.x, B.x], [R.y, G.y, B.y], [R.z, G.z, B.z]]);
 		#[allow(non_snake_case)]
 		let C = rgb.inv().unwrap() * W;
-		let rgb2xyz = rgb * SquareMatrix::diag([C.x, C.y, C.z]);
+		let rgb2xyz = rgb * SMatrix::diag([C.x, C.y, C.z]);
 		let xyz2rgb = rgb2xyz.inv().unwrap();
 
 		Self {
@@ -100,8 +100,8 @@ impl<'a> RGBColorSpace<'a> {
 	}
 
 	/// Return a matrix convert color between two RGB color spaces.
-	pub fn convert_rgb_color_space(from: &Self, to: &Self) -> SquareMatrix<3> {
-		if from == to { SquareMatrix::default() } else { &to.xyz2rgb * &from.rgb2xyz }
+	pub fn convert_rgb_color_space(from: &Self, to: &Self) -> SMatrix<3> {
+		if from == to { SMatrix::default() } else { &to.xyz2rgb * &from.rgb2xyz }
 	}
 
 	pub fn to_rgb_coeffs(&self, rgb: RGB) -> RGBSigmoidPolynomial {

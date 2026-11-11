@@ -163,7 +163,7 @@ fn render(buffer: &mut ScreenBuffer, game: &Game) {
 	let fov = 30.0;
 	let aspectratio = w as f32 / h as f32;
 	let angle = (PI * 0.5 * fov / 180.0).tan();
-	let screen_to_camera = SquareMatrix::<4>::from([
+	let screen_to_camera = SMatrix::<4>::from([
 		[2.0 * invw * angle * aspectratio, 0.0, 0.0, (invw - 1.0) * angle * aspectratio],
 		[0.0, -2.0 * invh * angle, 0.0, (-invh + 1.0) * angle],
 		[0.0, 0.0, 1.0, 0.0],

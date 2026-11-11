@@ -1,7 +1,7 @@
 use anyhow::Result;
 use minifb::Key;
 use rsr::{
-	pbrt::{SquareMatrix, Transform, Vector2i, Vector3f},
+	pbrt::{SMatrix, Transform, Vector2i, Vector3f},
 	ui::{Canvas, Window, color::raylib::*},
 };
 
@@ -22,13 +22,13 @@ fn main() -> Result<()> {
 		Vector3f::new(0.0, 0.0, 0.0),
 		Vector3f::new(0.0, 1.0, 0.0),
 	);
-	let proj_ortho = SquareMatrix::from([
+	let proj_ortho = SMatrix::from([
 		[100.0, 0.0, 0.0, 0.0],
 		[0.0, 100.0, 0.0, 0.0],
 		[0.0, 0.0, 100.0, -200.0],
 		[0.0, 0.0, 0.0, 1.0],
 	]);
-	let proj_screen = SquareMatrix::from([
+	let proj_screen = SMatrix::from([
 		[1.0, 0.0, 0.0, window.w() as f32 / 2.0],
 		[0.0, -1.0, 0.0, window.h() as f32 / 2.0],
 		[0.0, 0.0, 1.0, 0.0],

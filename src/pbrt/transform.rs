@@ -7,12 +7,13 @@ use super::{
 use approx::abs_diff_eq;
 use std::ops;
 
+/// Square matrix.
 #[derive(Debug, Clone, PartialEq)]
-pub struct SquareMatrix<const N: usize> {
+pub struct SMatrix<const N: usize> {
 	m: [[f32; N]; N],
 }
 
-impl<const N: usize> SquareMatrix<N> {
+impl<const N: usize> SMatrix<N> {
 	pub fn zero() -> Self {
 		Self { m: [[0.0; N]; N] }
 	}
@@ -68,7 +69,7 @@ impl<const N: usize> SquareMatrix<N> {
 	// TODO: implement linear_least_squares
 }
 
-impl SquareMatrix<1> {
+impl SMatrix<1> {
 	pub fn det(&self) -> f32 {
 		self[0][0]
 	}
@@ -82,7 +83,7 @@ impl SquareMatrix<1> {
 	}
 }
 
-impl SquareMatrix<2> {
+impl SMatrix<2> {
 	pub fn det(&self) -> f32 {
 		diff_of_products(self[0][0], self[1][1], self[0][1], self[1][0])
 	}
@@ -103,7 +104,7 @@ impl SquareMatrix<2> {
 	}
 }
 
-impl SquareMatrix<3> {
+impl SMatrix<3> {
 	pub fn det(&self) -> f32 {
 		let c00 = diff_of_products(self[1][1], self[2][2], self[1][2], self[2][1]);
 		let c01 = diff_of_products(self[1][0], self[2][2], self[1][2], self[2][0]);
@@ -135,7 +136,7 @@ impl SquareMatrix<3> {
 	}
 }
 
-impl SquareMatrix<4> {
+impl SMatrix<4> {
 	pub fn det(&self) -> f32 {
 		let s0 = diff_of_products(self[0][0], self[1][1], self[1][0], self[0][1]);
 		let s1 = diff_of_products(self[0][0], self[1][2], self[1][0], self[0][2]);
@@ -243,7 +244,7 @@ impl SquareMatrix<4> {
 	}
 }
 
-impl<const N: usize> Default for SquareMatrix<N> {
+impl<const N: usize> Default for SMatrix<N> {
 	/// Return an identity matrix.
 	fn default() -> Self {
 		let mut ret = Self::zero();
@@ -254,7 +255,7 @@ impl<const N: usize> Default for SquareMatrix<N> {
 	}
 }
 
-impl<const N: usize> From<[[f32; N]; N]> for SquareMatrix<N> {
+impl<const N: usize> From<[[f32; N]; N]> for SMatrix<N> {
 	fn from(m: [[f32; N]; N]) -> Self {
 		let ret = Self { m };
 		debug_assert!(!ret.has_nan());
@@ -263,13 +264,13 @@ impl<const N: usize> From<[[f32; N]; N]> for SquareMatrix<N> {
 	}
 }
 
-impl<const N: usize> HasNaN for SquareMatrix<N> {
+impl<const N: usize> HasNaN for SMatrix<N> {
 	fn has_nan(&self) -> bool {
 		self.m.iter().flatten().any(|x| x.is_nan())
 	}
 }
 
-impl<const N: usize> ops::Add<&Self> for SquareMatrix<N> {
+impl<const N: usize> ops::Add<&Self> for SMatrix<N> {
 	type Output = Self;
 
 	fn add(self, rhs: &Self) -> Self {
@@ -283,7 +284,7 @@ impl<const N: usize> ops::Add<&Self> for SquareMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::Mul<f32> for SquareMatrix<N> {
+impl<const N: usize> ops::Mul<f32> for SMatrix<N> {
 	type Output = Self;
 
 	fn mul(self, rhs: f32) -> Self {
@@ -297,35 +298,35 @@ impl<const N: usize> ops::Mul<f32> for SquareMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::Mul<&SquareMatrix<N>> for f32 {
-	type Output = SquareMatrix<N>;
+impl<const N: usize> ops::Mul<&SMatrix<N>> for f32 {
+	type Output = SMatrix<N>;
 
-	fn mul(self, rhs: &SquareMatrix<N>) -> SquareMatrix<N> {
+	fn mul(self, rhs: &SMatrix<N>) -> SMatrix<N> {
 		rhs.clone() * self
 	}
 }
 
-impl<const N: usize> ops::Mul<SquareMatrix<N>> for SquareMatrix<N> {
-	type Output = SquareMatrix<N>;
+impl<const N: usize> ops::Mul<SMatrix<N>> for SMatrix<N> {
+	type Output = SMatrix<N>;
 
-	fn mul(self, rhs: SquareMatrix<N>) -> SquareMatrix<N> {
+	fn mul(self, rhs: SMatrix<N>) -> SMatrix<N> {
 		&self * &rhs
 	}
 }
 
-impl<const N: usize> ops::Mul<&SquareMatrix<N>> for SquareMatrix<N> {
-	type Output = SquareMatrix<N>;
+impl<const N: usize> ops::Mul<&SMatrix<N>> for SMatrix<N> {
+	type Output = SMatrix<N>;
 
-	fn mul(self, rhs: &SquareMatrix<N>) -> SquareMatrix<N> {
+	fn mul(self, rhs: &SMatrix<N>) -> SMatrix<N> {
 		&self * rhs
 	}
 }
 
-impl<const N: usize> ops::Mul<&SquareMatrix<N>> for &SquareMatrix<N> {
-	type Output = SquareMatrix<N>;
+impl<const N: usize> ops::Mul<&SMatrix<N>> for &SMatrix<N> {
+	type Output = SMatrix<N>;
 
-	fn mul(self, rhs: &SquareMatrix<N>) -> SquareMatrix<N> {
-		let mut ret = SquareMatrix::zero();
+	fn mul(self, rhs: &SMatrix<N>) -> SMatrix<N> {
+		let mut ret = SMatrix::zero();
 		for i in 0..N {
 			for j in 0..N {
 				for k in 0..N {
@@ -338,7 +339,7 @@ impl<const N: usize> ops::Mul<&SquareMatrix<N>> for &SquareMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::Div<f32> for SquareMatrix<N> {
+impl<const N: usize> ops::Div<f32> for SMatrix<N> {
 	type Output = Self;
 
 	fn div(self, rhs: f32) -> Self {
@@ -355,7 +356,7 @@ impl<const N: usize> ops::Div<f32> for SquareMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::Index<usize> for SquareMatrix<N> {
+impl<const N: usize> ops::Index<usize> for SMatrix<N> {
 	type Output = [f32; N];
 
 	fn index(&self, index: usize) -> &[f32; N] {
@@ -363,13 +364,13 @@ impl<const N: usize> ops::Index<usize> for SquareMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::IndexMut<usize> for SquareMatrix<N> {
+impl<const N: usize> ops::IndexMut<usize> for SMatrix<N> {
 	fn index_mut(&mut self, index: usize) -> &mut [f32; N] {
 		&mut self.m[index]
 	}
 }
 
-impl ops::Mul<Vector2f> for SquareMatrix<2> {
+impl ops::Mul<Vector2f> for SMatrix<2> {
 	type Output = Vector2f;
 
 	fn mul(self, v: Vector2f) -> Vector2f {
@@ -377,7 +378,7 @@ impl ops::Mul<Vector2f> for SquareMatrix<2> {
 	}
 }
 
-impl ops::Mul<Vector2f> for &SquareMatrix<2> {
+impl ops::Mul<Vector2f> for &SMatrix<2> {
 	type Output = Vector2f;
 
 	fn mul(self, v: Vector2f) -> Vector2f {
@@ -388,7 +389,7 @@ impl ops::Mul<Vector2f> for &SquareMatrix<2> {
 	}
 }
 
-impl ops::Mul<Vector3f> for SquareMatrix<3> {
+impl ops::Mul<Vector3f> for SMatrix<3> {
 	type Output = Vector3f;
 
 	fn mul(self, v: Vector3f) -> Vector3f {
@@ -396,7 +397,7 @@ impl ops::Mul<Vector3f> for SquareMatrix<3> {
 	}
 }
 
-impl ops::Mul<Vector3f> for &SquareMatrix<3> {
+impl ops::Mul<Vector3f> for &SMatrix<3> {
 	type Output = Vector3f;
 
 	fn mul(self, v: Vector3f) -> Vector3f {
@@ -408,7 +409,7 @@ impl ops::Mul<Vector3f> for &SquareMatrix<3> {
 	}
 }
 
-impl ops::Mul<XYZ> for SquareMatrix<3> {
+impl ops::Mul<XYZ> for SMatrix<3> {
 	type Output = XYZ;
 
 	fn mul(self, v: XYZ) -> XYZ {
@@ -416,7 +417,7 @@ impl ops::Mul<XYZ> for SquareMatrix<3> {
 	}
 }
 
-impl ops::Mul<XYZ> for &SquareMatrix<3> {
+impl ops::Mul<XYZ> for &SMatrix<3> {
 	type Output = XYZ;
 
 	fn mul(self, v: XYZ) -> XYZ {
@@ -428,7 +429,7 @@ impl ops::Mul<XYZ> for &SquareMatrix<3> {
 	}
 }
 
-impl ops::Mul<RGB> for SquareMatrix<3> {
+impl ops::Mul<RGB> for SMatrix<3> {
 	type Output = RGB;
 
 	fn mul(self, v: RGB) -> RGB {
@@ -436,7 +437,7 @@ impl ops::Mul<RGB> for SquareMatrix<3> {
 	}
 }
 
-impl ops::Mul<RGB> for &SquareMatrix<3> {
+impl ops::Mul<RGB> for &SMatrix<3> {
 	type Output = RGB;
 
 	fn mul(self, v: RGB) -> RGB {
@@ -450,26 +451,26 @@ impl ops::Mul<RGB> for &SquareMatrix<3> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Transform {
-	m: SquareMatrix<4>,
-	inv: Option<SquareMatrix<4>>,
+	m: SMatrix<4>,
+	inv: Option<SMatrix<4>>,
 }
 
 impl Transform {
-	pub fn new(m: SquareMatrix<4>) -> Self {
+	pub fn new(m: SMatrix<4>) -> Self {
 		let inv = m.inv();
 
 		Self { m, inv }
 	}
 
-	pub fn new_with_inv(m: SquareMatrix<4>, inv: SquareMatrix<4>) -> Self {
+	pub fn new_with_inv(m: SMatrix<4>, inv: SMatrix<4>) -> Self {
 		Self { m, inv: Some(inv) }
 	}
 
-	pub fn get_matrix(&self) -> &SquareMatrix<4> {
+	pub fn get_matrix(&self) -> &SMatrix<4> {
 		&self.m
 	}
 
-	pub fn get_inverse_matrix(&self) -> Option<&SquareMatrix<4>> {
+	pub fn get_inverse_matrix(&self) -> Option<&SMatrix<4>> {
 		self.inv.as_ref()
 	}
 
@@ -489,13 +490,13 @@ impl Transform {
 	}
 
 	pub fn translate(delta: Vector3f) -> Self {
-		let m = SquareMatrix::from([
+		let m = SMatrix::from([
 			[1.0, 0.0, 0.0, delta.x],
 			[0.0, 1.0, 0.0, delta.y],
 			[0.0, 0.0, 1.0, delta.z],
 			[0.0, 0.0, 0.0, 1.0],
 		]);
-		let inv = SquareMatrix::from([
+		let inv = SMatrix::from([
 			[1.0, 0.0, 0.0, -delta.x],
 			[0.0, 1.0, 0.0, -delta.y],
 			[0.0, 0.0, 1.0, -delta.z],
@@ -506,13 +507,13 @@ impl Transform {
 	}
 
 	pub fn scale(x: f32, y: f32, z: f32) -> Self {
-		let m = SquareMatrix::from([
+		let m = SMatrix::from([
 			[x, 0.0, 0.0, 0.0],
 			[0.0, y, 0.0, 0.0],
 			[0.0, 0.0, z, 0.0],
 			[0.0, 0.0, 0.0, 1.0],
 		]);
-		let inv = SquareMatrix::from([
+		let inv = SMatrix::from([
 			[1.0 / x, 0.0, 0.0, 0.0],
 			[0.0, 1.0 / y, 0.0, 0.0],
 			[0.0, 0.0, 1.0 / z, 0.0],
@@ -539,7 +540,7 @@ impl Transform {
 		let theta = theta.to_radians();
 		let sin = theta.sin();
 		let cos = theta.cos();
-		let m = SquareMatrix::from([
+		let m = SMatrix::from([
 			[1.0, 0.0, 0.0, 0.0],
 			[0.0, cos, -sin, 0.0],
 			[0.0, sin, cos, 0.0],
@@ -555,7 +556,7 @@ impl Transform {
 		let theta = theta.to_radians();
 		let sin = theta.sin();
 		let cos = theta.cos();
-		let m = SquareMatrix::from([
+		let m = SMatrix::from([
 			[cos, 0.0, sin, 0.0],
 			[0.0, 1.0, 0.0, 0.0],
 			[-sin, 0.0, cos, 0.0],
@@ -571,7 +572,7 @@ impl Transform {
 		let theta = theta.to_radians();
 		let sin = theta.sin();
 		let cos = theta.cos();
-		let m = SquareMatrix::from([
+		let m = SMatrix::from([
 			[cos, -sin, 0.0, 0.0],
 			[sin, cos, 0.0, 0.0],
 			[0.0, 0.0, 1.0, 0.0],
@@ -591,7 +592,7 @@ impl Transform {
 	/// Return a rotation transform around `axis` with precomputed `sin(theta)` and `cos(theta)` values.
 	pub fn rotate_with_sin_cos(axis: Vector3f, sin: f32, cos: f32) -> Self {
 		let a = axis.normalized();
-		let mut m = SquareMatrix::zero();
+		let mut m = SMatrix::zero();
 		m[3][3] = 1.0;
 
 		// TODO: why does it says the row vectors to be basis
@@ -630,7 +631,7 @@ impl Transform {
 		// Initialize matrix r for rotation
 		let u = refl - from;
 		let v = refl - to;
-		let mut r = SquareMatrix::zero();
+		let mut r = SMatrix::zero();
 		r[3][3] = 1.0;
 		for i in 0..3 {
 			for j in 0..3 {
@@ -651,7 +652,7 @@ impl Transform {
 	/// `pos`, with `up` as the up direction. `up` may not be perpendicular to `look`
 	/// direction.
 	pub fn look_at(pos: Vector3f, look: Vector3f, up: Vector3f) -> Self {
-		let mut camera_to_world = SquareMatrix::<4>::zero();
+		let mut camera_to_world = SMatrix::<4>::zero();
 		camera_to_world[0][3] = pos.x;
 		camera_to_world[1][3] = pos.y;
 		camera_to_world[2][3] = pos.z;
@@ -756,7 +757,7 @@ impl Transform {
 	/// Return `true` if the transform changes handedness.
 	pub fn swaps_handedness(&self) -> bool {
 		let m = &self.m;
-		let m = SquareMatrix::from([
+		let m = SMatrix::from([
 			[m[0][0], m[0][1], m[0][2]],
 			[m[1][0], m[1][1], m[1][2]],
 			[m[2][0], m[2][1], m[2][2]],
@@ -768,14 +769,14 @@ impl Transform {
 
 impl Default for Transform {
 	fn default() -> Self {
-		let m = SquareMatrix::default();
+		let m = SMatrix::default();
 		Self { m: m.clone(), inv: Some(m) }
 	}
 }
 
 impl From<[[f32; 4]; 4]> for Transform {
 	fn from(m: [[f32; 4]; 4]) -> Self {
-		let m = SquareMatrix::from(m);
+		let m = SMatrix::from(m);
 		let inv = m.inv();
 
 		Self { m, inv }
@@ -784,7 +785,7 @@ impl From<[[f32; 4]; 4]> for Transform {
 
 impl From<&Frame> for Transform {
 	fn from(f: &Frame) -> Self {
-		let m = SquareMatrix::from([
+		let m = SMatrix::from([
 			[f.x.x, f.x.y, f.x.z, 0.0],
 			[f.y.x, f.y.y, f.y.z, 0.0],
 			[f.z.x, f.z.y, f.z.z, 0.0],
@@ -911,13 +912,13 @@ mod tests {
 
 	#[test]
 	fn test_determinant() {
-		let m = SquareMatrix::from([[1.0, 2.0], [3.0, 4.0]]);
+		let m = SMatrix::from([[1.0, 2.0], [3.0, 4.0]]);
 		assert_eq!(m.det(), -2.0);
 
-		let m = SquareMatrix::from([[0.0, 1.0, 2.0], [3.0, 0.0, 4.0], [5.0, 6.0, 0.0]]);
+		let m = SMatrix::from([[0.0, 1.0, 2.0], [3.0, 0.0, 4.0], [5.0, 6.0, 0.0]]);
 		assert_eq!(m.det(), 56.0);
 
-		let m = SquareMatrix::from([
+		let m = SMatrix::from([
 			[1.0, 2.0, 3.0, 0.0],
 			[2.0, 6.0, 6.0, 1.0],
 			[-1.0, 0.0, 0.0, 3.0],
@@ -925,42 +926,42 @@ mod tests {
 		]);
 		assert_eq!(m.det(), 36.0);
 
-		let m = SquareMatrix::diag([1.0, 2.0, 3.0, 4.0]);
+		let m = SMatrix::diag([1.0, 2.0, 3.0, 4.0]);
 		assert_eq!(m.det(), 24.0);
 	}
 
 	#[test]
 	fn test_inverse() {
-		let m = SquareMatrix::from([[2.0]]);
-		let inv = SquareMatrix::from([[0.5]]);
+		let m = SMatrix::from([[2.0]]);
+		let inv = SMatrix::from([[0.5]]);
 		assert_eq!(m.inv().unwrap(), inv);
 		assert!((&m * &inv).is_identity());
 
-		let m = SquareMatrix::from([[1.0, 2.0], [3.0, 4.0]]);
-		let inv = SquareMatrix::from([[-2.0, 1.0], [1.5, -0.5]]);
+		let m = SMatrix::from([[1.0, 2.0], [3.0, 4.0]]);
+		let inv = SMatrix::from([[-2.0, 1.0], [1.5, -0.5]]);
 		assert_eq!(m.inv().unwrap(), inv);
 		assert!((&m * &inv).is_identity());
 
-		let m = SquareMatrix::from([[2.0, 6.0, 2.0], [1.0, 4.0, 2.0], [5.0, 9.0, 0.0]]);
-		let inv = SquareMatrix::from([[-9.0, 9.0, 2.0], [5.0, -5.0, -1.0], [-5.5, 6.0, 1.0]]);
-		let singular = SquareMatrix::from([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]);
+		let m = SMatrix::from([[2.0, 6.0, 2.0], [1.0, 4.0, 2.0], [5.0, 9.0, 0.0]]);
+		let inv = SMatrix::from([[-9.0, 9.0, 2.0], [5.0, -5.0, -1.0], [-5.5, 6.0, 1.0]]);
+		let singular = SMatrix::from([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]);
 		assert_eq!(m.inv().unwrap(), inv);
 		assert!((&m * &inv).is_identity());
 		assert!(singular.inv().is_none());
 
-		let m = SquareMatrix::from([
+		let m = SMatrix::from([
 			[1.0, 1.0, 1.0, 1.0],
 			[1.0, 1.0, -1.0, -1.0],
 			[1.0, -1.0, -1.0, 1.0],
 			[1.0, -1.0, 1.0, -1.0],
 		]);
-		let inv = SquareMatrix::from([
+		let inv = SMatrix::from([
 			[0.25, 0.25, 0.25, 0.25],
 			[0.25, 0.25, -0.25, -0.25],
 			[0.25, -0.25, -0.25, 0.25],
 			[0.25, -0.25, 0.25, -0.25],
 		]);
-		let singular = SquareMatrix::from([
+		let singular = SMatrix::from([
 			[1.0, 2.0, 3.0, 4.0],
 			[5.0, 6.0, 7.0, 8.0],
 			[9.0, 10.0, 11.0, 12.0],
