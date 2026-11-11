@@ -85,7 +85,7 @@ impl CameraTransform {
 		let render_from_world = world_from_render.inv().unwrap();
 		let (a, b) = (
 			&render_from_world * &world_from_camera.start_transform,
-			&render_from_world * &world_from_camera.end_transform,
+			world_from_camera.end_transform.as_ref().map(|t| &render_from_world * t),
 		);
 		let render_from_camera =
 			AnimatedTransform::new(a, world_from_camera.start_time, b, world_from_camera.end_time);

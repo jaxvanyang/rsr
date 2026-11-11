@@ -850,21 +850,20 @@ impl Default for Frame {
 	}
 }
 
-// TODO:
+// The transform is actually animated when end transform is not `None`.
 #[derive(Debug)]
 pub struct AnimatedTransform {
 	pub start_transform: Transform,
-	pub end_transform: Transform,
+	pub end_transform: Option<Transform>,
 	pub start_time: f32,
 	pub end_time: f32,
 }
 
 impl AnimatedTransform {
-	// TBD: use value or reference
 	pub fn new(
 		start_transform: Transform,
 		start_time: f32,
-		end_transform: Transform,
+		end_transform: Option<Transform>,
 		end_time: f32,
 	) -> Self {
 		Self { start_transform, end_transform, start_time, end_time }
