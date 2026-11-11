@@ -54,7 +54,7 @@ fn draw_star(window: &mut Window, x: f32, y: f32, radius: f32, theta: f32) {
 		points[i * 2 + 1] = Vector2f::new(cos1, sin1) * inner_radius;
 	}
 	for p in points.iter_mut() {
-		*p = center + &rotation * *p;
+		*p = center + rotation * *p;
 	}
 
 	window.fill_polygon(&points.map(|p| p.into()), yellow);

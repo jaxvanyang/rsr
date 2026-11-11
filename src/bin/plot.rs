@@ -30,7 +30,7 @@ fn plot(window: &mut Window, center: Vector2i, f: fn(f32) -> f32, color: u32) {
 	let mut points = Vec::new();
 	for x in 360..=830 {
 		let x = x as f32;
-		points.push(&transform * Vector2f::new(x, f(x)) + offset);
+		points.push(transform * Vector2f::new(x, f(x)) + offset);
 	}
 	window.draw_lines(&points, color);
 }

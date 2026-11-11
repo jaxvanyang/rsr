@@ -101,7 +101,7 @@ impl<'a> RGBColorSpace<'a> {
 
 	/// Return a matrix convert color between two RGB color spaces.
 	pub fn convert_rgb_color_space(from: &Self, to: &Self) -> SMatrix<3> {
-		if from == to { SMatrix::default() } else { &to.xyz2rgb * &from.rgb2xyz }
+		if from == to { SMatrix::default() } else { to.xyz2rgb * from.rgb2xyz }
 	}
 
 	pub fn to_rgb_coeffs(&self, rgb: RGB) -> RGBSigmoidPolynomial {

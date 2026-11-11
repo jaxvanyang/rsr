@@ -7,8 +7,8 @@ use super::{
 use approx::abs_diff_eq;
 use std::ops::*;
 
-/// Square matrix.
-#[derive(Debug, Clone, PartialEq)]
+/// Square matrix. For performance, use N <= 4 matrices.
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct SMatrix<const N: usize> {
 	m: [[f32; N]; N],
 }
@@ -270,14 +270,28 @@ impl<const N: usize> HasNaN for SMatrix<N> {
 	}
 }
 
-impl<const N: usize> Add<&Self> for SMatrix<N> {
+impl<const N: usize> Add<Self> for SMatrix<N> {
 	type Output = Self;
 
-	fn add(self, rhs: &Self) -> Self {
-		let mut ret = self.clone();
+	fn add(self, rhs: Self) -> Self {
+		let mut ret = self;
 		for i in 0..N {
 			for j in 0..N {
 				ret.m[i][j] += rhs.m[i][j];
+			}
+		}
+		ret
+	}
+}
+
+impl<const N: usize> Sub<Self> for SMatrix<N> {
+	type Output = Self;
+
+	fn sub(self, rhs: Self) -> Self {
+		let mut ret = self;
+		for i in 0..N {
+			for j in 0..N {
+				ret.m[i][j] -= rhs.m[i][j];
 			}
 		}
 		ret
@@ -288,7 +302,7 @@ impl<const N: usize> Mul<f32> for SMatrix<N> {
 	type Output = Self;
 
 	fn mul(self, rhs: f32) -> Self {
-		let mut ret = self.clone();
+		let mut ret = self;
 		for i in 0..N {
 			for j in 0..N {
 				ret.m[i][j] *= rhs;
@@ -298,34 +312,18 @@ impl<const N: usize> Mul<f32> for SMatrix<N> {
 	}
 }
 
-impl<const N: usize> Mul<&SMatrix<N>> for f32 {
+impl<const N: usize> Mul<SMatrix<N>> for f32 {
 	type Output = SMatrix<N>;
 
-	fn mul(self, rhs: &SMatrix<N>) -> SMatrix<N> {
-		rhs.clone() * self
+	fn mul(self, rhs: SMatrix<N>) -> SMatrix<N> {
+		rhs * self
 	}
 }
 
 impl<const N: usize> Mul<SMatrix<N>> for SMatrix<N> {
-	type Output = SMatrix<N>;
+	type Output = Self;
 
-	fn mul(self, rhs: SMatrix<N>) -> SMatrix<N> {
-		&self * &rhs
-	}
-}
-
-impl<const N: usize> Mul<&SMatrix<N>> for SMatrix<N> {
-	type Output = SMatrix<N>;
-
-	fn mul(self, rhs: &SMatrix<N>) -> SMatrix<N> {
-		&self * rhs
-	}
-}
-
-impl<const N: usize> Mul<&SMatrix<N>> for &SMatrix<N> {
-	type Output = SMatrix<N>;
-
-	fn mul(self, rhs: &SMatrix<N>) -> SMatrix<N> {
+	fn mul(self, rhs: Self) -> SMatrix<N> {
 		let mut ret = SMatrix::zero();
 		for i in 0..N {
 			for j in 0..N {
@@ -345,7 +343,7 @@ impl<const N: usize> Div<f32> for SMatrix<N> {
 	fn div(self, rhs: f32) -> Self {
 		debug_assert_ne!(rhs, 0.0);
 
-		let mut ret = self.clone();
+		let mut ret = self;
 		for i in 0..N {
 			for j in 0..N {
 				ret.m[i][j] /= rhs;
@@ -374,14 +372,6 @@ impl Mul<Vector2f> for SMatrix<2> {
 	type Output = Vector2f;
 
 	fn mul(self, v: Vector2f) -> Vector2f {
-		&self * v
-	}
-}
-
-impl Mul<Vector2f> for &SMatrix<2> {
-	type Output = Vector2f;
-
-	fn mul(self, v: Vector2f) -> Vector2f {
 		Vector2f::new(
 			self.m[0][0] * v.x + self.m[0][1] * v.y,
 			self.m[1][0] * v.x + self.m[1][1] * v.y,
@@ -390,14 +380,6 @@ impl Mul<Vector2f> for &SMatrix<2> {
 }
 
 impl Mul<Vector3f> for SMatrix<3> {
-	type Output = Vector3f;
-
-	fn mul(self, v: Vector3f) -> Vector3f {
-		&self * v
-	}
-}
-
-impl Mul<Vector3f> for &SMatrix<3> {
 	type Output = Vector3f;
 
 	fn mul(self, v: Vector3f) -> Vector3f {
@@ -413,14 +395,6 @@ impl Mul<XYZ> for SMatrix<3> {
 	type Output = XYZ;
 
 	fn mul(self, v: XYZ) -> XYZ {
-		&self * v
-	}
-}
-
-impl Mul<XYZ> for &SMatrix<3> {
-	type Output = XYZ;
-
-	fn mul(self, v: XYZ) -> XYZ {
 		XYZ::new(
 			self.m[0][0] * v.x + self.m[0][1] * v.y + self.m[0][2] * v.z,
 			self.m[1][0] * v.x + self.m[1][1] * v.y + self.m[1][2] * v.z,
@@ -430,14 +404,6 @@ impl Mul<XYZ> for &SMatrix<3> {
 }
 
 impl Mul<RGB> for SMatrix<3> {
-	type Output = RGB;
-
-	fn mul(self, v: RGB) -> RGB {
-		&self * v
-	}
-}
-
-impl Mul<RGB> for &SMatrix<3> {
 	type Output = RGB;
 
 	fn mul(self, v: RGB) -> RGB {
@@ -476,7 +442,7 @@ impl Transform {
 
 	/// Return the inverse of this transform, if it exists.
 	pub fn inv(&self) -> Option<Self> {
-		self.inv.as_ref().map(|inv| Self::new_with_inv(inv.clone(), self.m.clone()))
+		self.inv.as_ref().map(|inv| Self::new_with_inv(*inv, self.m))
 	}
 
 	/// Return the transpose of this transform.
@@ -770,7 +736,7 @@ impl Transform {
 impl Default for Transform {
 	fn default() -> Self {
 		let m = SMatrix::default();
-		Self { m: m.clone(), inv: Some(m) }
+		Self { m, inv: Some(m) }
 	}
 }
 
@@ -798,18 +764,18 @@ impl From<&Frame> for Transform {
 }
 
 impl Mul<Transform> for Transform {
-	type Output = Transform;
+	type Output = Self;
 
 	fn mul(self, rhs: Transform) -> Self::Output {
-		(&self) * &rhs
+		&self * &rhs
 	}
 }
 
 impl Mul<&Transform> for Transform {
-	type Output = Transform;
+	type Output = Self;
 
 	fn mul(self, rhs: &Transform) -> Self::Output {
-		(&self) * rhs
+		&self * rhs
 	}
 }
 
@@ -817,9 +783,9 @@ impl Mul<&Transform> for &Transform {
 	type Output = Transform;
 
 	fn mul(self, rhs: &Transform) -> Self::Output {
-		let m = &self.m * &rhs.m;
-		let inv = if let Some(a) = self.inv.as_ref()
-			&& let Some(b) = rhs.inv.as_ref()
+		let m = self.m * rhs.m;
+		let inv = if let Some(a) = self.inv
+			&& let Some(b) = rhs.inv
 		{
 			Some(b * a)
 		} else {
@@ -935,18 +901,18 @@ mod tests {
 		let m = SMatrix::from([[2.0]]);
 		let inv = SMatrix::from([[0.5]]);
 		assert_eq!(m.inv().unwrap(), inv);
-		assert!((&m * &inv).is_identity());
+		assert!((m * inv).is_identity());
 
 		let m = SMatrix::from([[1.0, 2.0], [3.0, 4.0]]);
 		let inv = SMatrix::from([[-2.0, 1.0], [1.5, -0.5]]);
 		assert_eq!(m.inv().unwrap(), inv);
-		assert!((&m * &inv).is_identity());
+		assert!((m * inv).is_identity());
 
 		let m = SMatrix::from([[2.0, 6.0, 2.0], [1.0, 4.0, 2.0], [5.0, 9.0, 0.0]]);
 		let inv = SMatrix::from([[-9.0, 9.0, 2.0], [5.0, -5.0, -1.0], [-5.5, 6.0, 1.0]]);
 		let singular = SMatrix::from([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]);
 		assert_eq!(m.inv().unwrap(), inv);
-		assert!((&m * &inv).is_identity());
+		assert!((m * inv).is_identity());
 		assert!(singular.inv().is_none());
 
 		let m = SMatrix::from([
@@ -968,7 +934,7 @@ mod tests {
 			[13.0, 14.0, 15.0, 16.0],
 		]);
 		assert_eq!(m.inv().unwrap(), inv);
-		assert!((&m * &inv).is_identity());
+		assert!((m * inv).is_identity());
 		assert!(singular.inv().is_none());
 	}
 

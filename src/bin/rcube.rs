@@ -34,7 +34,7 @@ fn main() -> Result<()> {
 		[0.0, 0.0, 1.0, 0.0],
 		[0.0, 0.0, 0.0, 1.0],
 	]);
-	let proj = Transform::new(proj_screen * proj_ortho * world2camera.get_matrix());
+	let proj = Transform::new(proj_screen * proj_ortho * *world2camera.get_matrix());
 
 	window.set_target_fps(0);
 
