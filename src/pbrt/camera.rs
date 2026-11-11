@@ -64,7 +64,9 @@ impl CameraRayDifferential {
 
 #[derive(Debug)]
 pub struct CameraTransform {
+	#[allow(dead_code)]
 	render_from_camera: AnimatedTransform,
+	#[allow(dead_code)]
 	world_from_render: Transform,
 }
 
@@ -103,7 +105,9 @@ pub struct CameraBase {
 	medium: Medium,
 	min_pos_differential_x: Vector3f,
 	min_pos_differential_y: Vector3f,
+	#[allow(dead_code)]
 	min_dir_differential_x: Vector3f,
+	#[allow(dead_code)]
 	min_dir_differential_y: Vector3f,
 }
 
@@ -131,6 +135,7 @@ impl CameraBase {
 		}
 	}
 
+	#[allow(dead_code)]
 	fn generate_ray_differential(
 		camera: &dyn Camera,
 		sample: CameraSample,
@@ -214,9 +219,12 @@ impl Camera for CameraBase {
 #[derive(Debug)]
 pub struct ProjectiveCamera {
 	base: CameraBase,
+	#[allow(dead_code)]
 	screen_from_camera: Transform,
 	camera_from_raster: Transform,
+	#[allow(dead_code)]
 	raster_from_screen: Transform,
+	#[allow(dead_code)]
 	screen_from_raster: Transform,
 	lens_radius: f32,
 	focal_distance: f32,
