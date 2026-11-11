@@ -141,7 +141,7 @@ pub mod pico8 {
 	pub const JADE: u32 = 0x00B543;
 	pub const DENIM: u32 = 0x065AB5;
 	pub const AUBERGINE: u32 = 0x754665;
-	pub const SALMON: u32 = 0xFF6e59;
+	pub const SALMON: u32 = 0xFF6E59;
 	pub const CORAL: u32 = 0xFF9D81;
 }
 
