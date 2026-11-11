@@ -5,7 +5,7 @@ use super::{
 	vecmath::{Bounds3f, Vector2f, Vector3f},
 };
 use approx::abs_diff_eq;
-use std::ops;
+use std::ops::*;
 
 /// Square matrix.
 #[derive(Debug, Clone, PartialEq)]
@@ -52,8 +52,8 @@ impl<const N: usize> SMatrix<N> {
 
 	pub fn mul<Output, V>(&self, v: V) -> Output
 	where
-		Output: Default + ops::IndexMut<usize, Output = f32>,
-		V: ops::Index<usize, Output = f32>,
+		Output: Default + IndexMut<usize, Output = f32>,
+		V: Index<usize, Output = f32>,
 	{
 		let mut ret = Output::default();
 
@@ -270,7 +270,7 @@ impl<const N: usize> HasNaN for SMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::Add<&Self> for SMatrix<N> {
+impl<const N: usize> Add<&Self> for SMatrix<N> {
 	type Output = Self;
 
 	fn add(self, rhs: &Self) -> Self {
@@ -284,7 +284,7 @@ impl<const N: usize> ops::Add<&Self> for SMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::Mul<f32> for SMatrix<N> {
+impl<const N: usize> Mul<f32> for SMatrix<N> {
 	type Output = Self;
 
 	fn mul(self, rhs: f32) -> Self {
@@ -298,7 +298,7 @@ impl<const N: usize> ops::Mul<f32> for SMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::Mul<&SMatrix<N>> for f32 {
+impl<const N: usize> Mul<&SMatrix<N>> for f32 {
 	type Output = SMatrix<N>;
 
 	fn mul(self, rhs: &SMatrix<N>) -> SMatrix<N> {
@@ -306,7 +306,7 @@ impl<const N: usize> ops::Mul<&SMatrix<N>> for f32 {
 	}
 }
 
-impl<const N: usize> ops::Mul<SMatrix<N>> for SMatrix<N> {
+impl<const N: usize> Mul<SMatrix<N>> for SMatrix<N> {
 	type Output = SMatrix<N>;
 
 	fn mul(self, rhs: SMatrix<N>) -> SMatrix<N> {
@@ -314,7 +314,7 @@ impl<const N: usize> ops::Mul<SMatrix<N>> for SMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::Mul<&SMatrix<N>> for SMatrix<N> {
+impl<const N: usize> Mul<&SMatrix<N>> for SMatrix<N> {
 	type Output = SMatrix<N>;
 
 	fn mul(self, rhs: &SMatrix<N>) -> SMatrix<N> {
@@ -322,7 +322,7 @@ impl<const N: usize> ops::Mul<&SMatrix<N>> for SMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::Mul<&SMatrix<N>> for &SMatrix<N> {
+impl<const N: usize> Mul<&SMatrix<N>> for &SMatrix<N> {
 	type Output = SMatrix<N>;
 
 	fn mul(self, rhs: &SMatrix<N>) -> SMatrix<N> {
@@ -339,7 +339,7 @@ impl<const N: usize> ops::Mul<&SMatrix<N>> for &SMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::Div<f32> for SMatrix<N> {
+impl<const N: usize> Div<f32> for SMatrix<N> {
 	type Output = Self;
 
 	fn div(self, rhs: f32) -> Self {
@@ -356,7 +356,7 @@ impl<const N: usize> ops::Div<f32> for SMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::Index<usize> for SMatrix<N> {
+impl<const N: usize> Index<usize> for SMatrix<N> {
 	type Output = [f32; N];
 
 	fn index(&self, index: usize) -> &[f32; N] {
@@ -364,13 +364,13 @@ impl<const N: usize> ops::Index<usize> for SMatrix<N> {
 	}
 }
 
-impl<const N: usize> ops::IndexMut<usize> for SMatrix<N> {
+impl<const N: usize> IndexMut<usize> for SMatrix<N> {
 	fn index_mut(&mut self, index: usize) -> &mut [f32; N] {
 		&mut self.m[index]
 	}
 }
 
-impl ops::Mul<Vector2f> for SMatrix<2> {
+impl Mul<Vector2f> for SMatrix<2> {
 	type Output = Vector2f;
 
 	fn mul(self, v: Vector2f) -> Vector2f {
@@ -378,7 +378,7 @@ impl ops::Mul<Vector2f> for SMatrix<2> {
 	}
 }
 
-impl ops::Mul<Vector2f> for &SMatrix<2> {
+impl Mul<Vector2f> for &SMatrix<2> {
 	type Output = Vector2f;
 
 	fn mul(self, v: Vector2f) -> Vector2f {
@@ -389,7 +389,7 @@ impl ops::Mul<Vector2f> for &SMatrix<2> {
 	}
 }
 
-impl ops::Mul<Vector3f> for SMatrix<3> {
+impl Mul<Vector3f> for SMatrix<3> {
 	type Output = Vector3f;
 
 	fn mul(self, v: Vector3f) -> Vector3f {
@@ -397,7 +397,7 @@ impl ops::Mul<Vector3f> for SMatrix<3> {
 	}
 }
 
-impl ops::Mul<Vector3f> for &SMatrix<3> {
+impl Mul<Vector3f> for &SMatrix<3> {
 	type Output = Vector3f;
 
 	fn mul(self, v: Vector3f) -> Vector3f {
@@ -409,7 +409,7 @@ impl ops::Mul<Vector3f> for &SMatrix<3> {
 	}
 }
 
-impl ops::Mul<XYZ> for SMatrix<3> {
+impl Mul<XYZ> for SMatrix<3> {
 	type Output = XYZ;
 
 	fn mul(self, v: XYZ) -> XYZ {
@@ -417,7 +417,7 @@ impl ops::Mul<XYZ> for SMatrix<3> {
 	}
 }
 
-impl ops::Mul<XYZ> for &SMatrix<3> {
+impl Mul<XYZ> for &SMatrix<3> {
 	type Output = XYZ;
 
 	fn mul(self, v: XYZ) -> XYZ {
@@ -429,7 +429,7 @@ impl ops::Mul<XYZ> for &SMatrix<3> {
 	}
 }
 
-impl ops::Mul<RGB> for SMatrix<3> {
+impl Mul<RGB> for SMatrix<3> {
 	type Output = RGB;
 
 	fn mul(self, v: RGB) -> RGB {
@@ -437,7 +437,7 @@ impl ops::Mul<RGB> for SMatrix<3> {
 	}
 }
 
-impl ops::Mul<RGB> for &SMatrix<3> {
+impl Mul<RGB> for &SMatrix<3> {
 	type Output = RGB;
 
 	fn mul(self, v: RGB) -> RGB {
@@ -797,7 +797,7 @@ impl From<&Frame> for Transform {
 	}
 }
 
-impl ops::Mul<Transform> for Transform {
+impl Mul<Transform> for Transform {
 	type Output = Transform;
 
 	fn mul(self, rhs: Transform) -> Self::Output {
@@ -805,7 +805,7 @@ impl ops::Mul<Transform> for Transform {
 	}
 }
 
-impl ops::Mul<&Transform> for Transform {
+impl Mul<&Transform> for Transform {
 	type Output = Transform;
 
 	fn mul(self, rhs: &Transform) -> Self::Output {
@@ -813,7 +813,7 @@ impl ops::Mul<&Transform> for Transform {
 	}
 }
 
-impl ops::Mul<&Transform> for &Transform {
+impl Mul<&Transform> for &Transform {
 	type Output = Transform;
 
 	fn mul(self, rhs: &Transform) -> Self::Output {

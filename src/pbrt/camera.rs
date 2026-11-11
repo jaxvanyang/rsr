@@ -8,13 +8,11 @@ use super::{
 	transform::{AnimatedTransform, Transform},
 	vecmath::{Bounds2f, Vector2f, Vector3f},
 };
-use std::ops;
+use std::ops::{Deref, DerefMut};
 
 pub trait Camera {
 	fn get_film(&self) -> &dyn Film;
 	fn sample_time(&self, u: f32) -> f32;
-	// TODO:
-	// fn init_metadata(&self, metadata: &mut ImageMetadata);
 	fn get_camera_transform(&self) -> &CameraTransform;
 
 	fn generate_ray(
@@ -266,14 +264,14 @@ impl ProjectiveCamera {
 	}
 }
 
-impl ops::Deref for ProjectiveCamera {
+impl Deref for ProjectiveCamera {
 	type Target = CameraBase;
 	fn deref(&self) -> &Self::Target {
 		&self.base
 	}
 }
 
-impl ops::DerefMut for ProjectiveCamera {
+impl DerefMut for ProjectiveCamera {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.base
 	}
@@ -386,14 +384,14 @@ impl Camera for OrthographicCamera {
 	}
 }
 
-impl ops::Deref for OrthographicCamera {
+impl Deref for OrthographicCamera {
 	type Target = ProjectiveCamera;
 	fn deref(&self) -> &Self::Target {
 		&self.proj
 	}
 }
 
-impl ops::DerefMut for OrthographicCamera {
+impl DerefMut for OrthographicCamera {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.proj
 	}
@@ -513,14 +511,14 @@ impl Camera for PerspectiveCamera {
 	}
 }
 
-impl ops::Deref for PerspectiveCamera {
+impl Deref for PerspectiveCamera {
 	type Target = ProjectiveCamera;
 	fn deref(&self) -> &Self::Target {
 		&self.proj
 	}
 }
 
-impl ops::DerefMut for PerspectiveCamera {
+impl DerefMut for PerspectiveCamera {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.proj
 	}

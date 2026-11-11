@@ -1,5 +1,5 @@
 use super::{medium::Medium, number::HasNaN, vecmath::Vector3f};
-use std::ops;
+use std::ops::{Deref, DerefMut};
 
 #[derive(Debug, Clone)]
 pub struct Ray {
@@ -81,14 +81,14 @@ impl HasNaN for RayDifferential {
 	}
 }
 
-impl ops::Deref for RayDifferential {
+impl Deref for RayDifferential {
 	type Target = Ray;
 	fn deref(&self) -> &Self::Target {
 		&self.ray
 	}
 }
 
-impl ops::DerefMut for RayDifferential {
+impl DerefMut for RayDifferential {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.ray
 	}

@@ -5,7 +5,7 @@ use super::{
 	colorspace::RGBColorSpace,
 	math::{fast_exp, lerp},
 };
-use std::ops;
+use std::ops::{Index, IndexMut, Mul};
 
 pub const LAMBDA_MIN: f32 = 360.;
 pub const LAMBDA_MAX: f32 = 830.;
@@ -287,7 +287,7 @@ impl SampledSpectrum {
 	}
 }
 
-impl ops::Index<usize> for SampledSpectrum {
+impl Index<usize> for SampledSpectrum {
 	type Output = f32;
 
 	fn index(&self, index: usize) -> &Self::Output {
@@ -295,13 +295,13 @@ impl ops::Index<usize> for SampledSpectrum {
 	}
 }
 
-impl ops::IndexMut<usize> for SampledSpectrum {
+impl IndexMut<usize> for SampledSpectrum {
 	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
 		&mut self.values[index]
 	}
 }
 
-impl ops::Mul for SampledSpectrum {
+impl Mul for SampledSpectrum {
 	type Output = Self;
 
 	fn mul(self, rhs: Self) -> Self::Output {
@@ -309,7 +309,7 @@ impl ops::Mul for SampledSpectrum {
 	}
 }
 
-impl ops::Mul<&Self> for SampledSpectrum {
+impl Mul<&Self> for SampledSpectrum {
 	type Output = Self;
 
 	fn mul(self, rhs: &Self) -> Self::Output {
@@ -362,7 +362,7 @@ impl SampledWavelengths {
 	}
 }
 
-impl ops::Index<usize> for SampledWavelengths {
+impl Index<usize> for SampledWavelengths {
 	type Output = f32;
 
 	fn index(&self, index: usize) -> &Self::Output {
@@ -370,7 +370,7 @@ impl ops::Index<usize> for SampledWavelengths {
 	}
 }
 
-impl ops::IndexMut<usize> for SampledWavelengths {
+impl IndexMut<usize> for SampledWavelengths {
 	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
 		&mut self.lambdas[index]
 	}

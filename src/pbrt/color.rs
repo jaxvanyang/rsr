@@ -5,7 +5,7 @@ use super::{
 	{Vector2f, spectrum::CIE_Y_INTEGRAL},
 };
 use crate::{polynomial, ui::Color};
-use std::ops;
+use std::ops::*;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct XYZ {
@@ -55,7 +55,7 @@ impl HasNaN for XYZ {
 	}
 }
 
-impl ops::Neg for XYZ {
+impl Neg for XYZ {
 	type Output = Self;
 
 	fn neg(self) -> Self::Output {
@@ -63,7 +63,7 @@ impl ops::Neg for XYZ {
 	}
 }
 
-impl ops::Add for XYZ {
+impl Add for XYZ {
 	type Output = Self;
 
 	fn add(self, rhs: Self) -> Self::Output {
@@ -73,7 +73,7 @@ impl ops::Add for XYZ {
 	}
 }
 
-impl ops::AddAssign for XYZ {
+impl AddAssign for XYZ {
 	fn add_assign(&mut self, rhs: Self) {
 		self.x += rhs.x;
 		self.y += rhs.y;
@@ -81,7 +81,7 @@ impl ops::AddAssign for XYZ {
 	}
 }
 
-impl ops::Sub for XYZ {
+impl Sub for XYZ {
 	type Output = Self;
 
 	fn sub(self, rhs: Self) -> Self::Output {
@@ -91,7 +91,7 @@ impl ops::Sub for XYZ {
 	}
 }
 
-impl ops::SubAssign for XYZ {
+impl SubAssign for XYZ {
 	fn sub_assign(&mut self, rhs: Self) {
 		self.x -= rhs.x;
 		self.y -= rhs.y;
@@ -99,7 +99,7 @@ impl ops::SubAssign for XYZ {
 	}
 }
 
-impl ops::Sub<XYZ> for f32 {
+impl Sub<XYZ> for f32 {
 	type Output = XYZ;
 
 	fn sub(self, rhs: XYZ) -> Self::Output {
@@ -107,7 +107,7 @@ impl ops::Sub<XYZ> for f32 {
 	}
 }
 
-impl ops::Mul for XYZ {
+impl Mul for XYZ {
 	type Output = Self;
 
 	fn mul(self, rhs: Self) -> Self::Output {
@@ -117,7 +117,7 @@ impl ops::Mul for XYZ {
 	}
 }
 
-impl ops::MulAssign for XYZ {
+impl MulAssign for XYZ {
 	fn mul_assign(&mut self, rhs: Self) {
 		self.x *= rhs.x;
 		self.y *= rhs.y;
@@ -125,7 +125,7 @@ impl ops::MulAssign for XYZ {
 	}
 }
 
-impl ops::Mul<f32> for XYZ {
+impl Mul<f32> for XYZ {
 	type Output = Self;
 
 	fn mul(self, rhs: f32) -> Self::Output {
@@ -135,7 +135,7 @@ impl ops::Mul<f32> for XYZ {
 	}
 }
 
-impl ops::MulAssign<f32> for XYZ {
+impl MulAssign<f32> for XYZ {
 	fn mul_assign(&mut self, rhs: f32) {
 		debug_assert!(!rhs.is_nan());
 		self.x *= rhs;
@@ -144,7 +144,7 @@ impl ops::MulAssign<f32> for XYZ {
 	}
 }
 
-impl ops::Div for XYZ {
+impl Div for XYZ {
 	type Output = Self;
 
 	fn div(self, rhs: Self) -> Self::Output {
@@ -154,7 +154,7 @@ impl ops::Div for XYZ {
 	}
 }
 
-impl ops::DivAssign for XYZ {
+impl DivAssign for XYZ {
 	fn div_assign(&mut self, rhs: Self) {
 		self.x /= rhs.x;
 		self.y /= rhs.y;
@@ -162,7 +162,7 @@ impl ops::DivAssign for XYZ {
 	}
 }
 
-impl ops::Div<f32> for XYZ {
+impl Div<f32> for XYZ {
 	type Output = Self;
 
 	fn div(self, rhs: f32) -> Self::Output {
@@ -172,14 +172,14 @@ impl ops::Div<f32> for XYZ {
 	}
 }
 
-impl ops::DivAssign<f32> for XYZ {
+impl DivAssign<f32> for XYZ {
 	fn div_assign(&mut self, rhs: f32) {
 		debug_assert!(!rhs.is_nan());
 		*self *= 1. / rhs;
 	}
 }
 
-impl ops::Index<usize> for XYZ {
+impl Index<usize> for XYZ {
 	type Output = f32;
 	fn index(&self, index: usize) -> &Self::Output {
 		match index {
@@ -191,7 +191,7 @@ impl ops::Index<usize> for XYZ {
 	}
 }
 
-impl ops::IndexMut<usize> for XYZ {
+impl IndexMut<usize> for XYZ {
 	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
 		match index {
 			0 => &mut self.x,
@@ -272,7 +272,7 @@ impl HasNaN for RGB {
 	}
 }
 
-impl ops::Neg for RGB {
+impl Neg for RGB {
 	type Output = Self;
 
 	fn neg(self) -> Self::Output {
@@ -280,7 +280,7 @@ impl ops::Neg for RGB {
 	}
 }
 
-impl ops::Add for RGB {
+impl Add for RGB {
 	type Output = Self;
 
 	fn add(self, rhs: Self) -> Self::Output {
@@ -290,7 +290,7 @@ impl ops::Add for RGB {
 	}
 }
 
-impl ops::AddAssign for RGB {
+impl AddAssign for RGB {
 	fn add_assign(&mut self, rhs: Self) {
 		self.r += rhs.r;
 		self.g += rhs.g;
@@ -298,7 +298,7 @@ impl ops::AddAssign for RGB {
 	}
 }
 
-impl ops::Sub for RGB {
+impl Sub for RGB {
 	type Output = Self;
 
 	fn sub(self, rhs: Self) -> Self::Output {
@@ -308,7 +308,7 @@ impl ops::Sub for RGB {
 	}
 }
 
-impl ops::SubAssign for RGB {
+impl SubAssign for RGB {
 	fn sub_assign(&mut self, rhs: Self) {
 		self.r -= rhs.r;
 		self.g -= rhs.g;
@@ -316,7 +316,7 @@ impl ops::SubAssign for RGB {
 	}
 }
 
-impl ops::Sub<RGB> for f32 {
+impl Sub<RGB> for f32 {
 	type Output = RGB;
 
 	fn sub(self, rhs: RGB) -> Self::Output {
@@ -324,7 +324,7 @@ impl ops::Sub<RGB> for f32 {
 	}
 }
 
-impl ops::Mul for RGB {
+impl Mul for RGB {
 	type Output = Self;
 
 	fn mul(self, rhs: Self) -> Self::Output {
@@ -334,7 +334,7 @@ impl ops::Mul for RGB {
 	}
 }
 
-impl ops::MulAssign for RGB {
+impl MulAssign for RGB {
 	fn mul_assign(&mut self, rhs: Self) {
 		self.r *= rhs.r;
 		self.g *= rhs.g;
@@ -342,7 +342,7 @@ impl ops::MulAssign for RGB {
 	}
 }
 
-impl ops::Mul<f32> for RGB {
+impl Mul<f32> for RGB {
 	type Output = Self;
 
 	fn mul(self, rhs: f32) -> Self::Output {
@@ -352,7 +352,7 @@ impl ops::Mul<f32> for RGB {
 	}
 }
 
-impl ops::MulAssign<f32> for RGB {
+impl MulAssign<f32> for RGB {
 	fn mul_assign(&mut self, rhs: f32) {
 		debug_assert!(!rhs.is_nan());
 		self.r *= rhs;
@@ -361,7 +361,7 @@ impl ops::MulAssign<f32> for RGB {
 	}
 }
 
-impl ops::Div for RGB {
+impl Div for RGB {
 	type Output = Self;
 
 	fn div(self, rhs: Self) -> Self::Output {
@@ -371,7 +371,7 @@ impl ops::Div for RGB {
 	}
 }
 
-impl ops::DivAssign for RGB {
+impl DivAssign for RGB {
 	fn div_assign(&mut self, rhs: Self) {
 		self.r /= rhs.r;
 		self.g /= rhs.g;
@@ -379,7 +379,7 @@ impl ops::DivAssign for RGB {
 	}
 }
 
-impl ops::Div<f32> for RGB {
+impl Div<f32> for RGB {
 	type Output = Self;
 
 	fn div(self, rhs: f32) -> Self::Output {
@@ -389,14 +389,14 @@ impl ops::Div<f32> for RGB {
 	}
 }
 
-impl ops::DivAssign<f32> for RGB {
+impl DivAssign<f32> for RGB {
 	fn div_assign(&mut self, rhs: f32) {
 		debug_assert!(!rhs.is_nan());
 		*self *= 1. / rhs;
 	}
 }
 
-impl ops::Index<usize> for RGB {
+impl Index<usize> for RGB {
 	type Output = f32;
 	fn index(&self, index: usize) -> &Self::Output {
 		match index {
@@ -408,7 +408,7 @@ impl ops::Index<usize> for RGB {
 	}
 }
 
-impl ops::IndexMut<usize> for RGB {
+impl IndexMut<usize> for RGB {
 	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
 		match index {
 			0 => &mut self.r,
