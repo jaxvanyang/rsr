@@ -1,4 +1,4 @@
-use super::{medium::Medium, number::HasNaN, vecmath::Vector3f};
+use super::{number::HasNaN, vecmath::Vector3f};
 use std::ops::{Deref, DerefMut};
 
 #[derive(Debug, Clone)]
@@ -8,12 +8,11 @@ pub struct Ray {
 	/// Direction of the ray
 	pub d: Vector3f,
 	pub time: f32,
-	pub medium: Medium,
 }
 
 impl Ray {
-	pub fn new(o: Vector3f, d: Vector3f, time: f32, medium: Medium) -> Self {
-		Self { o, d, time, medium }
+	pub fn new(o: Vector3f, d: Vector3f, time: f32) -> Self {
+		Self { o, d, time }
 	}
 
 	pub fn eval(&self, t: f32) -> Vector3f {
@@ -39,8 +38,8 @@ pub struct RayDifferential {
 }
 
 impl RayDifferential {
-	pub fn new(o: Vector3f, d: Vector3f, time: f32, medium: Medium) -> Self {
-		Ray::new(o, d, time, medium).into()
+	pub fn new(o: Vector3f, d: Vector3f, time: f32) -> Self {
+		Ray::new(o, d, time).into()
 	}
 
 	pub fn scale_differentials(&mut self, s: f32) {

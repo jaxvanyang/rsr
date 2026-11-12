@@ -1,7 +1,6 @@
 use super::{
 	film::Film,
 	math::{lerp, sample_uniform_disk_concentric},
-	medium::Medium,
 	options::{OPTIONS, RenderingCoordinateSystem},
 	ray::{Ray, RayDifferential},
 	spectrum::{SampledSpectrum, SampledWavelengths},
@@ -100,7 +99,6 @@ pub struct CameraBase {
 	shutter_open: f32,
 	shutter_close: f32,
 	film: Box<dyn Film>,
-	medium: Medium,
 	min_pos_differential_x: Vector3f,
 	min_pos_differential_y: Vector3f,
 	#[allow(dead_code)]
@@ -115,7 +113,6 @@ pub struct CameraBaseParameters {
 	pub shutter_open: f32,
 	pub shutter_close: f32,
 	pub film: Box<dyn Film>,
-	pub medium: Medium,
 }
 
 impl CameraBase {
@@ -125,7 +122,6 @@ impl CameraBase {
 			shutter_open: p.shutter_open,
 			shutter_close: p.shutter_close,
 			film: p.film,
-			medium: p.medium,
 			min_pos_differential_x: Vector3f::default(),
 			min_pos_differential_y: Vector3f::default(),
 			min_dir_differential_x: Vector3f::default(),
@@ -327,12 +323,7 @@ impl Camera for OrthographicCamera {
 	) -> Option<CameraRay> {
 		let p_film = Vector3f::new(sample.p_film.x, sample.p_film.y, 0.);
 		let p_camera = self.camera_from_raster.map_point(p_film);
-		let mut ray = Ray::new(
-			p_camera,
-			Vector3f::new(0., 0., 1.),
-			self.sample_time(sample.time),
-			self.medium.clone(),
-		);
+		let mut ray = Ray::new(p_camera, Vector3f::new(0., 0., 1.), self.sample_time(sample.time));
 		// modify ray for depth of field
 		if self.lens_radius > 0. {
 			let p_lens = self.lens_radius * sample_uniform_disk_concentric(sample.p_lens);
@@ -356,7 +347,6 @@ impl Camera for OrthographicCamera {
 			p_camera,
 			Vector3f::new(0., 0., 1.),
 			self.sample_time(sample.time),
-			self.base.medium.clone(),
 		);
 		if self.lens_radius > 0. {
 			// modify ray for depth of field
@@ -449,12 +439,8 @@ impl Camera for PerspectiveCamera {
 	) -> Option<CameraRay> {
 		let p_film = Vector3f::new(sample.p_film.x, sample.p_film.y, 0.);
 		let p_camera = self.camera_from_raster.map_point(p_film);
-		let mut ray = Ray::new(
-			Vector3f::default(),
-			p_camera.normalized(),
-			self.sample_time(sample.time),
-			self.medium.clone(),
-		);
+		let mut ray =
+			Ray::new(Vector3f::default(), p_camera.normalized(), self.sample_time(sample.time));
 		// modify ray for depth of field
 		if self.lens_radius > 0. {
 			let p_lens = self.lens_radius * sample_uniform_disk_concentric(sample.p_lens);
@@ -478,7 +464,6 @@ impl Camera for PerspectiveCamera {
 			Vector3f::default(),
 			p_camera.normalized(),
 			self.sample_time(sample.time),
-			self.medium.clone(),
 		);
 		if self.lens_radius > 0. {
 			// modify ray for depth of field
