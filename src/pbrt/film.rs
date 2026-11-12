@@ -1,7 +1,6 @@
-use super::{filter::Filter, vecmath::Vector2i};
+use super::vecmath::Vector2i;
+use std::fmt::Debug;
 
-// TODO:
-pub trait Film: std::fmt::Debug {
+pub trait Film: Debug {
 	fn full_resolution(&self) -> Vector2i;
-	fn get_filter(&self) -> &dyn Filter;
 }

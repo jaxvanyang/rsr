@@ -425,12 +425,6 @@ impl PerspectiveCamera {
 		let _dy_camera = proj.camera_from_raster.map_point(Vector3f::new(0., 1., 0.))
 			- proj.camera_from_raster.map_point(Vector3f::default());
 
-		// compute cos_total_width
-		let radius = proj.film.get_filter().radius();
-		let p_corner = Vector3f::new(-radius.x, -radius.y, 0.);
-		let w_corner_camera = proj.camera_from_raster.map_point(p_corner).normalized();
-		let _cos_total_width = w_corner_camera.z;
-
 		todo!("compute minimum differentials")
 	}
 }
