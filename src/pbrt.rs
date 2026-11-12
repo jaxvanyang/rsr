@@ -4,7 +4,6 @@ pub mod colorspace;
 pub mod film;
 pub mod interaction;
 pub mod math;
-pub mod medium;
 pub mod number;
 pub mod options;
 pub mod ray;
