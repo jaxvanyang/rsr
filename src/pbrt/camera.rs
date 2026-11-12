@@ -1,5 +1,6 @@
+use crate::pbrt::Vector2i;
+
 use super::{
-	film::Film,
 	math::{lerp, sample_uniform_disk_concentric},
 	options::{OPTIONS, RenderingCoordinateSystem},
 	ray::{Ray, RayDifferential},
@@ -10,7 +11,6 @@ use super::{
 use std::ops::{Deref, DerefMut};
 
 pub trait Camera {
-	fn get_film(&self) -> &dyn Film;
 	fn sample_time(&self, u: f32) -> f32;
 	fn get_camera_transform(&self) -> &CameraTransform;
 
@@ -98,7 +98,7 @@ pub struct CameraBase {
 	camera_transform: CameraTransform,
 	shutter_open: f32,
 	shutter_close: f32,
-	film: Box<dyn Film>,
+	resolution: Vector2i,
 	min_pos_differential_x: Vector3f,
 	min_pos_differential_y: Vector3f,
 	#[allow(dead_code)]
@@ -112,7 +112,7 @@ pub struct CameraBaseParameters {
 	pub camera_transform: CameraTransform,
 	pub shutter_open: f32,
 	pub shutter_close: f32,
-	pub film: Box<dyn Film>,
+	pub resolution: Vector2i,
 }
 
 impl CameraBase {
@@ -121,7 +121,7 @@ impl CameraBase {
 			camera_transform: p.camera_transform,
 			shutter_open: p.shutter_open,
 			shutter_close: p.shutter_close,
-			film: p.film,
+			resolution: p.resolution,
 			min_pos_differential_x: Vector3f::default(),
 			min_pos_differential_y: Vector3f::default(),
 			min_dir_differential_x: Vector3f::default(),
@@ -181,10 +181,6 @@ impl CameraBase {
 }
 
 impl Camera for CameraBase {
-	fn get_film(&self) -> &dyn Film {
-		self.film.as_ref()
-	}
-
 	fn get_camera_transform(&self) -> &CameraTransform {
 		&self.camera_transform
 	}
@@ -239,11 +235,8 @@ impl ProjectiveCamera {
 				1. / (screen_window.max.y - screen_window.min.y),
 				1.,
 			) * Transform::translate(Vector3f::new(-screen_window.min.x, -screen_window.min.y, 0.));
-		let raster_from_ndc = Transform::scale(
-			base.film.full_resolution().x as f32,
-			-base.film.full_resolution().y as f32,
-			1.,
-		);
+		let raster_from_ndc =
+			Transform::scale(base.resolution.x as f32, -base.resolution.y as f32, 1.);
 		let raster_from_screen = raster_from_ndc * ndc_from_screen;
 		let screen_from_raster = raster_from_screen.inv().unwrap();
 		let camera_from_raster = screen_from_camera.inv().unwrap() * &screen_from_raster;
@@ -304,10 +297,6 @@ impl OrthographicCamera {
 }
 
 impl Camera for OrthographicCamera {
-	fn get_film(&self) -> &dyn Film {
-		self.proj.get_film()
-	}
-
 	fn get_camera_transform(&self) -> &CameraTransform {
 		self.proj.get_camera_transform()
 	}
@@ -420,10 +409,6 @@ impl PerspectiveCamera {
 }
 
 impl Camera for PerspectiveCamera {
-	fn get_film(&self) -> &dyn Film {
-		self.proj.get_film()
-	}
-
 	fn get_camera_transform(&self) -> &CameraTransform {
 		self.proj.get_camera_transform()
 	}
