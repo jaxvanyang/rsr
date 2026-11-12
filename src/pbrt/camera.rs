@@ -59,7 +59,7 @@ impl CameraRayDifferential {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct CameraTransform {
 	#[allow(dead_code)]
 	render_from_camera: AnimatedTransform,
@@ -99,12 +99,6 @@ pub struct CameraBase {
 	shutter_open: f32,
 	shutter_close: f32,
 	resolution: Vector2i,
-	min_pos_differential_x: Vector3f,
-	min_pos_differential_y: Vector3f,
-	#[allow(dead_code)]
-	min_dir_differential_x: Vector3f,
-	#[allow(dead_code)]
-	min_dir_differential_y: Vector3f,
 }
 
 #[derive(Debug)]
@@ -122,10 +116,6 @@ impl CameraBase {
 			shutter_open: p.shutter_open,
 			shutter_close: p.shutter_close,
 			resolution: p.resolution,
-			min_pos_differential_x: Vector3f::default(),
-			min_pos_differential_y: Vector3f::default(),
-			min_dir_differential_x: Vector3f::default(),
-			min_dir_differential_y: Vector3f::default(),
 		}
 	}
 
@@ -280,7 +270,7 @@ impl OrthographicCamera {
 		len_radius: f32,
 		focal_distance: f32,
 	) -> Self {
-		let mut proj = ProjectiveCamera::new(
+		let proj = ProjectiveCamera::new(
 			base_parameters,
 			&Transform::orthographic(0., 1.),
 			screen_window,
@@ -289,8 +279,6 @@ impl OrthographicCamera {
 		);
 		let dx_camera = proj.camera_from_raster.map_vector(Vector3f::new(1., 0., 0.));
 		let dy_camera = proj.camera_from_raster.map_vector(Vector3f::new(0., 1., 0.));
-		proj.min_pos_differential_x = dx_camera;
-		proj.min_pos_differential_y = dy_camera;
 
 		Self { proj, dx_camera, dy_camera }
 	}
@@ -399,12 +387,11 @@ impl PerspectiveCamera {
 			len_radius,
 			focal_distance,
 		);
-		let _dx_camera = proj.camera_from_raster.map_point(Vector3f::new(1., 0., 0.))
-			- proj.camera_from_raster.map_point(Vector3f::default());
-		let _dy_camera = proj.camera_from_raster.map_point(Vector3f::new(0., 1., 0.))
-			- proj.camera_from_raster.map_point(Vector3f::default());
+		let origin = proj.camera_from_raster.map_point(Vector3f::default());
+		let dx_camera = proj.camera_from_raster.map_point(Vector3f::new(1., 0., 0.)) - origin;
+		let dy_camera = proj.camera_from_raster.map_point(Vector3f::new(0., 1., 0.)) - origin;
 
-		todo!("compute minimum differentials")
+		Self { proj, dx_camera, dy_camera }
 	}
 }
 
