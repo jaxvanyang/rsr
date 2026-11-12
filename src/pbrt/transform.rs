@@ -851,7 +851,7 @@ impl Default for Frame {
 }
 
 // The transform is actually animated when end transform is not `None`.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct AnimatedTransform {
 	pub start_transform: Transform,
 	pub end_transform: Option<Transform>,
