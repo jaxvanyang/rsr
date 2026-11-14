@@ -300,7 +300,8 @@ impl Camera for OrthographicCamera {
 	) -> Option<CameraRay> {
 		let p_film = Vector3f::new(sample.p_film.x, sample.p_film.y, 0.);
 		let p_camera = self.camera_from_raster.map_point(p_film);
-		let mut ray = Ray::new(p_camera, Vector3f::new(0., 0., 1.), self.sample_time(sample.time));
+		let mut ray =
+			Ray::new_with_time(p_camera, Vector3f::new(0., 0., 1.), self.sample_time(sample.time));
 		// modify ray for depth of field
 		if self.lens_radius > 0. {
 			let p_lens = self.lens_radius * sample_uniform_disk_concentric(sample.p_lens);
@@ -411,8 +412,11 @@ impl Camera for PerspectiveCamera {
 	) -> Option<CameraRay> {
 		let p_film = Vector3f::new(sample.p_film.x, sample.p_film.y, 0.);
 		let p_camera = self.camera_from_raster.map_point(p_film);
-		let mut ray =
-			Ray::new(Vector3f::default(), p_camera.normalized(), self.sample_time(sample.time));
+		let mut ray = Ray::new_with_time(
+			Vector3f::default(),
+			p_camera.normalized(),
+			self.sample_time(sample.time),
+		);
 		// modify ray for depth of field
 		if self.lens_radius > 0. {
 			let p_lens = self.lens_radius * sample_uniform_disk_concentric(sample.p_lens);

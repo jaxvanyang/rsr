@@ -7,11 +7,16 @@ pub struct Ray {
 	pub o: Vector3f,
 	/// Direction of the ray
 	pub d: Vector3f,
+	// this is for animated objects, default is 0
 	pub time: f32,
 }
 
 impl Ray {
-	pub fn new(o: Vector3f, d: Vector3f, time: f32) -> Self {
+	pub fn new(o: Vector3f, d: Vector3f) -> Self {
+		Self::new_with_time(o, d, 0.)
+	}
+
+	pub fn new_with_time(o: Vector3f, d: Vector3f, time: f32) -> Self {
 		Self { o, d, time }
 	}
 
@@ -39,7 +44,7 @@ pub struct RayDifferential {
 
 impl RayDifferential {
 	pub fn new(o: Vector3f, d: Vector3f, time: f32) -> Self {
-		Ray::new(o, d, time).into()
+		Ray::new_with_time(o, d, time).into()
 	}
 
 	pub fn scale_differentials(&mut self, s: f32) {
