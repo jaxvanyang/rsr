@@ -77,7 +77,7 @@ pub struct Sphere {
 	phi_max: f32,
 	render_from_object: Transform,
 	/// whether the normal is reversed
-	is_reversed: bool,
+	is_normal_reversed: bool,
 	/// whether the transform swaps handedness
 	is_handedness_swapped: bool,
 }
@@ -85,7 +85,7 @@ pub struct Sphere {
 impl Sphere {
 	pub fn new(
 		render_from_object: &Transform,
-		is_reversed: bool,
+		is_normal_reversed: bool,
 		radius: f32,
 		z_min: f32,
 		z_max: f32,
@@ -104,7 +104,7 @@ impl Sphere {
 			theta_z_max,
 			phi_max,
 			render_from_object: render_from_object.clone(),
-			is_reversed,
+			is_normal_reversed,
 			is_handedness_swapped: render_from_object.swaps_handedness(),
 		}
 	}
@@ -209,7 +209,7 @@ impl Sphere {
 		let dndu = (f * F - e * G) * inv_EGF2 * dpdu + (e * F - f * E) * inv_EGF2 * dpdv;
 		let dndv = (g * F - f * G) * inv_EGF2 * dpdu + (f * F - g * E) * inv_EGF2 * dpdv;
 		// return SurfaceInteraction for quadric intersection
-		let flip_normal = self.is_reversed ^ self.is_handedness_swapped;
+		let flip_normal = self.is_normal_reversed ^ self.is_handedness_swapped;
 		let wo_object = self.render_from_object.invert_vector(wo);
 		let si = SurfaceInteraction::new(
 			p,
