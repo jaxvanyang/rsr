@@ -92,7 +92,7 @@ fn update(window: &Window, game: &mut Game) {
 		game.y_rot -= d_rot;
 	}
 
-	game.world_to_camera = (x_rot * y_rot).inv().unwrap() * Transform::translate(-game.pos);
+	game.world_to_camera = (x_rot * y_rot).inv() * Transform::translate(-game.pos);
 }
 
 impl Game {

@@ -111,8 +111,8 @@ impl Sphere {
 
 	pub fn basic_intersect(&self, ray: &Ray, tmax: f32) -> Option<QuadricIntersection> {
 		// transform ray origin and direction to object space
-		let o = self.render_from_object.invert_point(ray.o).unwrap();
-		let d = self.render_from_object.invert_vector(ray.d).unwrap();
+		let o = self.render_from_object.invert_point(ray.o);
+		let d = self.render_from_object.invert_vector(ray.d);
 		// solve quadratic equation to compute sphere t0 and t1
 		// compute sphere quadratic coefficients
 		let a = d.x.powi(2) + d.y.powi(2) + d.z.powi(2);
@@ -210,7 +210,7 @@ impl Sphere {
 		let dndv = (g * F - f * G) * inv_EGF2 * dpdu + (f * F - g * E) * inv_EGF2 * dpdv;
 		// return SurfaceInteraction for quadric intersection
 		let flip_normal = self.is_reversed ^ self.is_handedness_swapped;
-		let wo_object = self.render_from_object.invert_vector(wo).unwrap();
+		let wo_object = self.render_from_object.invert_vector(wo);
 		let si = SurfaceInteraction::new(
 			p,
 			Vector2f::new(u, v),

@@ -81,7 +81,7 @@ impl CameraTransform {
 			}
 		};
 
-		let render_from_world = world_from_render.inv().unwrap();
+		let render_from_world = world_from_render.inv();
 		let (a, b) = (
 			&render_from_world * &world_from_camera.start_transform,
 			world_from_camera.end_transform.as_ref().map(|t| &render_from_world * t),
@@ -228,8 +228,8 @@ impl ProjectiveCamera {
 		let raster_from_ndc =
 			Transform::scale(base.resolution.x as f32, -base.resolution.y as f32, 1.);
 		let raster_from_screen = raster_from_ndc * ndc_from_screen;
-		let screen_from_raster = raster_from_screen.inv().unwrap();
-		let camera_from_raster = screen_from_camera.inv().unwrap() * &screen_from_raster;
+		let screen_from_raster = raster_from_screen.inv();
+		let camera_from_raster = screen_from_camera.inv() * &screen_from_raster;
 
 		Self {
 			base,

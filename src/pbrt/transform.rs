@@ -419,37 +419,37 @@ impl Mul<RGB> for SMatrix<3> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Transform {
 	m: SMatrix<4>,
-	inv: Option<SMatrix<4>>,
+	inv: SMatrix<4>,
 }
 
 impl Transform {
 	pub fn new(m: SMatrix<4>) -> Self {
-		let inv = m.inv();
+		let inv = m.inv().unwrap_or(SMatrix::from([[f32::NAN; 4]; 4]));
 
 		Self { m, inv }
 	}
 
 	pub fn new_with_inv(m: SMatrix<4>, inv: SMatrix<4>) -> Self {
-		Self { m, inv: Some(inv) }
+		Self { m, inv }
 	}
 
 	pub fn get_matrix(&self) -> &SMatrix<4> {
 		&self.m
 	}
 
-	pub fn get_inverse_matrix(&self) -> Option<&SMatrix<4>> {
-		self.inv.as_ref()
+	pub fn get_inverse_matrix(&self) -> &SMatrix<4> {
+		&self.inv
 	}
 
-	/// Return the inverse of this transform, if it exists.
-	pub fn inv(&self) -> Option<Self> {
-		self.inv.as_ref().map(|inv| Self::new_with_inv(*inv, self.m))
+	/// Return the inverse of this transform.
+	pub fn inv(&self) -> Self {
+		Self::new_with_inv(self.inv, self.m)
 	}
 
 	/// Return the transpose of this transform.
 	#[allow(non_snake_case)]
 	pub fn T(&self) -> Self {
-		Self { m: self.m.T(), inv: self.inv.as_ref().map(|inv| inv.T()) }
+		Self { m: self.m.T(), inv: self.inv.T() }
 	}
 
 	pub fn is_identity(&self) -> bool {
@@ -470,7 +470,7 @@ impl Transform {
 			[0.0, 0.0, 0.0, 1.0],
 		]);
 
-		Self { m, inv: Some(inv) }
+		Self { m, inv }
 	}
 
 	pub fn scale(x: f32, y: f32, z: f32) -> Self {
@@ -487,7 +487,7 @@ impl Transform {
 			[0.0, 0.0, 0.0, 1.0],
 		]);
 
-		Self { m, inv: Some(inv) }
+		Self { m, inv }
 	}
 
 	/// Return `true` if the transform has a scaling term.
@@ -515,7 +515,7 @@ impl Transform {
 		]);
 		let inv = m.T();
 
-		Self { m, inv: Some(inv) }
+		Self { m, inv }
 	}
 
 	/// Return a rotation transform around the y-axis, `theta` is in degrees.
@@ -531,7 +531,7 @@ impl Transform {
 		]);
 		let inv = m.T();
 
-		Self { m, inv: Some(inv) }
+		Self { m, inv }
 	}
 
 	/// Return a rotation transform around the y-axis, `theta` is in degrees.
@@ -547,7 +547,7 @@ impl Transform {
 		]);
 		let inv = m.T();
 
-		Self { m, inv: Some(inv) }
+		Self { m, inv }
 	}
 
 	/// Return a rotation transform around `axis`, `theta` is in degrees.
@@ -579,7 +579,7 @@ impl Transform {
 
 		let inv = m.T();
 
-		Self { m, inv: Some(inv) }
+		Self { m, inv }
 	}
 
 	/// Returns a rotation matrix that rotates from one vector to another. The arguments must be normalized.
@@ -612,7 +612,7 @@ impl Transform {
 		}
 		let inv = r.T();
 
-		Self { m: r, inv: Some(inv) }
+		Self { m: r, inv }
 	}
 
 	/// Create a look-at transform to camera space, the camera is looking at `look` from
@@ -641,7 +641,7 @@ impl Transform {
 
 		let world_to_camera = camera_to_world.inv().unwrap();
 
-		Self { m: world_to_camera, inv: Some(camera_to_world) }
+		Self { m: world_to_camera, inv: camera_to_world }
 	}
 
 	pub fn orthographic(z_near: f32, z_far: f32) -> Self {
@@ -666,8 +666,8 @@ impl Transform {
 	}
 
 	/// Apply the inverse transform to a point.
-	pub fn invert_point(&self, p: Vector3f) -> Option<Vector3f> {
-		self.inv.as_ref().map(|m| m.mul_point(p))
+	pub fn invert_point(&self, p: Vector3f) -> Vector3f {
+		self.inv.mul_point(p)
 	}
 
 	/// Apply the transform to a vector.
@@ -676,18 +676,18 @@ impl Transform {
 	}
 
 	/// Apply the inverse transform to a vector.
-	pub fn invert_vector(&self, v: Vector3f) -> Option<Vector3f> {
-		self.inv.as_ref().map(|m| m.mul_vector(v))
+	pub fn invert_vector(&self, v: Vector3f) -> Vector3f {
+		self.inv.mul_vector(v)
 	}
 
 	/// Apply the transform to a normal.
-	pub fn map_normal(&self, n: Vector3f) -> Option<Vector3f> {
-		let m = self.inv.as_ref()?;
+	pub fn map_normal(&self, n: Vector3f) -> Vector3f {
+		let m = &self.inv;
 		let x = m[0][0] * n.x + m[1][0] * n.y + m[2][0] * n.z;
 		let y = m[0][1] * n.x + m[1][1] * n.y + m[2][1] * n.z;
 		let z = m[0][2] * n.x + m[1][2] * n.y + m[2][2] * n.z;
 
-		Some(Vector3f::new(x, y, z))
+		Vector3f::new(x, y, z)
 	}
 
 	/// Apply the inverse transform to a normal.
@@ -711,14 +711,11 @@ impl Transform {
 	}
 
 	/// Apply the inverse transform to a bounding box.
-	pub fn invert_bounds(&self, b: &Bounds3f) -> Option<Bounds3f> {
-		let m = self.inv.as_ref()?;
-		let ret = Bounds3f::from_point(m.mul_point(b.corner(0)))
-			.union_point(m.mul_point(b.corner(1)))
-			.union_point(m.mul_point(b.corner(2)))
-			.union_point(m.mul_point(b.corner(4)));
-
-		Some(ret)
+	pub fn invert_bounds(&self, b: &Bounds3f) -> Bounds3f {
+		Bounds3f::from_point(self.invert_point(b.corner(0)))
+			.union_point(self.invert_point(b.corner(1)))
+			.union_point(self.invert_point(b.corner(2)))
+			.union_point(self.invert_point(b.corner(4)))
 	}
 
 	/// Return `true` if the transform changes handedness.
@@ -737,7 +734,7 @@ impl Transform {
 	pub fn map_interaction(&self, i: &Interaction) -> Interaction {
 		Interaction::new(
 			self.map_point(i.p),
-			self.map_normal(i.n).unwrap(),
+			self.map_normal(i.n),
 			i.uv,
 			self.map_vector(i.wo),
 			i.t,
@@ -747,10 +744,10 @@ impl Transform {
 	/// Apply the inverse transform to an interaction
 	pub fn invert_interaction(&self, i: &Interaction) -> Interaction {
 		Interaction::new(
-			self.invert_point(i.p).unwrap(),
+			self.invert_point(i.p),
 			self.invert_normal(i.n),
 			i.uv,
-			self.invert_vector(i.wo).unwrap(),
+			self.invert_vector(i.wo),
 			i.t,
 		)
 	}
@@ -761,14 +758,14 @@ impl Transform {
 			base: self.map_interaction(&si.base),
 			dpdu: self.map_vector(si.dpdu),
 			dpdv: self.map_vector(si.dpdv),
-			dndu: self.map_normal(si.dndu).unwrap(),
-			dndv: self.map_normal(si.dndv).unwrap(),
+			dndu: self.map_normal(si.dndu),
+			dndv: self.map_normal(si.dndv),
 			shading: Shading {
-				n: self.map_normal(si.shading.n).unwrap(),
+				n: self.map_normal(si.shading.n),
 				dpdu: self.map_vector(si.shading.dpdu),
 				dpdv: self.map_vector(si.shading.dpdv),
-				dndu: self.map_normal(si.shading.dndu).unwrap(),
-				dndv: self.map_normal(si.shading.dndv).unwrap(),
+				dndu: self.map_normal(si.shading.dndu),
+				dndv: self.map_normal(si.shading.dndv),
 			},
 			face_index: si.face_index,
 			dpdx: self.map_vector(si.dpdx),
@@ -784,20 +781,20 @@ impl Transform {
 	pub fn invert_si(&self, si: &SurfaceInteraction) -> SurfaceInteraction {
 		SurfaceInteraction {
 			base: self.invert_interaction(&si.base),
-			dpdu: self.invert_vector(si.dpdu).unwrap(),
-			dpdv: self.invert_vector(si.dpdv).unwrap(),
+			dpdu: self.invert_vector(si.dpdu),
+			dpdv: self.invert_vector(si.dpdv),
 			dndu: self.invert_normal(si.dndu),
 			dndv: self.invert_normal(si.dndv),
 			shading: Shading {
 				n: self.invert_normal(si.shading.n),
-				dpdu: self.invert_vector(si.shading.dpdu).unwrap(),
-				dpdv: self.invert_vector(si.shading.dpdv).unwrap(),
+				dpdu: self.invert_vector(si.shading.dpdu),
+				dpdv: self.invert_vector(si.shading.dpdv),
 				dndu: self.invert_normal(si.shading.dndu),
 				dndv: self.invert_normal(si.shading.dndv),
 			},
 			face_index: si.face_index,
-			dpdx: self.invert_vector(si.dpdx).unwrap(),
-			dpdy: self.invert_vector(si.dpdy).unwrap(),
+			dpdx: self.invert_vector(si.dpdx),
+			dpdy: self.invert_vector(si.dpdy),
 			dudx: si.dudx,
 			dvdx: si.dvdx,
 			dudy: si.dudy,
@@ -809,16 +806,13 @@ impl Transform {
 impl Default for Transform {
 	fn default() -> Self {
 		let m = SMatrix::default();
-		Self { m, inv: Some(m) }
+		Self { m, inv: m }
 	}
 }
 
 impl From<[[f32; 4]; 4]> for Transform {
 	fn from(m: [[f32; 4]; 4]) -> Self {
-		let m = SMatrix::from(m);
-		let inv = m.inv();
-
-		Self { m, inv }
+		Self::new(m.into())
 	}
 }
 
@@ -832,7 +826,7 @@ impl From<&Frame> for Transform {
 		]);
 		let inv = m.T();
 
-		Self { m, inv: Some(inv) }
+		Self { m, inv }
 	}
 }
 
@@ -857,13 +851,7 @@ impl Mul<&Transform> for &Transform {
 
 	fn mul(self, rhs: &Transform) -> Self::Output {
 		let m = self.m * rhs.m;
-		let inv = if let Some(a) = self.inv
-			&& let Some(b) = rhs.inv
-		{
-			Some(b * a)
-		} else {
-			None
-		};
+		let inv = rhs.inv * self.inv;
 
 		Self::Output { m, inv }
 	}
@@ -1016,10 +1004,10 @@ mod tests {
 		let p = Vector3f::new(4.0, 5.0, 6.0);
 		let q = Vector3f::new(5.0, 7.0, 9.0);
 		assert_eq!(t.map_point(p), q);
-		assert_eq!(t.invert_point(q).unwrap(), p);
+		assert_eq!(t.invert_point(q), p);
 		assert_eq!(t.map_vector(p), p);
-		assert_eq!(t.invert_vector(p).unwrap(), p);
-		assert_eq!(t.map_normal(p).unwrap(), p);
+		assert_eq!(t.invert_vector(p), p);
+		assert_eq!(t.map_normal(p), p);
 		assert_eq!(t.invert_normal(p), p);
 	}
 
@@ -1031,10 +1019,10 @@ mod tests {
 		let n = Vector3f::new(4.0, 2.5, 2.0);
 		assert!(t.has_scale());
 		assert_eq!(t.map_point(p), q);
-		assert_eq!(t.invert_point(q).unwrap(), p);
+		assert_eq!(t.invert_point(q), p);
 		assert_eq!(t.map_vector(p), q);
-		assert_eq!(t.invert_vector(q).unwrap(), p);
-		assert_eq!(t.map_normal(p).unwrap(), n);
+		assert_eq!(t.invert_vector(q), p);
+		assert_eq!(t.map_normal(p), n);
 		assert_eq!(t.invert_normal(n), p);
 
 		let t = Transform::default();
@@ -1048,40 +1036,40 @@ mod tests {
 		let p = Vector3f::new(1.0, 2.0, 3.0);
 		let q = Vector3f::new(1.0, -3.0, 2.0);
 		assert_abs_diff_eq!(t.map_point(p), q);
-		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p, epsilon = 1e-6);
+		assert_abs_diff_eq!(t.invert_point(q), p, epsilon = 1e-6);
 		assert_abs_diff_eq!(t.map_vector(p), q);
-		assert_abs_diff_eq!(t.invert_vector(q).unwrap(), p, epsilon = 1e-6);
-		assert_abs_diff_eq!(t.map_normal(p).unwrap(), q);
+		assert_abs_diff_eq!(t.invert_vector(q), p, epsilon = 1e-6);
+		assert_abs_diff_eq!(t.map_normal(p), q);
 		assert_abs_diff_eq!(t.invert_normal(q), p, epsilon = 1e-6);
 
 		let t = Transform::rotate_y(90.0);
 		let p = Vector3f::new(1.0, 2.0, 3.0);
 		let q = Vector3f::new(3.0, 2.0, -1.0);
 		assert_abs_diff_eq!(t.map_point(p), q);
-		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p);
+		assert_abs_diff_eq!(t.invert_point(q), p);
 		assert_abs_diff_eq!(t.map_vector(p), q);
-		assert_abs_diff_eq!(t.invert_vector(q).unwrap(), p);
-		assert_abs_diff_eq!(t.map_normal(p).unwrap(), q);
+		assert_abs_diff_eq!(t.invert_vector(q), p);
+		assert_abs_diff_eq!(t.map_normal(p), q);
 		assert_abs_diff_eq!(t.invert_normal(q), p);
 
 		let t = Transform::rotate_z(90.0);
 		let p = Vector3f::new(1.0, 2.0, 3.0);
 		let q = Vector3f::new(-2.0, 1.0, 3.0);
 		assert_abs_diff_eq!(t.map_point(p), q);
-		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p);
+		assert_abs_diff_eq!(t.invert_point(q), p);
 		assert_abs_diff_eq!(t.map_vector(p), q);
-		assert_abs_diff_eq!(t.invert_vector(q).unwrap(), p);
-		assert_abs_diff_eq!(t.map_normal(p).unwrap(), q);
+		assert_abs_diff_eq!(t.invert_vector(q), p);
+		assert_abs_diff_eq!(t.map_normal(p), q);
 		assert_abs_diff_eq!(t.invert_normal(q), p);
 
 		let t = Transform::rotate(Vector3f::new(1.0, 1.0, 1.0), 120.0);
 		let p = Vector3f::new(1.0, 0.0, 0.0);
 		let q = Vector3f::new(0.0, 1.0, 0.0);
 		assert_abs_diff_eq!(t.map_point(p), q, epsilon = 1e-6);
-		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p, epsilon = 1e-6);
+		assert_abs_diff_eq!(t.invert_point(q), p, epsilon = 1e-6);
 		assert_abs_diff_eq!(t.map_vector(p), q, epsilon = 1e-6);
-		assert_abs_diff_eq!(t.invert_vector(q).unwrap(), p, epsilon = 1e-6);
-		assert_abs_diff_eq!(t.map_normal(p).unwrap(), q, epsilon = 1e-6);
+		assert_abs_diff_eq!(t.invert_vector(q), p, epsilon = 1e-6);
+		assert_abs_diff_eq!(t.map_normal(p), q, epsilon = 1e-6);
 		assert_abs_diff_eq!(t.invert_normal(q), p, epsilon = 1e-6);
 
 		// the rotation axis is (1, 1, 1)
@@ -1090,10 +1078,10 @@ mod tests {
 		let p = Vector3f::new(1.0, 1.0, 0.0);
 		let q = Vector3f::new(0.0, 1.0, 1.0);
 		assert_eq!(t.map_point(p), q);
-		assert_eq!(t.invert_point(q).unwrap(), p);
+		assert_eq!(t.invert_point(q), p);
 		assert_eq!(t.map_vector(p), q);
-		assert_eq!(t.invert_vector(q).unwrap(), p);
-		assert_eq!(t.map_normal(p).unwrap(), q);
+		assert_eq!(t.invert_vector(q), p);
+		assert_eq!(t.map_normal(p), q);
 		assert_eq!(t.invert_normal(q), p);
 	}
 
@@ -1108,10 +1096,10 @@ mod tests {
 		let q = Vector3f::new(0.0, 0.0, 3.0f32.sqrt());
 		let v = Vector3f::new(0.0, 0.0, -3.0f32.sqrt());
 		assert_abs_diff_eq!(t.map_point(p), q, epsilon = 1e-6);
-		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p);
+		assert_abs_diff_eq!(t.invert_point(q), p);
 		assert_abs_diff_eq!(t.map_vector(p), v);
-		assert_abs_diff_eq!(t.invert_vector(v).unwrap(), p);
-		assert_abs_diff_eq!(t.map_normal(p).unwrap(), v, epsilon = 1e-6);
+		assert_abs_diff_eq!(t.invert_vector(v), p);
+		assert_abs_diff_eq!(t.map_normal(p), v, epsilon = 1e-6);
 		assert_abs_diff_eq!(t.invert_normal(v), p);
 	}
 
@@ -1121,7 +1109,7 @@ mod tests {
 		let b = Bounds3f::new(Vector3f::new(-1.0, -1.0, -1.0), Vector3f::new(1.0, 1.0, 1.0));
 		let c = Bounds3f::new(Vector3f::new(-1.0, -2.0, -3.0), Vector3f::new(1.0, 2.0, 3.0));
 		assert_eq!(t.map_bounds(&b), c);
-		assert_eq!(t.invert_bounds(&c).unwrap(), b);
+		assert_eq!(t.invert_bounds(&c), b);
 	}
 
 	#[test]
@@ -1133,10 +1121,10 @@ mod tests {
 		let p = Vector3f::new(1.0, 1.0, 1.0);
 		let q = Vector3f::new(1.0, 1.0, -1.0);
 		assert_abs_diff_eq!(t.map_point(p), q);
-		assert_abs_diff_eq!(t.invert_point(q).unwrap(), p);
+		assert_abs_diff_eq!(t.invert_point(q), p);
 		assert_abs_diff_eq!(t.map_vector(p), q);
-		assert_abs_diff_eq!(t.invert_vector(q).unwrap(), p);
-		assert_abs_diff_eq!(t.map_normal(p).unwrap(), q);
+		assert_abs_diff_eq!(t.invert_vector(q), p);
+		assert_abs_diff_eq!(t.map_normal(p), q);
 		assert_abs_diff_eq!(t.invert_normal(q), p);
 	}
 
@@ -1149,6 +1137,6 @@ mod tests {
 		assert_eq!(f.to_local(u), v);
 		assert_eq!(f.from_local(v), u);
 		assert_eq!(t.map_vector(u), v);
-		assert_eq!(t.invert_vector(v).unwrap(), u);
+		assert_eq!(t.invert_vector(v), u);
 	}
 }
