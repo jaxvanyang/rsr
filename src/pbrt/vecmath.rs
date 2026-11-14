@@ -1000,6 +1000,26 @@ impl Bounds3f {
 
 		(center, radius)
 	}
+
+	pub fn intersect_p(&self, o: Vector3f, d: Vector3f, tmax: f32) -> Option<(f32, f32)> {
+		let mut t0 = 0.0;
+		let mut t1 = tmax;
+		for i in 0..3 {
+			let inv_d = 1.0 / d[i];
+			let tn = (self.min[i] - o[i]) * inv_d;
+			let tf = (self.max[i] - o[i]) * inv_d;
+			let (tn, tf) = if tn > tf { (tf, tn) } else { (tn, tf) };
+			t0 = t0.max(tn);
+			t1 = t1.min(tf);
+			if t0 > t1 {
+				return None;
+			}
+		}
+
+		Some((t0, t1))
+	}
+
+	// TODO: intersect_p() with reciprocals of ray direction
 }
 
 impl<T: Number> Default for Bounds3<T> {

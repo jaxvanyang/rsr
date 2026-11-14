@@ -1,5 +1,6 @@
 use super::{
 	color::{RGB, XYZ},
+	interaction::{Interaction, Shading, SurfaceInteraction},
 	math::diff_of_products,
 	number::HasNaN,
 	vecmath::{Bounds3f, Vector2f, Vector3f},
@@ -730,6 +731,78 @@ impl Transform {
 		]);
 
 		m.det() < 0.0
+	}
+
+	/// Apply the transform to an interaction
+	pub fn map_interaction(&self, i: &Interaction) -> Interaction {
+		Interaction::new(
+			self.map_point(i.p),
+			self.map_normal(i.n).unwrap(),
+			i.uv,
+			self.map_vector(i.wo),
+			i.t,
+		)
+	}
+
+	/// Apply the inverse transform to an interaction
+	pub fn invert_interaction(&self, i: &Interaction) -> Interaction {
+		Interaction::new(
+			self.invert_point(i.p).unwrap(),
+			self.invert_normal(i.n),
+			i.uv,
+			self.invert_vector(i.wo).unwrap(),
+			i.t,
+		)
+	}
+
+	/// Apply the transform to a surface interaction
+	pub fn map_si(&self, si: &SurfaceInteraction) -> SurfaceInteraction {
+		SurfaceInteraction {
+			base: self.map_interaction(&si.base),
+			dpdu: self.map_vector(si.dpdu),
+			dpdv: self.map_vector(si.dpdv),
+			dndu: self.map_normal(si.dndu).unwrap(),
+			dndv: self.map_normal(si.dndv).unwrap(),
+			shading: Shading {
+				n: self.map_normal(si.shading.n).unwrap(),
+				dpdu: self.map_vector(si.shading.dpdu),
+				dpdv: self.map_vector(si.shading.dpdv),
+				dndu: self.map_normal(si.shading.dndu).unwrap(),
+				dndv: self.map_normal(si.shading.dndv).unwrap(),
+			},
+			face_index: si.face_index,
+			dpdx: self.map_vector(si.dpdx),
+			dpdy: self.map_vector(si.dpdy),
+			dudx: si.dudx,
+			dvdx: si.dvdx,
+			dudy: si.dudy,
+			dvdy: si.dvdy,
+		}
+	}
+
+	/// Apply the inverse transform to a surface interaction
+	pub fn invert_si(&self, si: &SurfaceInteraction) -> SurfaceInteraction {
+		SurfaceInteraction {
+			base: self.invert_interaction(&si.base),
+			dpdu: self.invert_vector(si.dpdu).unwrap(),
+			dpdv: self.invert_vector(si.dpdv).unwrap(),
+			dndu: self.invert_normal(si.dndu),
+			dndv: self.invert_normal(si.dndv),
+			shading: Shading {
+				n: self.invert_normal(si.shading.n),
+				dpdu: self.invert_vector(si.shading.dpdu).unwrap(),
+				dpdv: self.invert_vector(si.shading.dpdv).unwrap(),
+				dndu: self.invert_normal(si.shading.dndu),
+				dndv: self.invert_normal(si.shading.dndv),
+			},
+			face_index: si.face_index,
+			dpdx: self.invert_vector(si.dpdx).unwrap(),
+			dpdy: self.invert_vector(si.dpdy).unwrap(),
+			dudx: si.dudx,
+			dvdx: si.dvdx,
+			dudy: si.dudy,
+			dvdy: si.dvdy,
+		}
 	}
 }
 

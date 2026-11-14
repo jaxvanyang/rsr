@@ -160,6 +160,21 @@ pub fn sample_uniform_disk_concentric(u: Vector2f) -> Vector2f {
 	r * Vector2f::new(theta.cos(), theta.sin())
 }
 
+#[inline]
+pub fn safe_asin(x: f32) -> f32 {
+	x.clamp(-1.0, 1.0).asin()
+}
+
+#[inline]
+pub fn safe_acos(x: f32) -> f32 {
+	x.clamp(-1.0, 1.0).acos()
+}
+
+#[inline]
+pub fn safe_sqrt(x: f32) -> f32 {
+	x.max(0.0).sqrt()
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;

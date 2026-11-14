@@ -1,9 +1,11 @@
-use super::vecmath::{Vector2f, Vector3f, Vector3fi};
+use super::vecmath::{Vector2f, Vector3f};
 
+#[derive(Debug)]
 pub struct Interaction {
-	/// The interaction point using interval arithmetic.
-	pub pi: Vector3fi,
-	pub time: f32,
+	/// The interaction point.
+	pub p: Vector3f,
+	/// time
+	pub t: f32,
 	/// `omega_o`, the negative ray direction.
 	pub wo: Vector3f,
 	/// The surface normal.
@@ -14,13 +16,8 @@ pub struct Interaction {
 }
 
 impl Interaction {
-	pub fn new(pi: Vector3fi, n: Vector3f, uv: Vector2f, wo: Vector3f, time: f32) -> Self {
-		Self { pi, time, wo, n, uv }
-	}
-
-	/// Return the interaction point without error.
-	pub fn p(&self) -> Vector3f {
-		self.pi.into()
+	pub fn new(p: Vector3f, n: Vector3f, uv: Vector2f, wo: Vector3f, t: f32) -> Self {
+		Self { p, t, wo, n, uv }
 	}
 
 	pub fn is_surface_interaction(&self) -> bool {
@@ -32,6 +29,7 @@ impl Interaction {
 	}
 }
 
+#[derive(Debug)]
 pub struct Shading {
 	pub n: Vector3f,
 	pub dpdu: Vector3f,
@@ -40,8 +38,9 @@ pub struct Shading {
 	pub dndv: Vector3f,
 }
 
+#[derive(Debug)]
 pub struct SurfaceInteraction {
-	pub interaction: Interaction,
+	pub base: Interaction,
 	pub dpdu: Vector3f,
 	pub dpdv: Vector3f,
 	pub dndu: Vector3f,
@@ -60,7 +59,7 @@ pub struct SurfaceInteraction {
 impl SurfaceInteraction {
 	#[allow(clippy::too_many_arguments)]
 	pub fn new(
-		pi: Vector3fi,
+		p: Vector3f,
 		uv: Vector2f,
 		wo: Vector3f,
 		dpdu: Vector3f,
@@ -70,18 +69,18 @@ impl SurfaceInteraction {
 		time: f32,
 		flip_normal: bool,
 	) -> Self {
-		let mut interaction = Interaction::new(pi, dpdu.cross(dpdv).normalized(), uv, wo, time);
+		let mut base = Interaction::new(p, dpdu.cross(dpdv).normalized(), uv, wo, time);
 		// initialize shading geometry from true geometry
-		let mut shading = Shading { n: interaction.n, dpdu, dpdv, dndu, dndv };
+		let mut shading = Shading { n: base.n, dpdu, dpdv, dndu, dndv };
 
 		// adujust normal based on orientation and handedness
 		if flip_normal {
-			interaction.n = -interaction.n;
+			base.n = -base.n;
 			shading.n = -shading.n;
 		}
 
 		Self {
-			interaction,
+			base,
 			dpdu,
 			dpdv,
 			dndu,
@@ -113,15 +112,15 @@ impl SurfaceInteraction {
 		self.shading.dndv = dndv;
 
 		if orientation_is_authoritative {
-			self.interaction.n = self.interaction.n.face_forward(n);
+			self.base.n = self.base.n.face_forward(n);
 		} else {
-			self.shading.n = n.face_forward(self.interaction.n);
+			self.shading.n = n.face_forward(self.base.n);
 		}
 	}
 }
 
 pub struct MediumInteraction {
-	pub interaction: Interaction,
+	pub base: Interaction,
 	// TODO: pub phase: PhaseFunction,
 }
 
