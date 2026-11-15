@@ -1,22 +1,22 @@
-use super::vecmath::{Vector2f, Vector3f};
+use super::vecmath::{Vec2f, Vec3f};
 
 #[derive(Debug)]
 pub struct Interaction {
 	/// The interaction point.
-	pub p: Vector3f,
+	pub p: Vec3f,
 	/// time
 	pub t: f32,
 	/// `omega_o`, the negative ray direction.
-	pub wo: Vector3f,
+	pub wo: Vec3f,
 	/// The surface normal.
-	pub n: Vector3f,
+	pub n: Vec3f,
 	/// (u, v) parametric coordinates.
-	pub uv: Vector2f,
+	pub uv: Vec2f,
 	// TODO: medium_interface, medium
 }
 
 impl Interaction {
-	pub fn new(p: Vector3f, n: Vector3f, uv: Vector2f, wo: Vector3f, t: f32) -> Self {
+	pub fn new(p: Vec3f, n: Vec3f, uv: Vec2f, wo: Vec3f, t: f32) -> Self {
 		Self { p, t, wo, n, uv }
 	}
 
@@ -25,31 +25,31 @@ impl Interaction {
 	}
 
 	pub fn is_medium_interaction(&self) -> bool {
-		self.n == Vector3f::default()
+		self.n == Vec3f::default()
 	}
 }
 
 #[derive(Debug)]
 pub struct Shading {
-	pub n: Vector3f,
-	pub dpdu: Vector3f,
-	pub dpdv: Vector3f,
-	pub dndu: Vector3f,
-	pub dndv: Vector3f,
+	pub n: Vec3f,
+	pub dpdu: Vec3f,
+	pub dpdv: Vec3f,
+	pub dndu: Vec3f,
+	pub dndv: Vec3f,
 }
 
 #[derive(Debug)]
 pub struct SurfaceInteraction {
 	pub base: Interaction,
-	pub dpdu: Vector3f,
-	pub dpdv: Vector3f,
-	pub dndu: Vector3f,
-	pub dndv: Vector3f,
+	pub dpdu: Vec3f,
+	pub dpdv: Vec3f,
+	pub dndu: Vec3f,
+	pub dndv: Vec3f,
 	pub shading: Shading,
 	pub face_index: usize,
 	// TODO: material, area_light
-	pub dpdx: Vector3f,
-	pub dpdy: Vector3f,
+	pub dpdx: Vec3f,
+	pub dpdy: Vec3f,
 	pub dudx: f32,
 	pub dvdx: f32,
 	pub dudy: f32,
@@ -59,13 +59,13 @@ pub struct SurfaceInteraction {
 impl SurfaceInteraction {
 	#[allow(clippy::too_many_arguments)]
 	pub fn new(
-		p: Vector3f,
-		uv: Vector2f,
-		wo: Vector3f,
-		dpdu: Vector3f,
-		dpdv: Vector3f,
-		dndu: Vector3f,
-		dndv: Vector3f,
+		p: Vec3f,
+		uv: Vec2f,
+		wo: Vec3f,
+		dpdu: Vec3f,
+		dpdv: Vec3f,
+		dndu: Vec3f,
+		dndv: Vec3f,
 		time: f32,
 		flip_normal: bool,
 	) -> Self {
@@ -87,8 +87,8 @@ impl SurfaceInteraction {
 			dndv,
 			shading,
 			face_index: 0,
-			dpdx: Vector3f::default(),
-			dpdy: Vector3f::default(),
+			dpdx: Vec3f::default(),
+			dpdy: Vec3f::default(),
 			dudx: 0.0,
 			dvdx: 0.0,
 			dudy: 0.0,
@@ -98,11 +98,11 @@ impl SurfaceInteraction {
 
 	pub fn set_shading_geometry(
 		&mut self,
-		n: Vector3f,
-		dpdu: Vector3f,
-		dpdv: Vector3f,
-		dndu: Vector3f,
-		dndv: Vector3f,
+		n: Vec3f,
+		dpdu: Vec3f,
+		dpdv: Vec3f,
+		dndu: Vec3f,
+		dndv: Vec3f,
 		orientation_is_authoritative: bool,
 	) {
 		self.shading.n = n;

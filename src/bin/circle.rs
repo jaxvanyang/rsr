@@ -1,13 +1,13 @@
 use minifb::Key;
 use rsr::{
-	pbrt::Vector2f,
+	pbrt::Vec2f,
 	ui::{Canvas, Circle, Result, Window, color::raylib::*},
 };
 
 fn main() -> Result<()> {
 	let mut window = Window::new("Test - ESC to exit", 640, 360)?;
 	let mut circle = Circle::new(50.0, 50.0, 25.0);
-	let mut v = Vector2f::new(250., 150.);
+	let mut v = Vec2f::new(250., 150.);
 	let colors = [RED, GREEN, BLUE];
 	let mut c = 0;
 

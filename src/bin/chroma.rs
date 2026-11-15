@@ -1,7 +1,7 @@
 use minifb::{Key, KeyRepeat};
 use rsr::{
 	pbrt::{
-		Vector2f, Vector2i,
+		Vec2f, Vec2i,
 		color::{RGB, XYZ},
 		colorspace::{self as cs, RGBColorSpace},
 		spectrum::{DenselySampledSpectrum, LAMBDA_MAX_I, LAMBDA_MIN_I, Spectrum},
@@ -38,7 +38,7 @@ fn main() -> Result<()> {
 	Ok(())
 }
 
-fn draw_diagram(window: &mut Window, boundary: &[Vector2i], cs: &RGBColorSpace) {
+fn draw_diagram(window: &mut Window, boundary: &[Vec2i], cs: &RGBColorSpace) {
 	window.fill(GRAY);
 	window.fill_polygon(boundary, BLACK);
 
@@ -52,7 +52,7 @@ fn draw_diagram(window: &mut Window, boundary: &[Vector2i], cs: &RGBColorSpace) 
 
 			let x = i as f32 / w;
 			let y = (window.h() - j) as f32 / h;
-			let xyz = XYZ::from_xy(Vector2f::new(x, y));
+			let xyz = XYZ::from_xy(Vec2f::new(x, y));
 			let rgb = cs.to_rgb(xyz);
 
 			window[(i, j)] = rgb.into();
@@ -66,13 +66,13 @@ fn draw_diagram(window: &mut Window, boundary: &[Vector2i], cs: &RGBColorSpace) 
 	window.draw_triangle(f(r), f(g), f(b), BLACK);
 }
 
-fn to_screen(point: Vector2f, width: usize, height: usize) -> Vector2i {
+fn to_screen(point: Vec2f, width: usize, height: usize) -> Vec2i {
 	let w = (width - 1) as f32;
 	let h = (height - 1) as f32;
 	let x = point.x * w;
 	let y = (1. - point.y) * h;
 
-	Vector2f::new(x, y).into()
+	Vec2f::new(x, y).into()
 }
 
 fn new_light(lambda: usize, intensity: f32) -> DenselySampledSpectrum {

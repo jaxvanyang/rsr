@@ -1,26 +1,26 @@
-use super::{number::HasNaN, vecmath::Vector3f};
+use super::{number::HasNaN, vecmath::Vec3f};
 use std::ops::{Deref, DerefMut};
 
 #[derive(Debug, Clone)]
 pub struct Ray {
 	/// Origin of the ray
-	pub o: Vector3f,
+	pub o: Vec3f,
 	/// Direction of the ray
-	pub d: Vector3f,
+	pub d: Vec3f,
 	// this is for animated objects, default is 0
 	pub time: f32,
 }
 
 impl Ray {
-	pub fn new(o: Vector3f, d: Vector3f) -> Self {
+	pub fn new(o: Vec3f, d: Vec3f) -> Self {
 		Self::new_with_time(o, d, 0.)
 	}
 
-	pub fn new_with_time(o: Vector3f, d: Vector3f, time: f32) -> Self {
+	pub fn new_with_time(o: Vec3f, d: Vec3f, time: f32) -> Self {
 		Self { o, d, time }
 	}
 
-	pub fn eval(&self, t: f32) -> Vector3f {
+	pub fn eval(&self, t: f32) -> Vec3f {
 		self.o + self.d * t
 	}
 }
@@ -36,14 +36,14 @@ pub struct RayDifferential {
 	pub ray: Ray,
 	pub has_differentials: bool,
 	/// Following members are only valid if `has_differentials` is true.
-	pub rx_origin: Vector3f,
-	pub ry_origin: Vector3f,
-	pub rx_direction: Vector3f,
-	pub ry_direction: Vector3f,
+	pub rx_origin: Vec3f,
+	pub ry_origin: Vec3f,
+	pub rx_direction: Vec3f,
+	pub ry_direction: Vec3f,
 }
 
 impl RayDifferential {
-	pub fn new(o: Vector3f, d: Vector3f, time: f32) -> Self {
+	pub fn new(o: Vec3f, d: Vec3f, time: f32) -> Self {
 		Ray::new_with_time(o, d, time).into()
 	}
 
@@ -60,10 +60,10 @@ impl From<Ray> for RayDifferential {
 		Self {
 			ray,
 			has_differentials: false,
-			rx_origin: Vector3f::default(),
-			ry_origin: Vector3f::default(),
-			rx_direction: Vector3f::default(),
-			ry_direction: Vector3f::default(),
+			rx_origin: Vec3f::default(),
+			ry_origin: Vec3f::default(),
+			rx_direction: Vec3f::default(),
+			ry_direction: Vec3f::default(),
 		}
 	}
 }

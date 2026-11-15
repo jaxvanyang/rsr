@@ -2,7 +2,7 @@ use super::{
 	color::{RGB, RGBSigmoidPolynomial, RGBToSpectrumTable, XYZ},
 	spectrum::{DenselySampledSpectrum, Spectrum, get_named_spectrum},
 	transform::SMatrix,
-	vecmath::Vector2f,
+	vecmath::Vec2f,
 };
 use std::sync::LazyLock;
 
@@ -10,9 +10,9 @@ use std::sync::LazyLock;
 #[allow(non_upper_case_globals)]
 pub static sRGB: LazyLock<RGBColorSpace> = LazyLock::new(|| {
 	RGBColorSpace::new(
-		Vector2f::new(0.64, 0.33),
-		Vector2f::new(0.3, 0.6),
-		Vector2f::new(0.15, 0.06),
+		Vec2f::new(0.64, 0.33),
+		Vec2f::new(0.3, 0.6),
+		Vec2f::new(0.15, 0.06),
 		get_named_spectrum("stdillum-D65").unwrap(),
 		&RGBToSpectrumTable::sRGB,
 	)
@@ -20,9 +20,9 @@ pub static sRGB: LazyLock<RGBColorSpace> = LazyLock::new(|| {
 // P3-D65 (display)
 pub static DCI_P3: LazyLock<RGBColorSpace> = LazyLock::new(|| {
 	RGBColorSpace::new(
-		Vector2f::new(0.68, 0.32),
-		Vector2f::new(0.265, 0.690),
-		Vector2f::new(0.15, 0.06),
+		Vec2f::new(0.68, 0.32),
+		Vec2f::new(0.265, 0.690),
+		Vec2f::new(0.15, 0.06),
 		get_named_spectrum("stdillum-D65").unwrap(),
 		&RGBToSpectrumTable::DCI_P3,
 	)
@@ -31,18 +31,18 @@ pub static DCI_P3: LazyLock<RGBColorSpace> = LazyLock::new(|| {
 #[allow(non_upper_case_globals)]
 pub static Rec2020: LazyLock<RGBColorSpace> = LazyLock::new(|| {
 	RGBColorSpace::new(
-		Vector2f::new(0.708, 0.292),
-		Vector2f::new(0.170, 0.797),
-		Vector2f::new(0.131, 0.046),
+		Vec2f::new(0.708, 0.292),
+		Vec2f::new(0.170, 0.797),
+		Vec2f::new(0.131, 0.046),
 		get_named_spectrum("stdillum-D65").unwrap(),
 		&RGBToSpectrumTable::Rec2020,
 	)
 });
 pub static ACES2065_1: LazyLock<RGBColorSpace> = LazyLock::new(|| {
 	RGBColorSpace::new(
-		Vector2f::new(0.7347, 0.2653),
-		Vector2f::new(0., 1.),
-		Vector2f::new(0.0001, -0.077),
+		Vec2f::new(0.7347, 0.2653),
+		Vec2f::new(0., 1.),
+		Vec2f::new(0.0001, -0.077),
 		get_named_spectrum("illum-acesD60").unwrap(),
 		&RGBToSpectrumTable::ACES2065_1,
 	)
@@ -50,10 +50,10 @@ pub static ACES2065_1: LazyLock<RGBColorSpace> = LazyLock::new(|| {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RGBColorSpace<'a> {
-	pub r: Vector2f,
-	pub g: Vector2f,
-	pub b: Vector2f,
-	pub w: Vector2f,
+	pub r: Vec2f,
+	pub g: Vec2f,
+	pub b: Vec2f,
+	pub w: Vec2f,
 	pub illuminant: DenselySampledSpectrum,
 	pub rgb2spec: &'a RGBToSpectrumTable<'a>,
 	pub rgb2xyz: SMatrix<3>,
@@ -62,9 +62,9 @@ pub struct RGBColorSpace<'a> {
 
 impl<'a> RGBColorSpace<'a> {
 	pub fn new(
-		r: Vector2f,
-		g: Vector2f,
-		b: Vector2f,
+		r: Vec2f,
+		g: Vec2f,
+		b: Vec2f,
 		illuminant: &dyn Spectrum,
 		rgb2spec: &'a RGBToSpectrumTable,
 	) -> Self {

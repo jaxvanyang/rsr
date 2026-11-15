@@ -3,7 +3,7 @@ use super::{
 	interaction::{Interaction, Shading, SurfaceInteraction},
 	math::diff_of_products,
 	number::HasNaN,
-	vecmath::{Bounds3f, Vector2f, Vector3f},
+	vecmath::{Bounds3f, Vec2f, Vec3f},
 };
 use approx::abs_diff_eq;
 use std::ops::*;
@@ -225,23 +225,23 @@ impl SMatrix<4> {
 		Some(Self { m: inv })
 	}
 
-	pub fn mul_point(&self, p: Vector3f) -> Vector3f {
+	pub fn mul_point(&self, p: Vec3f) -> Vec3f {
 		let m = &self.m;
 		let x = m[0][0] * p.x + m[0][1] * p.y + m[0][2] * p.z + m[0][3];
 		let y = m[1][0] * p.x + m[1][1] * p.y + m[1][2] * p.z + m[1][3];
 		let z = m[2][0] * p.x + m[2][1] * p.y + m[2][2] * p.z + m[2][3];
 		let w = m[3][0] * p.x + m[3][1] * p.y + m[3][2] * p.z + m[3][3];
 
-		if w == 1.0 { Vector3f::new(x, y, z) } else { Vector3f::new(x, y, z) / w }
+		if w == 1.0 { Vec3f::new(x, y, z) } else { Vec3f::new(x, y, z) / w }
 	}
 
-	pub fn mul_vector(&self, v: Vector3f) -> Vector3f {
+	pub fn mul_vector(&self, v: Vec3f) -> Vec3f {
 		let m = &self.m;
 		let x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z;
 		let y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z;
 		let z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z;
 
-		Vector3f::new(x, y, z)
+		Vec3f::new(x, y, z)
 	}
 }
 
@@ -369,22 +369,19 @@ impl<const N: usize> IndexMut<usize> for SMatrix<N> {
 	}
 }
 
-impl Mul<Vector2f> for SMatrix<2> {
-	type Output = Vector2f;
+impl Mul<Vec2f> for SMatrix<2> {
+	type Output = Vec2f;
 
-	fn mul(self, v: Vector2f) -> Vector2f {
-		Vector2f::new(
-			self.m[0][0] * v.x + self.m[0][1] * v.y,
-			self.m[1][0] * v.x + self.m[1][1] * v.y,
-		)
+	fn mul(self, v: Vec2f) -> Vec2f {
+		Vec2f::new(self.m[0][0] * v.x + self.m[0][1] * v.y, self.m[1][0] * v.x + self.m[1][1] * v.y)
 	}
 }
 
-impl Mul<Vector3f> for SMatrix<3> {
-	type Output = Vector3f;
+impl Mul<Vec3f> for SMatrix<3> {
+	type Output = Vec3f;
 
-	fn mul(self, v: Vector3f) -> Vector3f {
-		Vector3f::new(
+	fn mul(self, v: Vec3f) -> Vec3f {
+		Vec3f::new(
 			self.m[0][0] * v.x + self.m[0][1] * v.y + self.m[0][2] * v.z,
 			self.m[1][0] * v.x + self.m[1][1] * v.y + self.m[1][2] * v.z,
 			self.m[2][0] * v.x + self.m[2][1] * v.y + self.m[2][2] * v.z,
@@ -456,7 +453,7 @@ impl Transform {
 		self.m.is_identity()
 	}
 
-	pub fn translate(delta: Vector3f) -> Self {
+	pub fn translate(delta: Vec3f) -> Self {
 		let m = SMatrix::from([
 			[1.0, 0.0, 0.0, delta.x],
 			[0.0, 1.0, 0.0, delta.y],
@@ -493,9 +490,9 @@ impl Transform {
 	/// Return `true` if the transform has a scaling term.
 	pub fn has_scale(&self) -> bool {
 		let tolerance = 1e-3;
-		let lx2 = self.map_point(Vector3f::new(1.0, 0.0, 0.0)).length_squared();
-		let ly2 = self.map_point(Vector3f::new(0.0, 1.0, 0.0)).length_squared();
-		let lz2 = self.map_point(Vector3f::new(0.0, 0.0, 1.0)).length_squared();
+		let lx2 = self.map_point(Vec3f::new(1.0, 0.0, 0.0)).length_squared();
+		let ly2 = self.map_point(Vec3f::new(0.0, 1.0, 0.0)).length_squared();
+		let lz2 = self.map_point(Vec3f::new(0.0, 0.0, 1.0)).length_squared();
 
 		(lx2 - 1.0).abs() > tolerance
 			|| (ly2 - 1.0).abs() > tolerance
@@ -551,13 +548,13 @@ impl Transform {
 	}
 
 	/// Return a rotation transform around `axis`, `theta` is in degrees.
-	pub fn rotate(axis: Vector3f, theta: f32) -> Self {
+	pub fn rotate(axis: Vec3f, theta: f32) -> Self {
 		let theta = theta.to_radians();
 		Self::rotate_with_sin_cos(axis, theta.sin(), theta.cos())
 	}
 
 	/// Return a rotation transform around `axis` with precomputed `sin(theta)` and `cos(theta)` values.
-	pub fn rotate_with_sin_cos(axis: Vector3f, sin: f32, cos: f32) -> Self {
+	pub fn rotate_with_sin_cos(axis: Vec3f, sin: f32, cos: f32) -> Self {
 		let a = axis.normalized();
 		let mut m = SMatrix::zero();
 		m[3][3] = 1.0;
@@ -584,14 +581,14 @@ impl Transform {
 
 	/// Returns a rotation matrix that rotates from one vector to another. The arguments must be normalized.
 	/// Note: the result transform may not be the shortest rotation.
-	pub fn rotate_from_to(from: Vector3f, to: Vector3f) -> Self {
+	pub fn rotate_from_to(from: Vec3f, to: Vec3f) -> Self {
 		// Compute intermediate vector for vector reflection
 		let refl = if from.x.abs() < 0.72 && to.x.abs() < 0.72 {
-			Vector3f::new(1.0, 0.0, 0.0)
+			Vec3f::new(1.0, 0.0, 0.0)
 		} else if from.y.abs() < 0.72 && to.y.abs() < 0.72 {
-			Vector3f::new(0.0, 1.0, 0.0)
+			Vec3f::new(0.0, 1.0, 0.0)
 		} else {
-			Vector3f::new(0.0, 0.0, 1.0)
+			Vec3f::new(0.0, 0.0, 1.0)
 		};
 
 		// TODO: understand Householder matrix
@@ -618,7 +615,7 @@ impl Transform {
 	/// Create a look-at transform to camera space, the camera is looking at `look` from
 	/// `pos`, with `up` as the up direction. `up` may not be perpendicular to `look`
 	/// direction.
-	pub fn look_at(pos: Vector3f, look: Vector3f, up: Vector3f) -> Self {
+	pub fn look_at(pos: Vec3f, look: Vec3f, up: Vec3f) -> Self {
 		let mut camera_to_world = SMatrix::<4>::zero();
 		camera_to_world[0][3] = pos.x;
 		camera_to_world[1][3] = pos.y;
@@ -645,7 +642,7 @@ impl Transform {
 	}
 
 	pub fn orthographic(z_near: f32, z_far: f32) -> Self {
-		Self::scale(1., 1., 1. / (z_far - z_near)) * Self::translate(Vector3f::new(0., 0., -z_near))
+		Self::scale(1., 1., 1. / (z_far - z_near)) * Self::translate(Vec3f::new(0., 0., -z_near))
 	}
 
 	pub fn perspective(fov: f32, n: f32, f: f32) -> Self {
@@ -661,43 +658,43 @@ impl Transform {
 	}
 
 	/// Apply the transform to a point.
-	pub fn map_point(&self, p: Vector3f) -> Vector3f {
+	pub fn map_point(&self, p: Vec3f) -> Vec3f {
 		self.m.mul_point(p)
 	}
 
 	/// Apply the inverse transform to a point.
-	pub fn invert_point(&self, p: Vector3f) -> Vector3f {
+	pub fn invert_point(&self, p: Vec3f) -> Vec3f {
 		self.inv.mul_point(p)
 	}
 
 	/// Apply the transform to a vector.
-	pub fn map_vector(&self, v: Vector3f) -> Vector3f {
+	pub fn map_vector(&self, v: Vec3f) -> Vec3f {
 		self.m.mul_vector(v)
 	}
 
 	/// Apply the inverse transform to a vector.
-	pub fn invert_vector(&self, v: Vector3f) -> Vector3f {
+	pub fn invert_vector(&self, v: Vec3f) -> Vec3f {
 		self.inv.mul_vector(v)
 	}
 
 	/// Apply the transform to a normal.
-	pub fn map_normal(&self, n: Vector3f) -> Vector3f {
+	pub fn map_normal(&self, n: Vec3f) -> Vec3f {
 		let m = &self.inv;
 		let x = m[0][0] * n.x + m[1][0] * n.y + m[2][0] * n.z;
 		let y = m[0][1] * n.x + m[1][1] * n.y + m[2][1] * n.z;
 		let z = m[0][2] * n.x + m[1][2] * n.y + m[2][2] * n.z;
 
-		Vector3f::new(x, y, z)
+		Vec3f::new(x, y, z)
 	}
 
 	/// Apply the inverse transform to a normal.
-	pub fn invert_normal(&self, n: Vector3f) -> Vector3f {
+	pub fn invert_normal(&self, n: Vec3f) -> Vec3f {
 		let m = &self.m;
 		let x = m[0][0] * n.x + m[1][0] * n.y + m[2][0] * n.z;
 		let y = m[0][1] * n.x + m[1][1] * n.y + m[2][1] * n.z;
 		let z = m[0][2] * n.x + m[1][2] * n.y + m[2][2] * n.z;
 
-		Vector3f::new(x, y, z)
+		Vec3f::new(x, y, z)
 	}
 
 	// TODO: transform ray
@@ -859,13 +856,13 @@ impl Mul<&Transform> for &Transform {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Frame {
-	pub x: Vector3f,
-	pub y: Vector3f,
-	pub z: Vector3f,
+	pub x: Vec3f,
+	pub y: Vec3f,
+	pub z: Vec3f,
 }
 
 impl Frame {
-	pub fn new(x: Vector3f, y: Vector3f, z: Vector3f) -> Self {
+	pub fn new(x: Vec3f, y: Vec3f, z: Vec3f) -> Self {
 		let ret = Self { x, y, z };
 
 		debug_assert!(x.is_normalized());
@@ -876,27 +873,27 @@ impl Frame {
 		ret
 	}
 
-	pub fn from_xz(x: Vector3f, z: Vector3f) -> Self {
+	pub fn from_xz(x: Vec3f, z: Vec3f) -> Self {
 		Self::new(x, z.cross(x), z)
 	}
 
-	pub fn from_xy(x: Vector3f, y: Vector3f) -> Self {
+	pub fn from_xy(x: Vec3f, y: Vec3f) -> Self {
 		Self::new(x, y, x.cross(y))
 	}
 
-	pub fn from_z(z: Vector3f) -> Self {
+	pub fn from_z(z: Vec3f) -> Self {
 		let (x, y) = z.coordinate_system();
 
 		Self::new(x, y, z)
 	}
 
 	/// Transform a vector / normal into the frame's local coordinate system.
-	pub fn to_local(&self, v: Vector3f) -> Vector3f {
-		Vector3f::new(self.x.dot(v), self.y.dot(v), self.z.dot(v))
+	pub fn to_local(&self, v: Vec3f) -> Vec3f {
+		Vec3f::new(self.x.dot(v), self.y.dot(v), self.z.dot(v))
 	}
 
 	/// Transform a vector / normal from the frame's local coordinate system to world space.
-	pub fn from_local(&self, v: Vector3f) -> Vector3f {
+	pub fn from_local(&self, v: Vec3f) -> Vec3f {
 		v.x * self.x + v.y * self.y + v.z * self.z
 	}
 }
@@ -904,9 +901,9 @@ impl Frame {
 impl Default for Frame {
 	fn default() -> Self {
 		Self {
-			x: Vector3f::new(1.0, 0.0, 0.0),
-			y: Vector3f::new(0.0, 1.0, 0.0),
-			z: Vector3f::new(0.0, 0.0, 1.0),
+			x: Vec3f::new(1.0, 0.0, 0.0),
+			y: Vec3f::new(0.0, 1.0, 0.0),
+			z: Vec3f::new(0.0, 0.0, 1.0),
 		}
 	}
 }
@@ -1000,9 +997,9 @@ mod tests {
 
 	#[test]
 	fn test_translate() {
-		let t = Transform::translate(Vector3f::new(1.0, 2.0, 3.0));
-		let p = Vector3f::new(4.0, 5.0, 6.0);
-		let q = Vector3f::new(5.0, 7.0, 9.0);
+		let t = Transform::translate(Vec3f::new(1.0, 2.0, 3.0));
+		let p = Vec3f::new(4.0, 5.0, 6.0);
+		let q = Vec3f::new(5.0, 7.0, 9.0);
 		assert_eq!(t.map_point(p), q);
 		assert_eq!(t.invert_point(q), p);
 		assert_eq!(t.map_vector(p), p);
@@ -1014,9 +1011,9 @@ mod tests {
 	#[test]
 	fn test_scale() {
 		let t = Transform::scale(1.0, 2.0, 3.0);
-		let p = Vector3f::new(4.0, 5.0, 6.0);
-		let q = Vector3f::new(4.0, 10.0, 18.0);
-		let n = Vector3f::new(4.0, 2.5, 2.0);
+		let p = Vec3f::new(4.0, 5.0, 6.0);
+		let q = Vec3f::new(4.0, 10.0, 18.0);
+		let n = Vec3f::new(4.0, 2.5, 2.0);
 		assert!(t.has_scale());
 		assert_eq!(t.map_point(p), q);
 		assert_eq!(t.invert_point(q), p);
@@ -1033,8 +1030,8 @@ mod tests {
 	#[test]
 	fn test_rotate() {
 		let t = Transform::rotate_x(90.0);
-		let p = Vector3f::new(1.0, 2.0, 3.0);
-		let q = Vector3f::new(1.0, -3.0, 2.0);
+		let p = Vec3f::new(1.0, 2.0, 3.0);
+		let q = Vec3f::new(1.0, -3.0, 2.0);
 		assert_abs_diff_eq!(t.map_point(p), q);
 		assert_abs_diff_eq!(t.invert_point(q), p, epsilon = 1e-6);
 		assert_abs_diff_eq!(t.map_vector(p), q);
@@ -1043,8 +1040,8 @@ mod tests {
 		assert_abs_diff_eq!(t.invert_normal(q), p, epsilon = 1e-6);
 
 		let t = Transform::rotate_y(90.0);
-		let p = Vector3f::new(1.0, 2.0, 3.0);
-		let q = Vector3f::new(3.0, 2.0, -1.0);
+		let p = Vec3f::new(1.0, 2.0, 3.0);
+		let q = Vec3f::new(3.0, 2.0, -1.0);
 		assert_abs_diff_eq!(t.map_point(p), q);
 		assert_abs_diff_eq!(t.invert_point(q), p);
 		assert_abs_diff_eq!(t.map_vector(p), q);
@@ -1053,8 +1050,8 @@ mod tests {
 		assert_abs_diff_eq!(t.invert_normal(q), p);
 
 		let t = Transform::rotate_z(90.0);
-		let p = Vector3f::new(1.0, 2.0, 3.0);
-		let q = Vector3f::new(-2.0, 1.0, 3.0);
+		let p = Vec3f::new(1.0, 2.0, 3.0);
+		let q = Vec3f::new(-2.0, 1.0, 3.0);
 		assert_abs_diff_eq!(t.map_point(p), q);
 		assert_abs_diff_eq!(t.invert_point(q), p);
 		assert_abs_diff_eq!(t.map_vector(p), q);
@@ -1062,9 +1059,9 @@ mod tests {
 		assert_abs_diff_eq!(t.map_normal(p), q);
 		assert_abs_diff_eq!(t.invert_normal(q), p);
 
-		let t = Transform::rotate(Vector3f::new(1.0, 1.0, 1.0), 120.0);
-		let p = Vector3f::new(1.0, 0.0, 0.0);
-		let q = Vector3f::new(0.0, 1.0, 0.0);
+		let t = Transform::rotate(Vec3f::new(1.0, 1.0, 1.0), 120.0);
+		let p = Vec3f::new(1.0, 0.0, 0.0);
+		let q = Vec3f::new(0.0, 1.0, 0.0);
 		assert_abs_diff_eq!(t.map_point(p), q, epsilon = 1e-6);
 		assert_abs_diff_eq!(t.invert_point(q), p, epsilon = 1e-6);
 		assert_abs_diff_eq!(t.map_vector(p), q, epsilon = 1e-6);
@@ -1073,10 +1070,9 @@ mod tests {
 		assert_abs_diff_eq!(t.invert_normal(q), p, epsilon = 1e-6);
 
 		// the rotation axis is (1, 1, 1)
-		let t =
-			Transform::rotate_from_to(Vector3f::new(1.0, 0.0, 0.0), Vector3f::new(0.0, 1.0, 0.0));
-		let p = Vector3f::new(1.0, 1.0, 0.0);
-		let q = Vector3f::new(0.0, 1.0, 1.0);
+		let t = Transform::rotate_from_to(Vec3f::new(1.0, 0.0, 0.0), Vec3f::new(0.0, 1.0, 0.0));
+		let p = Vec3f::new(1.0, 1.0, 0.0);
+		let q = Vec3f::new(0.0, 1.0, 1.0);
 		assert_eq!(t.map_point(p), q);
 		assert_eq!(t.invert_point(q), p);
 		assert_eq!(t.map_vector(p), q);
@@ -1088,13 +1084,13 @@ mod tests {
 	#[test]
 	fn test_look_at() {
 		let t = Transform::look_at(
-			Vector3f::new(2.0, 2.0, 2.0),
-			Vector3f::new(0.0, 0.0, 0.0),
-			Vector3f::new(-1.0, 0.0, -1.0),
+			Vec3f::new(2.0, 2.0, 2.0),
+			Vec3f::new(0.0, 0.0, 0.0),
+			Vec3f::new(-1.0, 0.0, -1.0),
 		);
-		let p = Vector3f::new(1.0, 1.0, 1.0);
-		let q = Vector3f::new(0.0, 0.0, 3.0f32.sqrt());
-		let v = Vector3f::new(0.0, 0.0, -3.0f32.sqrt());
+		let p = Vec3f::new(1.0, 1.0, 1.0);
+		let q = Vec3f::new(0.0, 0.0, 3.0f32.sqrt());
+		let v = Vec3f::new(0.0, 0.0, -3.0f32.sqrt());
 		assert_abs_diff_eq!(t.map_point(p), q, epsilon = 1e-6);
 		assert_abs_diff_eq!(t.invert_point(q), p);
 		assert_abs_diff_eq!(t.map_vector(p), v);
@@ -1106,8 +1102,8 @@ mod tests {
 	#[test]
 	fn test_bounds() {
 		let t = Transform::scale(-1.0, 2.0, -3.0);
-		let b = Bounds3f::new(Vector3f::new(-1.0, -1.0, -1.0), Vector3f::new(1.0, 1.0, 1.0));
-		let c = Bounds3f::new(Vector3f::new(-1.0, -2.0, -3.0), Vector3f::new(1.0, 2.0, 3.0));
+		let b = Bounds3f::new(Vec3f::new(-1.0, -1.0, -1.0), Vec3f::new(1.0, 1.0, 1.0));
+		let c = Bounds3f::new(Vec3f::new(-1.0, -2.0, -3.0), Vec3f::new(1.0, 2.0, 3.0));
 		assert_eq!(t.map_bounds(&b), c);
 		assert_eq!(t.invert_bounds(&c), b);
 	}
@@ -1118,8 +1114,8 @@ mod tests {
 		let ty = Transform::rotate_y(90.0);
 		let tz = Transform::rotate_z(90.0);
 		let t = &tz * &ty * &tx;
-		let p = Vector3f::new(1.0, 1.0, 1.0);
-		let q = Vector3f::new(1.0, 1.0, -1.0);
+		let p = Vec3f::new(1.0, 1.0, 1.0);
+		let q = Vec3f::new(1.0, 1.0, -1.0);
 		assert_abs_diff_eq!(t.map_point(p), q);
 		assert_abs_diff_eq!(t.invert_point(q), p);
 		assert_abs_diff_eq!(t.map_vector(p), q);
@@ -1130,10 +1126,10 @@ mod tests {
 
 	#[test]
 	fn test_frame() {
-		let f = Frame::from_z(Vector3f::new(1.0, 0.0, 0.0));
+		let f = Frame::from_z(Vec3f::new(1.0, 0.0, 0.0));
 		let t = Transform::from(&f);
-		let u = Vector3f::new(1.0, 2.0, 3.0);
-		let v = Vector3f::new(-3.0, 2.0, 1.0);
+		let u = Vec3f::new(1.0, 2.0, 3.0);
+		let v = Vec3f::new(-3.0, 2.0, 1.0);
 		assert_eq!(f.to_local(u), v);
 		assert_eq!(f.from_local(v), u);
 		assert_eq!(t.map_vector(u), v);

@@ -2,7 +2,7 @@ use super::{
 	math::{find_interval, lerp},
 	number::HasNaN,
 	spectrum::{LAMBDA_MAX, LAMBDA_MIN, Spectrum, spectra},
-	{Vector2f, spectrum::CIE_Y_INTEGRAL},
+	{Vec2f, spectrum::CIE_Y_INTEGRAL},
 };
 use crate::{polynomial, ui::Color};
 use std::ops::*;
@@ -21,12 +21,12 @@ impl XYZ {
 		ret
 	}
 
-	pub fn from_xy(xy: Vector2f) -> Self {
+	pub fn from_xy(xy: Vec2f) -> Self {
 		Self::from_xyY(xy, 1.)
 	}
 
 	#[allow(non_snake_case)]
-	pub fn from_xyY(xy: Vector2f, Y: f32) -> Self {
+	pub fn from_xyY(xy: Vec2f, Y: f32) -> Self {
 		if xy.y == 0. {
 			Self::default()
 		} else {
@@ -34,8 +34,8 @@ impl XYZ {
 		}
 	}
 
-	pub fn xy(&self) -> Vector2f {
-		Vector2f::new(self.x, self.y) / (self.x + self.y + self.z)
+	pub fn xy(&self) -> Vec2f {
+		Vec2f::new(self.x, self.y) / (self.x + self.y + self.z)
 	}
 }
 

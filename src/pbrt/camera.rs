@@ -1,4 +1,4 @@
-use crate::pbrt::Vector2i;
+use crate::pbrt::Vec2i;
 
 use super::{
 	math::{lerp, sample_uniform_disk_concentric},
@@ -6,7 +6,7 @@ use super::{
 	ray::{Ray, RayDifferential},
 	spectrum::{SampledSpectrum, SampledWavelengths},
 	transform::{AnimatedTransform, Transform},
-	vecmath::{Bounds2f, Vector2f, Vector3f},
+	vecmath::{Bounds2f, Vec2f, Vec3f},
 };
 use std::ops::{Deref, DerefMut};
 
@@ -29,8 +29,8 @@ pub trait Camera {
 
 #[derive(Debug, Clone, Copy)]
 pub struct CameraSample {
-	pub p_film: Vector2f,
-	pub p_lens: Vector2f,
+	pub p_film: Vec2f,
+	pub p_lens: Vec2f,
 	pub time: f32,
 	pub filter_weight: f32,
 }
@@ -98,7 +98,7 @@ pub struct CameraBase {
 	camera_transform: CameraTransform,
 	shutter_open: f32,
 	shutter_close: f32,
-	resolution: Vector2i,
+	resolution: Vec2i,
 }
 
 #[derive(Debug)]
@@ -106,7 +106,7 @@ pub struct CameraBaseParameters {
 	pub camera_transform: CameraTransform,
 	pub shutter_open: f32,
 	pub shutter_close: f32,
-	pub resolution: Vector2i,
+	pub resolution: Vec2i,
 }
 
 impl CameraBase {
@@ -224,7 +224,7 @@ impl ProjectiveCamera {
 				1. / (screen_window.max.x - screen_window.min.x),
 				1. / (screen_window.max.y - screen_window.min.y),
 				1.,
-			) * Transform::translate(Vector3f::new(-screen_window.min.x, -screen_window.min.y, 0.));
+			) * Transform::translate(Vec3f::new(-screen_window.min.x, -screen_window.min.y, 0.));
 		let raster_from_ndc =
 			Transform::scale(base.resolution.x as f32, -base.resolution.y as f32, 1.);
 		let raster_from_screen = raster_from_ndc * ndc_from_screen;
@@ -259,8 +259,8 @@ impl DerefMut for ProjectiveCamera {
 #[derive(Debug)]
 pub struct OrthographicCamera {
 	proj: ProjectiveCamera,
-	dx_camera: Vector3f,
-	dy_camera: Vector3f,
+	dx_camera: Vec3f,
+	dy_camera: Vec3f,
 }
 
 impl OrthographicCamera {
@@ -277,8 +277,8 @@ impl OrthographicCamera {
 			len_radius,
 			focal_distance,
 		);
-		let dx_camera = proj.camera_from_raster.map_vector(Vector3f::new(1., 0., 0.));
-		let dy_camera = proj.camera_from_raster.map_vector(Vector3f::new(0., 1., 0.));
+		let dx_camera = proj.camera_from_raster.map_vector(Vec3f::new(1., 0., 0.));
+		let dy_camera = proj.camera_from_raster.map_vector(Vec3f::new(0., 1., 0.));
 
 		Self { proj, dx_camera, dy_camera }
 	}
@@ -298,16 +298,16 @@ impl Camera for OrthographicCamera {
 		sample: CameraSample,
 		_lambda: &mut SampledWavelengths,
 	) -> Option<CameraRay> {
-		let p_film = Vector3f::new(sample.p_film.x, sample.p_film.y, 0.);
+		let p_film = Vec3f::new(sample.p_film.x, sample.p_film.y, 0.);
 		let p_camera = self.camera_from_raster.map_point(p_film);
 		let mut ray =
-			Ray::new_with_time(p_camera, Vector3f::new(0., 0., 1.), self.sample_time(sample.time));
+			Ray::new_with_time(p_camera, Vec3f::new(0., 0., 1.), self.sample_time(sample.time));
 		// modify ray for depth of field
 		if self.lens_radius > 0. {
 			let p_lens = self.lens_radius * sample_uniform_disk_concentric(sample.p_lens);
 			let ft = self.focal_distance / ray.d.z;
 			let p_focus = ray.eval(ft);
-			ray.o = Vector3f::new(p_lens.x, p_lens.y, 0.);
+			ray.o = Vec3f::new(p_lens.x, p_lens.y, 0.);
 			ray.d = (p_focus - ray.o).normalized();
 		}
 
@@ -319,27 +319,24 @@ impl Camera for OrthographicCamera {
 		sample: CameraSample,
 		_lambda: &mut SampledWavelengths,
 	) -> Option<CameraRayDifferential> {
-		let p_film = Vector3f::new(sample.p_film.x, sample.p_film.y, 0.);
+		let p_film = Vec3f::new(sample.p_film.x, sample.p_film.y, 0.);
 		let p_camera = self.camera_from_raster.map_point(p_film);
-		let mut ray = RayDifferential::new(
-			p_camera,
-			Vector3f::new(0., 0., 1.),
-			self.sample_time(sample.time),
-		);
+		let mut ray =
+			RayDifferential::new(p_camera, Vec3f::new(0., 0., 1.), self.sample_time(sample.time));
 		if self.lens_radius > 0. {
 			// modify ray for depth of field
 			let p_lens = self.lens_radius * sample_uniform_disk_concentric(sample.p_lens);
 			let ft = self.focal_distance / ray.d.z;
 			let p_focus = ray.eval(ft);
-			ray.o = Vector3f::new(p_lens.x, p_lens.y, 0.);
+			ray.o = Vec3f::new(p_lens.x, p_lens.y, 0.);
 			ray.d = (p_focus - ray.o).normalized();
 
 			// compute ray differentials
-			let p_focus = p_camera + self.dx_camera + (ft * Vector3f::new(0., 0., 1.));
-			ray.rx_origin = Vector3f::new(p_lens.x, p_lens.y, 0.);
+			let p_focus = p_camera + self.dx_camera + (ft * Vec3f::new(0., 0., 1.));
+			ray.rx_origin = Vec3f::new(p_lens.x, p_lens.y, 0.);
 			ray.rx_direction = (p_focus - ray.rx_origin).normalized();
-			let p_focus = p_camera + self.dy_camera + (ft * Vector3f::new(0., 0., 1.));
-			ray.ry_origin = Vector3f::new(p_lens.x, p_lens.y, 0.);
+			let p_focus = p_camera + self.dy_camera + (ft * Vec3f::new(0., 0., 1.));
+			ray.ry_origin = Vec3f::new(p_lens.x, p_lens.y, 0.);
 			ray.ry_direction = (p_focus - ray.rx_origin).normalized();
 		} else {
 			ray.rx_origin = ray.o + self.dx_camera;
@@ -368,8 +365,8 @@ impl DerefMut for OrthographicCamera {
 #[derive(Debug)]
 pub struct PerspectiveCamera {
 	proj: ProjectiveCamera,
-	dx_camera: Vector3f,
-	dy_camera: Vector3f,
+	dx_camera: Vec3f,
+	dy_camera: Vec3f,
 	// cos_total_width: f32,
 }
 
@@ -388,9 +385,9 @@ impl PerspectiveCamera {
 			len_radius,
 			focal_distance,
 		);
-		let origin = proj.camera_from_raster.map_point(Vector3f::default());
-		let dx_camera = proj.camera_from_raster.map_point(Vector3f::new(1., 0., 0.)) - origin;
-		let dy_camera = proj.camera_from_raster.map_point(Vector3f::new(0., 1., 0.)) - origin;
+		let origin = proj.camera_from_raster.map_point(Vec3f::default());
+		let dx_camera = proj.camera_from_raster.map_point(Vec3f::new(1., 0., 0.)) - origin;
+		let dy_camera = proj.camera_from_raster.map_point(Vec3f::new(0., 1., 0.)) - origin;
 
 		Self { proj, dx_camera, dy_camera }
 	}
@@ -410,10 +407,10 @@ impl Camera for PerspectiveCamera {
 		sample: CameraSample,
 		_lambda: &mut SampledWavelengths,
 	) -> Option<CameraRay> {
-		let p_film = Vector3f::new(sample.p_film.x, sample.p_film.y, 0.);
+		let p_film = Vec3f::new(sample.p_film.x, sample.p_film.y, 0.);
 		let p_camera = self.camera_from_raster.map_point(p_film);
 		let mut ray = Ray::new_with_time(
-			Vector3f::default(),
+			Vec3f::default(),
 			p_camera.normalized(),
 			self.sample_time(sample.time),
 		);
@@ -422,7 +419,7 @@ impl Camera for PerspectiveCamera {
 			let p_lens = self.lens_radius * sample_uniform_disk_concentric(sample.p_lens);
 			let ft = self.focal_distance / ray.d.z;
 			let p_focus = ray.eval(ft);
-			ray.o = Vector3f::new(p_lens.x, p_lens.y, 0.);
+			ray.o = Vec3f::new(p_lens.x, p_lens.y, 0.);
 			ray.d = (p_focus - ray.o).normalized();
 		}
 
@@ -434,10 +431,10 @@ impl Camera for PerspectiveCamera {
 		sample: CameraSample,
 		_lambda: &mut SampledWavelengths,
 	) -> Option<CameraRayDifferential> {
-		let p_film = Vector3f::new(sample.p_film.x, sample.p_film.y, 0.);
+		let p_film = Vec3f::new(sample.p_film.x, sample.p_film.y, 0.);
 		let p_camera = self.camera_from_raster.map_point(p_film);
 		let mut ray = RayDifferential::new(
-			Vector3f::default(),
+			Vec3f::default(),
 			p_camera.normalized(),
 			self.sample_time(sample.time),
 		);
@@ -446,7 +443,7 @@ impl Camera for PerspectiveCamera {
 			let p_lens = self.lens_radius * sample_uniform_disk_concentric(sample.p_lens);
 			let ft = self.focal_distance / ray.d.z;
 			let p_focus = ray.eval(ft);
-			ray.o = Vector3f::new(p_lens.x, p_lens.y, 0.);
+			ray.o = Vec3f::new(p_lens.x, p_lens.y, 0.);
 			ray.d = (p_focus - ray.o).normalized();
 
 			// compute ray differentials

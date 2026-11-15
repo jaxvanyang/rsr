@@ -1,4 +1,4 @@
-use super::vecmath::Vector2f;
+use super::vecmath::Vec2f;
 
 pub use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, PI};
 
@@ -144,11 +144,11 @@ pub fn diff_of_products(a: f32, b: f32, c: f32, d: f32) -> f32 {
 	result + error
 }
 
-pub fn sample_uniform_disk_concentric(u: Vector2f) -> Vector2f {
-	let offset = 2. * u - Vector2f::new(1., 1.);
+pub fn sample_uniform_disk_concentric(u: Vec2f) -> Vec2f {
+	let offset = 2. * u - Vec2f::new(1., 1.);
 	// handle degeneracy at the origin
 	if offset.x == 0. && offset.y == 0. {
-		return Vector2f::default();
+		return Vec2f::default();
 	}
 
 	let (r, theta) = if offset.x.abs() > offset.y.abs() {
@@ -157,7 +157,7 @@ pub fn sample_uniform_disk_concentric(u: Vector2f) -> Vector2f {
 		(offset.y, FRAC_PI_2 - FRAC_PI_4 * (offset.y / offset.x))
 	};
 
-	r * Vector2f::new(theta.cos(), theta.sin())
+	r * Vec2f::new(theta.cos(), theta.sin())
 }
 
 #[inline]

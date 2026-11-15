@@ -1,6 +1,6 @@
 use rsr::{
 	pbrt::{
-		SMatrix, Vector2f, Vector2i,
+		SMatrix, Vec2f, Vec2i,
 		spectrum::{Spectrum, spectra},
 	},
 	ui::{Canvas, Result, Window, color::manim::*},
@@ -8,7 +8,7 @@ use rsr::{
 
 fn main() -> Result<()> {
 	let mut window = Window::new("Plot", 800, 600)?;
-	let center = Vector2i::new(-200, window.h() as i32 / 2);
+	let center = Vec2i::new(-200, window.h() as i32 / 2);
 
 	while window.is_open() {
 		draw_background(&mut window, center, 50);
@@ -22,20 +22,20 @@ fn main() -> Result<()> {
 	Ok(())
 }
 
-fn plot(window: &mut Window, center: Vector2i, f: fn(f32) -> f32, color: u32) {
+fn plot(window: &mut Window, center: Vec2i, f: fn(f32) -> f32, color: u32) {
 	let flip = SMatrix::<2>::from([[1., 0.], [0., -1.]]);
 	let scale = SMatrix::<2>::from([[1., 0.], [0., 110.]]);
 	let transform = flip * scale;
-	let offset = Vector2f::from(center);
+	let offset = Vec2f::from(center);
 	let mut points = Vec::new();
 	for x in 360..=830 {
 		let x = x as f32;
-		points.push(transform * Vector2f::new(x, f(x)) + offset);
+		points.push(transform * Vec2f::new(x, f(x)) + offset);
 	}
 	window.draw_lines(&points, color);
 }
 
-fn draw_background(window: &mut Window, center: Vector2i, step: usize) {
+fn draw_background(window: &mut Window, center: Vec2i, step: usize) {
 	let (x, y) = (center.x, center.y);
 	let step_i = step as i32;
 	let x_min = if x < 0 { (x % step_i) + step_i } else { x % step_i } as usize;

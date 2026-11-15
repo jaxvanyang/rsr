@@ -1,26 +1,26 @@
 use anyhow::Result;
 use minifb::Key;
 use rsr::{
-	pbrt::{SMatrix, Transform, Vector2i, Vector3f},
+	pbrt::{SMatrix, Transform, Vec2i, Vec3f},
 	ui::{Canvas, Window, color::raylib::*},
 };
 
 fn main() -> Result<()> {
 	let mut window = Window::new("Rotating Cube", 640, 480)?;
 	let mut cube = [
-		Vector3f::new(1.0, 1.0, 1.0),
-		Vector3f::new(1.0, 1.0, -1.0),
-		Vector3f::new(-1.0, 1.0, -1.0),
-		Vector3f::new(-1.0, 1.0, 1.0),
-		Vector3f::new(1.0, -1.0, 1.0),
-		Vector3f::new(1.0, -1.0, -1.0),
-		Vector3f::new(-1.0, -1.0, -1.0),
-		Vector3f::new(-1.0, -1.0, 1.0),
+		Vec3f::new(1.0, 1.0, 1.0),
+		Vec3f::new(1.0, 1.0, -1.0),
+		Vec3f::new(-1.0, 1.0, -1.0),
+		Vec3f::new(-1.0, 1.0, 1.0),
+		Vec3f::new(1.0, -1.0, 1.0),
+		Vec3f::new(1.0, -1.0, -1.0),
+		Vec3f::new(-1.0, -1.0, -1.0),
+		Vec3f::new(-1.0, -1.0, 1.0),
 	];
 	let world2camera = Transform::look_at(
-		Vector3f::new(10.0, 10.0, 0.0),
-		Vector3f::new(0.0, 0.0, 0.0),
-		Vector3f::new(0.0, 1.0, 0.0),
+		Vec3f::new(10.0, 10.0, 0.0),
+		Vec3f::new(0.0, 0.0, 0.0),
+		Vec3f::new(0.0, 1.0, 0.0),
 	);
 	let proj_ortho = SMatrix::from([
 		[100.0, 0.0, 0.0, 0.0],
@@ -56,11 +56,11 @@ fn main() -> Result<()> {
 	Ok(())
 }
 
-fn draw_cube(window: &mut Window, cube: &[Vector3f; 8], projection: &Transform) {
+fn draw_cube(window: &mut Window, cube: &[Vec3f; 8], projection: &Transform) {
 	let cube = cube
 		.map(|p| {
 			let q = projection.map_point(p);
-			Vector2i::new(q.x as i32, q.y as i32)
+			Vec2i::new(q.x as i32, q.y as i32)
 		})
 		.into_iter()
 		.collect::<Vec<_>>();

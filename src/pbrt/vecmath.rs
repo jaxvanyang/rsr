@@ -7,15 +7,15 @@ use std::fmt::Display;
 use std::ops::*;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct Vector2<T> {
+pub struct Vec2<T> {
 	pub x: T,
 	pub y: T,
 }
 
-pub type Vector2f = Vector2<f32>;
-pub type Vector2i = Vector2<i32>;
+pub type Vec2f = Vec2<f32>;
+pub type Vec2i = Vec2<i32>;
 
-impl<T: Number> Vector2<T> {
+impl<T: Number> Vec2<T> {
 	pub fn new(x: T, y: T) -> Self {
 		let ret = Self { x, y };
 		debug_assert!(!ret.has_nan());
@@ -95,7 +95,7 @@ impl<T: Number> Vector2<T> {
 	}
 }
 
-impl Vector2f {
+impl Vec2f {
 	pub fn is_normalized(self) -> bool {
 		abs_diff_eq!(self.length(), 1.0)
 	}
@@ -145,37 +145,37 @@ impl Vector2f {
 	}
 }
 
-impl<T: Default> Default for Vector2<T> {
+impl<T: Default> Default for Vec2<T> {
 	fn default() -> Self {
 		Self { x: T::default(), y: T::default() }
 	}
 }
 
-impl From<Vector2i> for Vector2f {
-	fn from(v: Vector2i) -> Self {
+impl From<Vec2i> for Vec2f {
+	fn from(v: Vec2i) -> Self {
 		Self::new(v.x as f32, v.y as f32)
 	}
 }
 
-impl From<Vector2f> for Vector2i {
-	fn from(v: Vector2f) -> Self {
+impl From<Vec2f> for Vec2i {
+	fn from(v: Vec2f) -> Self {
 		Self::new(v.x as i32, v.y as i32)
 	}
 }
 
-impl<T: Display> Display for Vector2<T> {
+impl<T: Display> Display for Vec2<T> {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		write!(f, "({}, {})", self.x, self.y)
 	}
 }
 
-impl<T: Number> HasNaN for Vector2<T> {
+impl<T: Number> HasNaN for Vec2<T> {
 	fn has_nan(&self) -> bool {
 		self.x.is_nan() || self.y.is_nan()
 	}
 }
 
-impl<T> Index<usize> for Vector2<T> {
+impl<T> Index<usize> for Vec2<T> {
 	type Output = T;
 	fn index(&self, index: usize) -> &Self::Output {
 		match index {
@@ -186,7 +186,7 @@ impl<T> Index<usize> for Vector2<T> {
 	}
 }
 
-impl<T> IndexMut<usize> for Vector2<T> {
+impl<T> IndexMut<usize> for Vec2<T> {
 	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
 		match index {
 			0 => &mut self.x,
@@ -196,84 +196,84 @@ impl<T> IndexMut<usize> for Vector2<T> {
 	}
 }
 
-impl<T: Neg<Output = T>> Neg for Vector2<T> {
+impl<T: Neg<Output = T>> Neg for Vec2<T> {
 	type Output = Self;
 	fn neg(self) -> Self::Output {
 		Self { x: -self.x, y: -self.y }
 	}
 }
 
-impl<T: Add<Output = T>> Add for Vector2<T> {
+impl<T: Add<Output = T>> Add for Vec2<T> {
 	type Output = Self;
 	fn add(self, rhs: Self) -> Self::Output {
 		Self { x: self.x + rhs.x, y: self.y + rhs.y }
 	}
 }
 
-impl<T: AddAssign> AddAssign for Vector2<T> {
+impl<T: AddAssign> AddAssign for Vec2<T> {
 	fn add_assign(&mut self, rhs: Self) {
 		self.x += rhs.x;
 		self.y += rhs.y;
 	}
 }
 
-impl<T: Sub<Output = T>> Sub for Vector2<T> {
+impl<T: Sub<Output = T>> Sub for Vec2<T> {
 	type Output = Self;
 	fn sub(self, rhs: Self) -> Self::Output {
 		Self { x: self.x - rhs.x, y: self.y - rhs.y }
 	}
 }
 
-impl<T: SubAssign> SubAssign for Vector2<T> {
+impl<T: SubAssign> SubAssign for Vec2<T> {
 	fn sub_assign(&mut self, rhs: Self) {
 		self.x -= rhs.x;
 		self.y -= rhs.y;
 	}
 }
 
-impl<T: Mul<Output = T>> Mul<Vector2<T>> for Vector2<T> {
+impl<T: Mul<Output = T>> Mul<Vec2<T>> for Vec2<T> {
 	type Output = Self;
-	fn mul(self, rhs: Vector2<T>) -> Self::Output {
+	fn mul(self, rhs: Vec2<T>) -> Self::Output {
 		Self { x: self.x * rhs.x, y: self.y * rhs.y }
 	}
 }
 
-impl<T: MulAssign + Copy> MulAssign<Vector2<T>> for Vector2<T> {
-	fn mul_assign(&mut self, rhs: Vector2<T>) {
+impl<T: MulAssign + Copy> MulAssign<Vec2<T>> for Vec2<T> {
+	fn mul_assign(&mut self, rhs: Vec2<T>) {
 		self.x *= rhs.x;
 		self.y *= rhs.y;
 	}
 }
 
-impl<T: Mul<Output = T> + Copy> Mul<T> for Vector2<T> {
+impl<T: Mul<Output = T> + Copy> Mul<T> for Vec2<T> {
 	type Output = Self;
 	fn mul(self, rhs: T) -> Self::Output {
 		Self { x: self.x * rhs, y: self.y * rhs }
 	}
 }
 
-impl<T: MulAssign + Copy> MulAssign<T> for Vector2<T> {
+impl<T: MulAssign + Copy> MulAssign<T> for Vec2<T> {
 	fn mul_assign(&mut self, rhs: T) {
 		self.x *= rhs;
 		self.y *= rhs;
 	}
 }
 
-impl Mul<Vector2f> for f32 {
-	type Output = Vector2f;
-	fn mul(self, rhs: Vector2f) -> Self::Output {
+impl Mul<Vec2f> for f32 {
+	type Output = Vec2f;
+	fn mul(self, rhs: Vec2f) -> Self::Output {
 		rhs * self
 	}
 }
 
-impl Mul<Vector2i> for i32 {
-	type Output = Vector2i;
-	fn mul(self, rhs: Vector2i) -> Self::Output {
+impl Mul<Vec2i> for i32 {
+	type Output = Vec2i;
+	fn mul(self, rhs: Vec2i) -> Self::Output {
 		rhs * self
 	}
 }
 
-impl Div<f32> for Vector2f {
+impl Div<f32> for Vec2f {
 	type Output = Self;
 	fn div(self, rhs: f32) -> Self::Output {
 		let inv = 1.0 / rhs;
@@ -281,7 +281,7 @@ impl Div<f32> for Vector2f {
 	}
 }
 
-impl Div<i32> for Vector2i {
+impl Div<i32> for Vec2i {
 	type Output = Self;
 	fn div(self, rhs: i32) -> Self::Output {
 		let inv = 1.0 / rhs as f32;
@@ -289,7 +289,7 @@ impl Div<i32> for Vector2i {
 	}
 }
 
-impl DivAssign<f32> for Vector2f {
+impl DivAssign<f32> for Vec2f {
 	fn div_assign(&mut self, rhs: f32) {
 		let inv = 1.0 / rhs;
 		self.x *= inv;
@@ -297,7 +297,7 @@ impl DivAssign<f32> for Vector2f {
 	}
 }
 
-impl DivAssign<i32> for Vector2i {
+impl DivAssign<i32> for Vec2i {
 	fn div_assign(&mut self, rhs: i32) {
 		let inv = 1.0 / rhs as f32;
 		self.x = (self.x as f32 * inv) as i32;
@@ -305,7 +305,7 @@ impl DivAssign<i32> for Vector2i {
 	}
 }
 
-impl AbsDiffEq for Vector2f {
+impl AbsDiffEq for Vec2f {
 	type Epsilon = f32;
 
 	fn default_epsilon() -> Self::Epsilon {
@@ -318,17 +318,17 @@ impl AbsDiffEq for Vector2f {
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
-pub struct Vector3<T> {
+pub struct Vec3<T> {
 	pub x: T,
 	pub y: T,
 	pub z: T,
 }
 
-pub type Vector3f = Vector3<f32>;
-pub type Vector3i = Vector3<i32>;
-pub type Vector3fi = Vector3<Interval>;
+pub type Vec3f = Vec3<f32>;
+pub type Vec3i = Vec3<i32>;
+pub type Vec3fi = Vec3<Interval>;
 
-impl<T: Number> Vector3<T> {
+impl<T: Number> Vec3<T> {
 	pub fn new(x: T, y: T, z: T) -> Self {
 		let ret = Self { x, y, z };
 		debug_assert!(!ret.has_nan());
@@ -430,7 +430,7 @@ impl<T: Number> Vector3<T> {
 	}
 }
 
-impl Vector3f {
+impl Vec3f {
 	pub fn is_normalized(self) -> bool {
 		abs_diff_eq!(self.length(), 1.0)
 	}
@@ -515,8 +515,8 @@ impl Vector3f {
 	}
 }
 
-impl Vector3fi {
-	pub fn new_with_error(v: Vector3f, e: Vector3f) -> Self {
+impl Vec3fi {
+	pub fn new_with_error(v: Vec3f, e: Vec3f) -> Self {
 		Self::new(
 			Interval::new_with_error(v.x, e.x),
 			Interval::new_with_error(v.y, e.y),
@@ -525,8 +525,8 @@ impl Vector3fi {
 	}
 
 	/// Return error bounds for the vector components.
-	pub fn error(&self) -> Vector3f {
-		Vector3f::new(self.x.width() / 2.0, self.y.width() / 2.0, self.z.width() / 2.0)
+	pub fn error(&self) -> Vec3f {
+		Vec3f::new(self.x.width() / 2.0, self.y.width() / 2.0, self.z.width() / 2.0)
 	}
 	/// Return whether the value stored has empty intervals.
 	pub fn is_exact(&self) -> bool {
@@ -534,31 +534,31 @@ impl Vector3fi {
 	}
 }
 
-impl<T: Default> Default for Vector3<T> {
+impl<T: Default> Default for Vec3<T> {
 	fn default() -> Self {
 		Self { x: T::default(), y: T::default(), z: T::default() }
 	}
 }
 
-impl From<Vector3fi> for Vector3f {
-	fn from(v: Vector3fi) -> Self {
+impl From<Vec3fi> for Vec3f {
+	fn from(v: Vec3fi) -> Self {
 		Self::new(v.x.into(), v.y.into(), v.z.into())
 	}
 }
 
-impl<T: Display> Display for Vector3<T> {
+impl<T: Display> Display for Vec3<T> {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		write!(f, "({}, {}, {})", self.x, self.y, self.z)
 	}
 }
 
-impl<T: Number> HasNaN for Vector3<T> {
+impl<T: Number> HasNaN for Vec3<T> {
 	fn has_nan(&self) -> bool {
 		self.x.is_nan() || self.y.is_nan() || self.z.is_nan()
 	}
 }
 
-impl<T> Index<usize> for Vector3<T> {
+impl<T> Index<usize> for Vec3<T> {
 	type Output = T;
 	fn index(&self, index: usize) -> &Self::Output {
 		match index {
@@ -570,7 +570,7 @@ impl<T> Index<usize> for Vector3<T> {
 	}
 }
 
-impl<T> IndexMut<usize> for Vector3<T> {
+impl<T> IndexMut<usize> for Vec3<T> {
 	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
 		match index {
 			0 => &mut self.x,
@@ -581,21 +581,21 @@ impl<T> IndexMut<usize> for Vector3<T> {
 	}
 }
 
-impl<T: Neg<Output = T>> Neg for Vector3<T> {
+impl<T: Neg<Output = T>> Neg for Vec3<T> {
 	type Output = Self;
 	fn neg(self) -> Self::Output {
 		Self { x: -self.x, y: -self.y, z: -self.z }
 	}
 }
 
-impl<T: Add<Output = T>> Add for Vector3<T> {
+impl<T: Add<Output = T>> Add for Vec3<T> {
 	type Output = Self;
 	fn add(self, rhs: Self) -> Self::Output {
 		Self { x: self.x + rhs.x, y: self.y + rhs.y, z: self.z + rhs.z }
 	}
 }
 
-impl<T: AddAssign> AddAssign for Vector3<T> {
+impl<T: AddAssign> AddAssign for Vec3<T> {
 	fn add_assign(&mut self, rhs: Self) {
 		self.x += rhs.x;
 		self.y += rhs.y;
@@ -603,14 +603,14 @@ impl<T: AddAssign> AddAssign for Vector3<T> {
 	}
 }
 
-impl<T: Sub<Output = T>> Sub for Vector3<T> {
+impl<T: Sub<Output = T>> Sub for Vec3<T> {
 	type Output = Self;
 	fn sub(self, rhs: Self) -> Self::Output {
 		Self { x: self.x - rhs.x, y: self.y - rhs.y, z: self.z - rhs.z }
 	}
 }
 
-impl<T: SubAssign> SubAssign for Vector3<T> {
+impl<T: SubAssign> SubAssign for Vec3<T> {
 	fn sub_assign(&mut self, rhs: Self) {
 		self.x -= rhs.x;
 		self.y -= rhs.y;
@@ -618,29 +618,29 @@ impl<T: SubAssign> SubAssign for Vector3<T> {
 	}
 }
 
-impl<T: Mul<Output = T>> Mul<Vector3<T>> for Vector3<T> {
+impl<T: Mul<Output = T>> Mul<Vec3<T>> for Vec3<T> {
 	type Output = Self;
-	fn mul(self, rhs: Vector3<T>) -> Self::Output {
+	fn mul(self, rhs: Vec3<T>) -> Self::Output {
 		Self { x: self.x * rhs.x, y: self.y * rhs.y, z: self.z * rhs.z }
 	}
 }
 
-impl<T: MulAssign + Copy> MulAssign<Vector3<T>> for Vector3<T> {
-	fn mul_assign(&mut self, rhs: Vector3<T>) {
+impl<T: MulAssign + Copy> MulAssign<Vec3<T>> for Vec3<T> {
+	fn mul_assign(&mut self, rhs: Vec3<T>) {
 		self.x *= rhs.x;
 		self.y *= rhs.y;
 		self.z *= rhs.z;
 	}
 }
 
-impl<T: Mul<Output = T> + Copy> Mul<T> for Vector3<T> {
+impl<T: Mul<Output = T> + Copy> Mul<T> for Vec3<T> {
 	type Output = Self;
 	fn mul(self, rhs: T) -> Self::Output {
 		Self { x: self.x * rhs, y: self.y * rhs, z: self.z * rhs }
 	}
 }
 
-impl<T: MulAssign + Copy> MulAssign<T> for Vector3<T> {
+impl<T: MulAssign + Copy> MulAssign<T> for Vec3<T> {
 	fn mul_assign(&mut self, rhs: T) {
 		self.x *= rhs;
 		self.y *= rhs;
@@ -648,21 +648,21 @@ impl<T: MulAssign + Copy> MulAssign<T> for Vector3<T> {
 	}
 }
 
-impl Mul<Vector3f> for f32 {
-	type Output = Vector3f;
-	fn mul(self, rhs: Vector3f) -> Self::Output {
+impl Mul<Vec3f> for f32 {
+	type Output = Vec3f;
+	fn mul(self, rhs: Vec3f) -> Self::Output {
 		rhs * self
 	}
 }
 
-impl Mul<Vector3i> for i32 {
-	type Output = Vector3i;
-	fn mul(self, rhs: Vector3i) -> Self::Output {
+impl Mul<Vec3i> for i32 {
+	type Output = Vec3i;
+	fn mul(self, rhs: Vec3i) -> Self::Output {
 		rhs * self
 	}
 }
 
-impl Div<f32> for Vector3f {
+impl Div<f32> for Vec3f {
 	type Output = Self;
 	fn div(self, rhs: f32) -> Self::Output {
 		let inv = 1.0 / rhs;
@@ -670,7 +670,7 @@ impl Div<f32> for Vector3f {
 	}
 }
 
-impl Div<i32> for Vector3i {
+impl Div<i32> for Vec3i {
 	type Output = Self;
 	fn div(self, rhs: i32) -> Self::Output {
 		let inv = 1.0 / rhs as f32;
@@ -682,7 +682,7 @@ impl Div<i32> for Vector3i {
 	}
 }
 
-impl DivAssign<f32> for Vector3f {
+impl DivAssign<f32> for Vec3f {
 	fn div_assign(&mut self, rhs: f32) {
 		let inv = 1.0 / rhs;
 		self.x *= inv;
@@ -691,7 +691,7 @@ impl DivAssign<f32> for Vector3f {
 	}
 }
 
-impl DivAssign<i32> for Vector3i {
+impl DivAssign<i32> for Vec3i {
 	fn div_assign(&mut self, rhs: i32) {
 		let inv = 1.0 / rhs as f32;
 		self.x = (self.x as f32 * inv) as i32;
@@ -700,7 +700,7 @@ impl DivAssign<i32> for Vector3i {
 	}
 }
 
-impl AbsDiffEq for Vector3f {
+impl AbsDiffEq for Vec3f {
 	type Epsilon = f32;
 
 	fn default_epsilon() -> Self::Epsilon {
@@ -716,28 +716,28 @@ impl AbsDiffEq for Vector3f {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Bounds2<T> {
-	pub min: Vector2<T>,
-	pub max: Vector2<T>,
+	pub min: Vec2<T>,
+	pub max: Vec2<T>,
 }
 
 pub type Bounds2f = Bounds2<f32>;
 pub type Bounds2i = Bounds2<i32>;
 
 impl<T: Number> Bounds2<T> {
-	pub fn new(p1: Vector2<T>, p2: Vector2<T>) -> Self {
+	pub fn new(p1: Vec2<T>, p2: Vec2<T>) -> Self {
 		Self { min: p1.min(p2), max: p1.max(p2) }
 	}
 
 	/// Return a bounding box that encloses just a single point.
-	pub fn from_point(p: Vector2<T>) -> Self {
+	pub fn from_point(p: Vec2<T>) -> Self {
 		Self { min: p, max: p }
 	}
 
-	pub fn corner(&self, code: usize) -> Vector2<T> {
-		Vector2 { x: self[code & 1].x, y: self[(code >> 1) & 1].y }
+	pub fn corner(&self, code: usize) -> Vec2<T> {
+		Vec2 { x: self[code & 1].x, y: self[(code >> 1) & 1].y }
 	}
 
-	pub fn union_point(&self, p: Vector2<T>) -> Self {
+	pub fn union_point(&self, p: Vec2<T>) -> Self {
 		Self { min: self.min.min(p), max: self.max.max(p) }
 	}
 
@@ -756,24 +756,24 @@ impl<T: Number> Bounds2<T> {
 	}
 
 	/// Return the squared distance to point `p`.
-	pub fn distance_squared(&self, p: Vector2<T>) -> T {
+	pub fn distance_squared(&self, p: Vec2<T>) -> T {
 		let dx = T::default().max(self.min.x - p.x).max(p.x - self.max.x);
 		let dy = T::default().max(self.min.y - p.y).max(p.y - self.max.y);
 		dx * dx + dy * dy
 	}
 
 	/// Return the distance to point `p`.
-	pub fn distance(&self, p: Vector2<T>) -> f32 {
+	pub fn distance(&self, p: Vec2<T>) -> f32 {
 		self.distance_squared(p).as_f32().sqrt()
 	}
 
 	/// Return a new bounding box expanded by `delta` in all dimensions.
 	pub fn expand(&self, delta: T) -> Self {
-		let delta = Vector2::new(delta, delta);
+		let delta = Vec2::new(delta, delta);
 		Self { min: self.min - delta, max: self.max + delta }
 	}
 
-	pub fn diagonal(&self) -> Vector2<T> {
+	pub fn diagonal(&self) -> Vec2<T> {
 		self.max - self.min
 	}
 
@@ -796,12 +796,12 @@ impl<T: Number> Bounds2<T> {
 }
 
 impl Bounds2f {
-	pub fn lerp(&self, t: Vector2f) -> Vector2f {
-		Vector2f::new(lerp(self.min.x, self.max.x, t.x), lerp(self.min.y, self.max.y, t.y))
+	pub fn lerp(&self, t: Vec2f) -> Vec2f {
+		Vec2f::new(lerp(self.min.x, self.max.x, t.x), lerp(self.min.y, self.max.y, t.y))
 	}
 
 	/// Inverse of `lerp()`.
-	pub fn offset(&self, p: Vector2f) -> Vector2f {
+	pub fn offset(&self, p: Vec2f) -> Vec2f {
 		let mut o = p - self.min;
 		if self.min.x < self.max.x {
 			o.x /= self.max.x - self.min.x;
@@ -817,12 +817,12 @@ impl Bounds2f {
 impl<T: Number> Default for Bounds2<T> {
 	/// Create an empty bounding box.
 	fn default() -> Self {
-		Self { min: Vector2 { x: T::MAX, y: T::MAX }, max: Vector2 { x: T::MIN, y: T::MIN } }
+		Self { min: Vec2 { x: T::MAX, y: T::MAX }, max: Vec2 { x: T::MIN, y: T::MIN } }
 	}
 }
 
 impl<T> Index<usize> for Bounds2<T> {
-	type Output = Vector2<T>;
+	type Output = Vec2<T>;
 
 	fn index(&self, index: usize) -> &Self::Output {
 		match index {
@@ -851,11 +851,11 @@ impl Bounds2i {
 
 pub struct Bounds2iIterator {
 	bounds: Bounds2i,
-	p: Vector2i,
+	p: Vec2i,
 }
 
 impl Iterator for Bounds2iIterator {
-	type Item = Vector2i;
+	type Item = Vec2i;
 
 	fn next(&mut self) -> Option<Self::Item> {
 		if self.p.y >= self.bounds.max.y {
@@ -876,28 +876,28 @@ impl Iterator for Bounds2iIterator {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Bounds3<T> {
-	pub min: Vector3<T>,
-	pub max: Vector3<T>,
+	pub min: Vec3<T>,
+	pub max: Vec3<T>,
 }
 
 pub type Bounds3f = Bounds3<f32>;
 pub type Bounds3i = Bounds3<i32>;
 
 impl<T: Number> Bounds3<T> {
-	pub fn new(p1: Vector3<T>, p2: Vector3<T>) -> Self {
+	pub fn new(p1: Vec3<T>, p2: Vec3<T>) -> Self {
 		Self { min: p1.min(p2), max: p1.max(p2) }
 	}
 
 	/// Return a bounding box that encloses just a single point.
-	pub fn from_point(p: Vector3<T>) -> Self {
+	pub fn from_point(p: Vec3<T>) -> Self {
 		Self { min: p, max: p }
 	}
 
-	pub fn corner(&self, code: usize) -> Vector3<T> {
-		Vector3 { x: self[code & 1].x, y: self[(code >> 1) & 1].y, z: self[(code >> 2) & 1].z }
+	pub fn corner(&self, code: usize) -> Vec3<T> {
+		Vec3 { x: self[code & 1].x, y: self[(code >> 1) & 1].y, z: self[(code >> 2) & 1].z }
 	}
 
-	pub fn union_point(&self, p: Vector3<T>) -> Self {
+	pub fn union_point(&self, p: Vec3<T>) -> Self {
 		Self { min: self.min.min(p), max: self.max.max(p) }
 	}
 
@@ -917,7 +917,7 @@ impl<T: Number> Bounds3<T> {
 	}
 
 	/// Return the squared distance to point `p`.
-	pub fn distance_squared(&self, p: Vector3<T>) -> T {
+	pub fn distance_squared(&self, p: Vec3<T>) -> T {
 		let dx = T::default().max(self.min.x - p.x).max(p.x - self.max.x);
 		let dy = T::default().max(self.min.y - p.y).max(p.y - self.max.y);
 		let dz = T::default().max(self.min.z - p.z).max(p.z - self.max.z);
@@ -925,17 +925,17 @@ impl<T: Number> Bounds3<T> {
 	}
 
 	/// Return the distance to point `p`.
-	pub fn distance(&self, p: Vector3<T>) -> f32 {
+	pub fn distance(&self, p: Vec3<T>) -> f32 {
 		self.distance_squared(p).as_f32().sqrt()
 	}
 
 	/// Return a new bounding box expanded by `delta` in all dimensions.
 	pub fn expand(&self, delta: T) -> Self {
-		let delta = Vector3::new(delta, delta, delta);
+		let delta = Vec3::new(delta, delta, delta);
 		Self { min: self.min - delta, max: self.max + delta }
 	}
 
-	pub fn diagonal(&self) -> Vector3<T> {
+	pub fn diagonal(&self) -> Vec3<T> {
 		self.max - self.min
 	}
 
@@ -970,8 +970,8 @@ impl<T: Number> Bounds3<T> {
 }
 
 impl Bounds3f {
-	pub fn lerp(&self, t: Vector3f) -> Vector3f {
-		Vector3f::new(
+	pub fn lerp(&self, t: Vec3f) -> Vec3f {
+		Vec3f::new(
 			lerp(self.min.x, self.max.x, t.x),
 			lerp(self.min.y, self.max.y, t.y),
 			lerp(self.min.z, self.max.z, t.z),
@@ -979,7 +979,7 @@ impl Bounds3f {
 	}
 
 	/// Inverse of `lerp()`.
-	pub fn offset(&self, p: Vector3f) -> Vector3f {
+	pub fn offset(&self, p: Vec3f) -> Vec3f {
 		let mut o = p - self.min;
 		if self.min.x < self.max.x {
 			o.x /= self.max.x - self.min.x;
@@ -994,14 +994,14 @@ impl Bounds3f {
 		o
 	}
 
-	pub fn bounding_sphere(&self) -> (Vector3f, f32) {
+	pub fn bounding_sphere(&self) -> (Vec3f, f32) {
 		let center = (self.min + self.max) / 2.0;
 		let radius = if center.inside(self) { center.distance(self.max) } else { 0.0 };
 
 		(center, radius)
 	}
 
-	pub fn intersect_p(&self, o: Vector3f, d: Vector3f, tmax: f32) -> Option<(f32, f32)> {
+	pub fn intersect_p(&self, o: Vec3f, d: Vec3f, tmax: f32) -> Option<(f32, f32)> {
 		let mut t0 = 0.0;
 		let mut t1 = tmax;
 		for i in 0..3 {
@@ -1026,14 +1026,14 @@ impl<T: Number> Default for Bounds3<T> {
 	/// Create an empty bounding box.
 	fn default() -> Self {
 		Self {
-			min: Vector3 { x: T::MAX, y: T::MAX, z: T::MAX },
-			max: Vector3 { x: T::MIN, y: T::MIN, z: T::MIN },
+			min: Vec3 { x: T::MAX, y: T::MAX, z: T::MAX },
+			max: Vec3 { x: T::MIN, y: T::MIN, z: T::MIN },
 		}
 	}
 }
 
 impl<T> Index<usize> for Bounds3<T> {
-	type Output = Vector3<T>;
+	type Output = Vec3<T>;
 
 	fn index(&self, index: usize) -> &Self::Output {
 		match index {
@@ -1061,11 +1061,11 @@ mod tests {
 
 	#[test]
 	fn test_indexing() {
-		let v = Vector2i::new(1, 2);
+		let v = Vec2i::new(1, 2);
 		assert_eq!(v[0], 1);
 		assert_eq!(v[1], 2);
 
-		let v = Vector3i::new(1, 2, 3);
+		let v = Vec3i::new(1, 2, 3);
 		assert_eq!(v[0], 1);
 		assert_eq!(v[1], 2);
 		assert_eq!(v[2], 3);
@@ -1074,72 +1074,72 @@ mod tests {
 	#[test]
 	#[should_panic]
 	fn test_out_of_bounds_v2() {
-		let v = Vector2i::default();
+		let v = Vec2i::default();
 		v[2];
 	}
 
 	#[test]
 	#[should_panic]
 	fn test_out_of_bounds_v3() {
-		let v = Vector3i::default();
+		let v = Vec3i::default();
 		v[3];
 	}
 
 	#[test]
 	fn test_mul() {
-		let a = Vector2f::new(1.0, -2.0);
-		let b = Vector2f::new(3.0, 4.0);
-		assert_eq!(a * b, Vector2f::new(3.0, -8.0));
+		let a = Vec2f::new(1.0, -2.0);
+		let b = Vec2f::new(3.0, 4.0);
+		assert_eq!(a * b, Vec2f::new(3.0, -8.0));
 
-		let a = Vector3f::new(1.0, 2.0, -3.0);
-		let b = Vector3f::new(4.0, 5.0, 6.0);
-		assert_eq!(a * b, Vector3f::new(4.0, 10.0, -18.0));
+		let a = Vec3f::new(1.0, 2.0, -3.0);
+		let b = Vec3f::new(4.0, 5.0, 6.0);
+		assert_eq!(a * b, Vec3f::new(4.0, 10.0, -18.0));
 	}
 
 	#[test]
 	fn test_dot() {
-		let a = Vector2f::new(1.0, -2.0);
-		let b = Vector2f::new(3.0, 4.0);
+		let a = Vec2f::new(1.0, -2.0);
+		let b = Vec2f::new(3.0, 4.0);
 		assert_eq!(a.dot(b), -5.0);
 		assert_eq!(a.abs_dot(b), 5.0);
 
-		let a = Vector3f::new(1.0, 2.0, -3.0);
-		let b = Vector3f::new(4.0, 5.0, 6.0);
+		let a = Vec3f::new(1.0, 2.0, -3.0);
+		let b = Vec3f::new(4.0, 5.0, 6.0);
 		assert_eq!(a.dot(b), -4.0);
 		assert_eq!(a.abs_dot(b), 4.0);
 	}
 
 	#[test]
 	fn test_normalize() {
-		let v = Vector2f::new(3.0, 4.0).normalized();
+		let v = Vec2f::new(3.0, 4.0).normalized();
 		assert_eq!(v.length(), 1.0);
 
-		let v = Vector3f::new(0.0, 3.0, 4.0).normalized();
+		let v = Vec3f::new(0.0, 3.0, 4.0).normalized();
 		assert_eq!(v.length(), 1.0);
 	}
 
 	#[test]
 	fn test_cross() {
-		let a = Vector3f::new(1.0, 0.0, 0.0);
-		let b = Vector3f::new(0.0, 1.0, 0.0);
-		assert_eq!(a.cross(b), Vector3f::new(0.0, 0.0, 1.0));
-		assert_eq!(b.cross(a), Vector3f::new(0.0, 0.0, -1.0));
+		let a = Vec3f::new(1.0, 0.0, 0.0);
+		let b = Vec3f::new(0.0, 1.0, 0.0);
+		assert_eq!(a.cross(b), Vec3f::new(0.0, 0.0, 1.0));
+		assert_eq!(b.cross(a), Vec3f::new(0.0, 0.0, -1.0));
 	}
 
 	#[test]
 	fn test_lerp() {
-		let a = Vector2f::new(1.0, 2.0);
-		let b = Vector2f::new(4.0, 5.0);
-		assert_eq!(Vector2f::lerp(a, b, 0.25), Vector2f::new(1.75, 2.75));
+		let a = Vec2f::new(1.0, 2.0);
+		let b = Vec2f::new(4.0, 5.0);
+		assert_eq!(Vec2f::lerp(a, b, 0.25), Vec2f::new(1.75, 2.75));
 
-		let a = Vector3f::new(1.0, 2.0, 3.0);
-		let b = Vector3f::new(4.0, 5.0, 6.0);
-		assert_eq!(Vector3f::lerp(a, b, 0.25), Vector3f::new(1.75, 2.75, 3.75));
+		let a = Vec3f::new(1.0, 2.0, 3.0);
+		let b = Vec3f::new(4.0, 5.0, 6.0);
+		assert_eq!(Vec3f::lerp(a, b, 0.25), Vec3f::new(1.75, 2.75, 3.75));
 	}
 
 	#[test]
 	fn test_coordinate_system() {
-		let v1 = Vector3f::new(1.0, 2.0, 3.0).normalized();
+		let v1 = Vec3f::new(1.0, 2.0, 3.0).normalized();
 		let (v2, v3) = v1.coordinate_system();
 		let v1xv2 = v1.cross(v2);
 
@@ -1150,136 +1150,133 @@ mod tests {
 
 	#[test]
 	fn test_new_bounds() {
-		let p1 = Vector2i::new(1, -1);
-		let p2 = Vector2i::new(-1, 1);
+		let p1 = Vec2i::new(1, -1);
+		let p2 = Vec2i::new(-1, 1);
 		let bounds = Bounds2i::new(p1, p2);
-		assert_eq!(bounds.min, Vector2i::new(-1, -1));
-		assert_eq!(bounds.max, Vector2i::new(1, 1));
+		assert_eq!(bounds.min, Vec2i::new(-1, -1));
+		assert_eq!(bounds.max, Vec2i::new(1, 1));
 
-		let p1 = Vector3i::new(1, -1, 1);
-		let p2 = Vector3i::new(-1, 1, -1);
+		let p1 = Vec3i::new(1, -1, 1);
+		let p2 = Vec3i::new(-1, 1, -1);
 		let bounds = Bounds3i::new(p1, p2);
-		assert_eq!(bounds.min, Vector3i::new(-1, -1, -1));
-		assert_eq!(bounds.max, Vector3i::new(1, 1, 1));
+		assert_eq!(bounds.min, Vec3i::new(-1, -1, -1));
+		assert_eq!(bounds.max, Vec3i::new(1, 1, 1));
 	}
 
 	#[test]
 	fn test_corner() {
-		let p1 = Vector2i::new(1, 2);
-		let p2 = Vector2i::new(3, 4);
+		let p1 = Vec2i::new(1, 2);
+		let p2 = Vec2i::new(3, 4);
 		let bounds = Bounds2i::new(p1, p2);
-		assert_eq!(bounds.corner(0), Vector2i::new(1, 2));
-		assert_eq!(bounds.corner(1), Vector2i::new(3, 2));
-		assert_eq!(bounds.corner(2), Vector2i::new(1, 4));
-		assert_eq!(bounds.corner(3), Vector2i::new(3, 4));
+		assert_eq!(bounds.corner(0), Vec2i::new(1, 2));
+		assert_eq!(bounds.corner(1), Vec2i::new(3, 2));
+		assert_eq!(bounds.corner(2), Vec2i::new(1, 4));
+		assert_eq!(bounds.corner(3), Vec2i::new(3, 4));
 
-		let p1 = Vector3i::new(1, 2, 3);
-		let p2 = Vector3i::new(4, 5, 6);
+		let p1 = Vec3i::new(1, 2, 3);
+		let p2 = Vec3i::new(4, 5, 6);
 		let bounds = Bounds3i::new(p1, p2);
-		assert_eq!(bounds.corner(0), Vector3i::new(1, 2, 3));
-		assert_eq!(bounds.corner(1), Vector3i::new(4, 2, 3));
-		assert_eq!(bounds.corner(2), Vector3i::new(1, 5, 3));
-		assert_eq!(bounds.corner(3), Vector3i::new(4, 5, 3));
-		assert_eq!(bounds.corner(4), Vector3i::new(1, 2, 6));
-		assert_eq!(bounds.corner(5), Vector3i::new(4, 2, 6));
-		assert_eq!(bounds.corner(6), Vector3i::new(1, 5, 6));
-		assert_eq!(bounds.corner(7), Vector3i::new(4, 5, 6));
+		assert_eq!(bounds.corner(0), Vec3i::new(1, 2, 3));
+		assert_eq!(bounds.corner(1), Vec3i::new(4, 2, 3));
+		assert_eq!(bounds.corner(2), Vec3i::new(1, 5, 3));
+		assert_eq!(bounds.corner(3), Vec3i::new(4, 5, 3));
+		assert_eq!(bounds.corner(4), Vec3i::new(1, 2, 6));
+		assert_eq!(bounds.corner(5), Vec3i::new(4, 2, 6));
+		assert_eq!(bounds.corner(6), Vec3i::new(1, 5, 6));
+		assert_eq!(bounds.corner(7), Vec3i::new(4, 5, 6));
 	}
 
 	#[test]
 	fn test_union() {
 		let empty = Bounds2i::default();
-		let bounds = Bounds2i::new(Vector2i::new(1, 2), Vector2i::new(3, 4));
+		let bounds = Bounds2i::new(Vec2i::new(1, 2), Vec2i::new(3, 4));
 		assert_eq!(empty.union(&empty), empty);
 		assert_eq!(bounds.union(&empty), bounds);
 
-		let b1 = Bounds2i::new(Vector2i::new(-1, -1), Vector2i::new(1, 2));
-		let b2 = Bounds2i::new(Vector2i::new(0, 0), Vector2i::new(2, 3));
-		assert_eq!(b1.union(&b2), Bounds2i::new(Vector2i::new(-1, -1), Vector2i::new(2, 3)));
+		let b1 = Bounds2i::new(Vec2i::new(-1, -1), Vec2i::new(1, 2));
+		let b2 = Bounds2i::new(Vec2i::new(0, 0), Vec2i::new(2, 3));
+		assert_eq!(b1.union(&b2), Bounds2i::new(Vec2i::new(-1, -1), Vec2i::new(2, 3)));
 
 		let empty = Bounds3i::default();
-		let bounds = Bounds3i::new(Vector3i::new(1, 2, 3), Vector3i::new(4, 5, 6));
+		let bounds = Bounds3i::new(Vec3i::new(1, 2, 3), Vec3i::new(4, 5, 6));
 		assert_eq!(empty.union(&empty), empty);
 		assert_eq!(bounds.union(&empty), bounds);
 
-		let b1 = Bounds3i::new(Vector3i::new(-1, -1, -1), Vector3i::new(1, 2, 3));
-		let b2 = Bounds3i::new(Vector3i::new(0, 0, 0), Vector3i::new(3, 2, 1));
-		assert_eq!(b1.union(&b2), Bounds3i::new(Vector3i::new(-1, -1, -1), Vector3i::new(3, 2, 3)));
+		let b1 = Bounds3i::new(Vec3i::new(-1, -1, -1), Vec3i::new(1, 2, 3));
+		let b2 = Bounds3i::new(Vec3i::new(0, 0, 0), Vec3i::new(3, 2, 1));
+		assert_eq!(b1.union(&b2), Bounds3i::new(Vec3i::new(-1, -1, -1), Vec3i::new(3, 2, 3)));
 	}
 
 	#[test]
 	fn test_intersect() {
-		let b1 = Bounds2i::new(Vector2i::new(-1, -2), Vector2i::new(1, 2));
-		let b2 = Bounds2i::new(Vector2i::new(-2, -1), Vector2i::new(2, 1));
-		assert_eq!(b1.intersect(&b2), Bounds2i::new(Vector2i::new(-1, -1), Vector2i::new(1, 1)));
+		let b1 = Bounds2i::new(Vec2i::new(-1, -2), Vec2i::new(1, 2));
+		let b2 = Bounds2i::new(Vec2i::new(-2, -1), Vec2i::new(2, 1));
+		assert_eq!(b1.intersect(&b2), Bounds2i::new(Vec2i::new(-1, -1), Vec2i::new(1, 1)));
 
-		let b1 = Bounds3i::new(Vector3i::new(-1, -1, -1), Vector3i::new(1, 2, 3));
-		let b2 = Bounds3i::new(Vector3i::new(0, 0, 0), Vector3i::new(3, 2, 1));
-		assert_eq!(
-			b1.intersect(&b2),
-			Bounds3i::new(Vector3i::new(0, 0, 0), Vector3i::new(1, 2, 1))
-		);
+		let b1 = Bounds3i::new(Vec3i::new(-1, -1, -1), Vec3i::new(1, 2, 3));
+		let b2 = Bounds3i::new(Vec3i::new(0, 0, 0), Vec3i::new(3, 2, 1));
+		assert_eq!(b1.intersect(&b2), Bounds3i::new(Vec3i::new(0, 0, 0), Vec3i::new(1, 2, 1)));
 	}
 
 	#[test]
 	fn test_overlap() {
-		let b1 = Bounds2i::new(Vector2i::new(0, 0), Vector2i::new(1, 1));
-		let b2 = Bounds2i::new(Vector2i::new(-1, -1), Vector2i::new(0, 0));
+		let b1 = Bounds2i::new(Vec2i::new(0, 0), Vec2i::new(1, 1));
+		let b2 = Bounds2i::new(Vec2i::new(-1, -1), Vec2i::new(0, 0));
 		assert!(b1.overlap(&b2));
 
-		let b1 = Bounds2i::new(Vector2i::new(1, 2), Vector2i::new(3, 4));
-		let b2 = Bounds2i::new(Vector2i::new(0, 0), Vector2i::new(1, 1));
+		let b1 = Bounds2i::new(Vec2i::new(1, 2), Vec2i::new(3, 4));
+		let b2 = Bounds2i::new(Vec2i::new(0, 0), Vec2i::new(1, 1));
 		assert!(!b1.overlap(&b2));
 
-		let b1 = Bounds3i::new(Vector3i::new(0, 0, 0), Vector3i::new(1, 1, 1));
-		let b2 = Bounds3i::new(Vector3i::new(-1, -1, -1), Vector3i::new(0, 0, 0));
+		let b1 = Bounds3i::new(Vec3i::new(0, 0, 0), Vec3i::new(1, 1, 1));
+		let b2 = Bounds3i::new(Vec3i::new(-1, -1, -1), Vec3i::new(0, 0, 0));
 		assert!(b1.overlap(&b2));
 
-		let b1 = Bounds3i::new(Vector3i::new(1, 2, 3), Vector3i::new(4, 5, 6));
-		let b2 = Bounds3i::new(Vector3i::new(0, 0, 0), Vector3i::new(1, 1, 1));
+		let b1 = Bounds3i::new(Vec3i::new(1, 2, 3), Vec3i::new(4, 5, 6));
+		let b2 = Bounds3i::new(Vec3i::new(0, 0, 0), Vec3i::new(1, 1, 1));
 		assert!(!b1.overlap(&b2));
 	}
 
 	#[test]
 	fn test_distance_between_bounds_and_point() {
-		let b = Bounds2i::new(Vector2i::new(0, 0), Vector2i::new(1, 1));
-		let p = Vector2i::new(0, 2);
+		let b = Bounds2i::new(Vec2i::new(0, 0), Vec2i::new(1, 1));
+		let p = Vec2i::new(0, 2);
 		assert_eq!(b.distance(p), 1.0);
 
-		let b = Bounds2i::new(Vector2i::new(0, 0), Vector2i::new(1, 1));
-		let p = Vector2i::new(4, 5);
+		let b = Bounds2i::new(Vec2i::new(0, 0), Vec2i::new(1, 1));
+		let p = Vec2i::new(4, 5);
 		assert_eq!(b.distance(p), 5.0);
 
-		let b = Bounds3i::new(Vector3i::new(0, 0, 0), Vector3i::new(1, 1, 1));
-		let p = Vector3i::new(0, 0, 2);
+		let b = Bounds3i::new(Vec3i::new(0, 0, 0), Vec3i::new(1, 1, 1));
+		let p = Vec3i::new(0, 0, 2);
 		assert_eq!(b.distance(p), 1.0);
 
-		let b = Bounds3i::new(Vector3i::new(0, 0, 0), Vector3i::new(1, 1, 1));
-		let p = Vector3i::new(0, 4, 5);
+		let b = Bounds3i::new(Vec3i::new(0, 0, 0), Vec3i::new(1, 1, 1));
+		let p = Vec3i::new(0, 4, 5);
 		assert_eq!(b.distance(p), 5.0);
 	}
 
 	#[test]
 	fn test_area_and_volume() {
-		let b = Bounds2f::new(Vector2f::new(1.0, 2.0), Vector2f::new(3.0, 4.0));
+		let b = Bounds2f::new(Vec2f::new(1.0, 2.0), Vec2f::new(3.0, 4.0));
 		assert_eq!(b.area(), 4.0);
 
-		let b = Bounds3f::new(Vector3f::new(1.0, 2.0, 3.0), Vector3f::new(4.0, 5.0, 6.0));
+		let b = Bounds3f::new(Vec3f::new(1.0, 2.0, 3.0), Vec3f::new(4.0, 5.0, 6.0));
 		assert_eq!(b.volume(), 27.0);
 		assert_eq!(b.surface_area(), 54.0);
 	}
 
 	#[test]
 	fn test_bounds_lerp_and_offset() {
-		let b = Bounds2f::new(Vector2f::new(1.0, 2.0), Vector2f::new(3.0, 4.0));
-		let t = Vector2f::new(0.1, 0.2);
-		let p = Vector2f::new(1.2, 2.4);
+		let b = Bounds2f::new(Vec2f::new(1.0, 2.0), Vec2f::new(3.0, 4.0));
+		let t = Vec2f::new(0.1, 0.2);
+		let p = Vec2f::new(1.2, 2.4);
 		assert_eq!(b.lerp(t), p);
 		assert_abs_diff_eq!(b.offset(p), t);
 
-		let b = Bounds3f::new(Vector3f::new(1.0, 2.0, 3.0), Vector3f::new(4.0, 5.0, 6.0));
-		let t = Vector3f::new(0.1, 0.2, 0.3);
-		let p = Vector3f::new(1.3, 2.6, 3.9);
+		let b = Bounds3f::new(Vec3f::new(1.0, 2.0, 3.0), Vec3f::new(4.0, 5.0, 6.0));
+		let t = Vec3f::new(0.1, 0.2, 0.3);
+		let p = Vec3f::new(1.3, 2.6, 3.9);
 		assert_eq!(b.lerp(t), p);
 		assert_abs_diff_eq!(b.offset(p), t);
 	}
@@ -1289,19 +1286,19 @@ mod tests {
 		let b = Bounds2i::default();
 		assert!(b.iter().collect::<Vec<_>>().is_empty());
 
-		let empty = Bounds2i::new(Vector2i::new(0, 0), Vector2i::new(0, 0));
+		let empty = Bounds2i::new(Vec2i::new(0, 0), Vec2i::new(0, 0));
 		assert!(empty.is_empty());
 		assert!(!empty.is_degenerate());
 		assert!(empty.iter().collect::<Vec<_>>().is_empty());
 
-		let b = Bounds2i::new(Vector2i::new(-1, -1), Vector2i::new(1, 2));
+		let b = Bounds2i::new(Vec2i::new(-1, -1), Vec2i::new(1, 2));
 		let array = vec![
-			Vector2i::new(-1, -1),
-			Vector2i::new(0, -1),
-			Vector2i::new(-1, 0),
-			Vector2i::new(0, 0),
-			Vector2i::new(-1, 1),
-			Vector2i::new(0, 1),
+			Vec2i::new(-1, -1),
+			Vec2i::new(0, -1),
+			Vec2i::new(-1, 0),
+			Vec2i::new(0, 0),
+			Vec2i::new(-1, 1),
+			Vec2i::new(0, 1),
 		];
 		assert_eq!(b.iter().collect::<Vec<_>>(), array);
 	}

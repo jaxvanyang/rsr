@@ -1,5 +1,5 @@
 use rsr::{
-	pbrt::{SMatrix, Vector2f, math::PI},
+	pbrt::{SMatrix, Vec2f, math::PI},
 	ui::{Canvas, Rectangle, Result, Window, elapsed_with_update},
 };
 use std::time::Instant;
@@ -40,18 +40,18 @@ fn draw_china_flag(window: &mut Window, width: f32) {
 
 fn draw_star(window: &mut Window, x: f32, y: f32, radius: f32, theta: f32) {
 	let yellow = 0xffff00;
-	let center = Vector2f::new(x, y);
+	let center = Vec2f::new(x, y);
 	let (sin, cos) = theta.sin_cos();
 	let rotation = SMatrix::from([[cos, -sin], [sin, cos]]);
 	let inner_radius = radius * f32::to_radians(18.).sin() / f32::to_radians(126.).sin();
-	let mut points = [Vector2f::default(); 10];
+	let mut points = [Vec2f::default(); 10];
 	for i in 0..5 {
 		let t0 = i as f32 * 72. - 90.;
 		let t1 = i as f32 * 72. - 54.;
 		let (sin0, cos0) = t0.to_radians().sin_cos();
 		let (sin1, cos1) = t1.to_radians().sin_cos();
-		points[i * 2] = Vector2f::new(cos0, sin0) * radius;
-		points[i * 2 + 1] = Vector2f::new(cos1, sin1) * inner_radius;
+		points[i * 2] = Vec2f::new(cos0, sin0) * radius;
+		points[i * 2 + 1] = Vec2f::new(cos1, sin1) * inner_radius;
 	}
 	for p in points.iter_mut() {
 		*p = center + rotation * *p;

@@ -1,7 +1,7 @@
 use std::{f32::consts::PI, fmt::Debug};
 
 use super::{
-	Bounds3f, Transform, Vector2f, Vector3f,
+	Bounds3f, Transform, Vec2f, Vec3f,
 	interaction::{Interaction, MediumInteraction, SurfaceInteraction},
 	math::{diff_of_products, safe_acos, safe_sqrt},
 	ray::Ray,
@@ -13,27 +13,27 @@ pub trait Shape: Debug {
 	fn intersect(&self, ray: &Ray, tmax: f32) -> Option<ShapeIntersection>;
 	fn intersect_p(&self, ray: &Ray, tmax: f32) -> bool;
 	fn area(&self) -> f32;
-	fn sample(&self, u: Vector2f) -> Option<ShapeSample>;
+	fn sample(&self, u: Vec2f) -> Option<ShapeSample>;
 	fn pdf(&self, intr: &Interaction) -> f32;
-	fn sample_ctx(&self, ctx: &ShapeSampleContext, u: Vector2f) -> Option<ShapeSample>;
+	fn sample_ctx(&self, ctx: &ShapeSampleContext, u: Vec2f) -> Option<ShapeSample>;
 	/// `wi` is the incident direction
-	fn pdf_ctx(&self, ctx: &ShapeSampleContext, wi: Vector3f) -> f32;
+	fn pdf_ctx(&self, ctx: &ShapeSampleContext, wi: Vec3f) -> f32;
 }
 
 #[derive(Debug)]
 pub struct ShapeSampleContext {
 	/// reference point
-	pub p: Vector3f,
+	pub p: Vec3f,
 	/// normal
-	pub n: Vector3f,
+	pub n: Vec3f,
 	/// shading normal
-	pub ns: Vector3f,
+	pub ns: Vec3f,
 	/// time
 	pub t: f32,
 }
 
 impl ShapeSampleContext {
-	pub fn new(p: Vector3f, n: Vector3f, ns: Vector3f, t: f32) -> Self {
+	pub fn new(p: Vec3f, n: Vec3f, ns: Vec3f, t: f32) -> Self {
 		Self { p, n, ns, t }
 	}
 
@@ -42,7 +42,7 @@ impl ShapeSampleContext {
 	}
 
 	pub fn from_medium_interaction(intr: &MediumInteraction) -> Self {
-		Self { p: intr.base.p, n: Vector3f::default(), ns: Vector3f::default(), t: intr.base.t }
+		Self { p: intr.base.p, n: Vec3f::default(), ns: Vec3f::default(), t: intr.base.t }
 	}
 
 	// TODO: OffsetRayOrigin(), SpawnRay()
@@ -173,7 +173,7 @@ impl Sphere {
 	pub fn interaction_from_intersection(
 		&self,
 		isect: &QuadricIntersection,
-		wo: Vector3f,
+		wo: Vec3f,
 		time: f32,
 	) -> SurfaceInteraction {
 		let p = isect.p;
@@ -189,12 +189,12 @@ impl Sphere {
 		let z_radius = (p.x * p.x + p.y * p.y).sqrt();
 		let (cos_phi, sin_phi) = (p.x / z_radius, p.y / z_radius);
 		let sin_theta = safe_sqrt(1. - cos_theta.powi(2));
-		let dpdu = Vector3f::new(-phi_max * p.y, phi_max * p.x, 0.);
+		let dpdu = Vec3f::new(-phi_max * p.y, phi_max * p.x, 0.);
 		let dpdv = (self.theta_z_max - self.theta_z_min)
-			* Vector3f::new(p.z * cos_phi, p.z * sin_phi, -self.r * sin_theta);
+			* Vec3f::new(p.z * cos_phi, p.z * sin_phi, -self.r * sin_theta);
 		// compute sphere dn/du and dn/dv
-		let d2pduu = -phi_max.powi(2) * Vector3f::new(p.x, p.y, 0.);
-		let d2pduv = theta_diff * p.z * phi_max * Vector3f::new(-sin_phi, cos_phi, 0.);
+		let d2pduu = -phi_max.powi(2) * Vec3f::new(p.x, p.y, 0.);
+		let d2pduv = theta_diff * p.z * phi_max * Vec3f::new(-sin_phi, cos_phi, 0.);
 		let d2pdvv = -theta_diff.powi(2) * p;
 		// compute coefficients for fundamental forms
 		#[allow(non_snake_case)]
@@ -213,7 +213,7 @@ impl Sphere {
 		let wo_object = self.render_from_object.invert_vector(wo);
 		let si = SurfaceInteraction::new(
 			p,
-			Vector2f::new(u, v),
+			Vec2f::new(u, v),
 			wo_object,
 			dpdu,
 			dpdv,
@@ -229,8 +229,8 @@ impl Sphere {
 impl Shape for Sphere {
 	fn bounds(&self) -> Bounds3f {
 		self.render_from_object.map_bounds(&Bounds3f::new(
-			Vector3f::new(-self.r, -self.r, self.z_min),
-			Vector3f::new(self.r, self.r, self.z_max),
+			Vec3f::new(-self.r, -self.r, self.z_min),
+			Vec3f::new(self.r, self.r, self.z_max),
 		))
 	}
 
@@ -252,7 +252,7 @@ impl Shape for Sphere {
 	}
 
 	#[allow(unused_variables)]
-	fn sample(&self, u: Vector2f) -> Option<ShapeSample> {
+	fn sample(&self, u: Vec2f) -> Option<ShapeSample> {
 		todo!()
 	}
 
@@ -262,12 +262,12 @@ impl Shape for Sphere {
 	}
 
 	#[allow(unused_variables)]
-	fn sample_ctx(&self, ctx: &ShapeSampleContext, u: Vector2f) -> Option<ShapeSample> {
+	fn sample_ctx(&self, ctx: &ShapeSampleContext, u: Vec2f) -> Option<ShapeSample> {
 		todo!()
 	}
 
 	#[allow(unused_variables)]
-	fn pdf_ctx(&self, ctx: &ShapeSampleContext, wi: Vector3f) -> f32 {
+	fn pdf_ctx(&self, ctx: &ShapeSampleContext, wi: Vec3f) -> f32 {
 		todo!()
 	}
 }
@@ -277,6 +277,6 @@ pub struct QuadricIntersection {
 	/// time of hit
 	pub t: f32,
 	/// point of hit in the object space
-	pub p: Vector3f,
+	pub p: Vec3f,
 	pub phi: f32,
 }
