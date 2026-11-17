@@ -28,9 +28,9 @@ impl<const N: usize> SMatrix<N> {
 	}
 
 	pub fn is_identity(&self) -> bool {
-		for i in 0..N {
-			for j in 0..N {
-				if (i == j && self.m[i][j] != 1.0) || (i != j && self.m[i][j] != 0.0) {
+		for (i, row) in self.m.iter().enumerate() {
+			for (j, v) in row.iter().enumerate() {
+				if (i == j && *v != 1.0) || (i != j && *v != 0.0) {
 					return false;
 				}
 			}
@@ -249,8 +249,8 @@ impl<const N: usize> Default for SMatrix<N> {
 	/// Return an identity matrix.
 	fn default() -> Self {
 		let mut ret = Self::zero();
-		for i in 0..N {
-			ret.m[i][i] = 1.0;
+		for (i, row) in ret.m.iter_mut().enumerate() {
+			row[i] = 1.0;
 		}
 		ret
 	}
@@ -304,9 +304,9 @@ impl<const N: usize> Mul<f32> for SMatrix<N> {
 
 	fn mul(self, rhs: f32) -> Self {
 		let mut ret = self;
-		for i in 0..N {
-			for j in 0..N {
-				ret.m[i][j] *= rhs;
+		for row in ret.m.iter_mut() {
+			for i in row.iter_mut() {
+				*i *= rhs;
 			}
 		}
 		ret
@@ -345,9 +345,9 @@ impl<const N: usize> Div<f32> for SMatrix<N> {
 		debug_assert_ne!(rhs, 0.0);
 
 		let mut ret = self;
-		for i in 0..N {
-			for j in 0..N {
-				ret.m[i][j] /= rhs;
+		for row in ret.m.iter_mut() {
+			for i in row.iter_mut() {
+				*i /= rhs;
 			}
 		}
 

@@ -352,8 +352,8 @@ impl SampledWavelengths {
 			return;
 		}
 
-		for i in 1..SPECTRUM_SAMPLES {
-			self.pdf[i] = 0.;
+		for i in self.pdf.iter_mut().skip(1) {
+			*i = 0.;
 		}
 	}
 
