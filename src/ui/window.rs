@@ -252,6 +252,40 @@ pub trait Canvas: Index<(usize, usize), Output = u32> + IndexMut<(usize, usize)>
 		}
 	}
 
+	fn draw_circle<T: Number>(&mut self, x: T, y: T, r: T, color: u32) {
+		let (cx, cy, radius) = (x.as_i32(), y.as_i32(), r.as_i32());
+		if radius < 0 {
+			return;
+		}
+
+		let mut x = radius;
+		let mut y = 0;
+		let mut decision = 1 - radius;
+
+		while x >= y {
+			self.draw_pixel(cx + x, cy + y, color);
+			self.draw_pixel(cx + y, cy + x, color);
+			self.draw_pixel(cx - y, cy + x, color);
+			self.draw_pixel(cx - x, cy + y, color);
+			self.draw_pixel(cx - x, cy - y, color);
+			self.draw_pixel(cx - y, cy - x, color);
+			self.draw_pixel(cx + y, cy - x, color);
+			self.draw_pixel(cx + x, cy - y, color);
+
+			y += 1;
+			if decision <= 0 {
+				decision += 2 * y + 1;
+			} else {
+				x -= 1;
+				decision += 2 * (y - x) + 1;
+			}
+		}
+	}
+
+	fn draw_circle_shape(&mut self, circle: Circle, color: u32) {
+		self.draw_circle(circle.x(), circle.y(), circle.r, color);
+	}
+
 	fn draw_lines<T: Number>(&mut self, points: &[Vec2<T>], color: u32) {
 		if points.len() < 2 {
 			return;
