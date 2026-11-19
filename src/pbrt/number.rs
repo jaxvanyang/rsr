@@ -1,42 +1,6 @@
 use approx::AbsDiffEq;
 use std::ops::*;
 
-fn next_f32_up(mut v: f32) -> f32 {
-	if v.is_infinite() && v > 0.0 {
-		return v;
-	}
-	if v == -0.0 {
-		v = 0.0;
-	}
-
-	let mut bits = v.to_bits();
-	if v >= 0.0 {
-		bits += 1;
-	} else {
-		bits -= 1;
-	}
-
-	f32::from_bits(bits)
-}
-
-fn next_f32_down(mut v: f32) -> f32 {
-	if v.is_infinite() && v < 0.0 {
-		return v;
-	}
-	if v == 0.0 {
-		v = -0.0;
-	}
-
-	let mut bits = v.to_bits();
-	if v > 0.0 {
-		bits -= 1;
-	} else {
-		bits += 1;
-	}
-
-	f32::from_bits(bits)
-}
-
 pub trait Number:
 	Copy
 	+ Neg<Output = Self>
@@ -174,8 +138,12 @@ impl Interval {
 		if error == 0.0 {
 			Self { low: value, high: value }
 		} else {
-			Self { low: next_f32_down(value - error), high: next_f32_up(value + error) }
+			Self::new_with_offset(value - error, value + error)
 		}
+	}
+
+	fn new_with_offset(low: f32, high: f32) -> Self {
+		Self { low: low.next_down(), high: high.next_up() }
 	}
 
 	pub fn in_range(self, other: Interval) -> bool {
@@ -186,11 +154,11 @@ impl Interval {
 		(self.low..=self.high).contains(&value)
 	}
 
-	pub fn sqrt(self) -> Interval {
-		Interval { low: next_f32_down(self.low.sqrt()), high: next_f32_up(self.high.sqrt()) }
+	pub fn sqrt(self) -> Self {
+		Self::new_with_offset(self.low.sqrt(), self.high.sqrt())
 	}
 
-	pub fn fma(self, b: Interval, c: Interval) -> Interval {
+	pub fn fma(self, b: Self, c: Self) -> Self {
 		let lows = [
 			self.low.mul_add(b.low, c.low),
 			self.low.mul_add(b.high, c.low),
@@ -206,7 +174,7 @@ impl Interval {
 		let low = lows.into_iter().reduce(|a, b| a.min(b)).unwrap();
 		let high = highs.into_iter().reduce(|a, b| a.max(b)).unwrap();
 
-		Interval { low: next_f32_down(low), high: next_f32_up(high) }
+		Self::new_with_offset(low, high)
 	}
 
 	pub fn square(self) -> Interval {
@@ -217,9 +185,9 @@ impl Interval {
 		}
 
 		if self.contains(0.0) {
-			Self::new(0.0, next_f32_up(high * high))
+			Self::new(0.0, (high * high).next_up())
 		} else {
-			Self::new(next_f32_down(low * low), next_f32_up(high * high))
+			Self::new((low * low).next_down(), (high * high).next_up())
 		}
 	}
 
@@ -303,66 +271,66 @@ impl PartialOrd for Interval {
 }
 
 impl Neg for Interval {
-	type Output = Interval;
+	type Output = Self;
 
-	fn neg(self) -> Interval {
-		Interval { low: -self.high, high: -self.low }
+	fn neg(self) -> Self {
+		Self { low: -self.high, high: -self.low }
 	}
 }
 
-impl Add<Interval> for Interval {
-	type Output = Interval;
+impl Add<Self> for Interval {
+	type Output = Self;
 
-	fn add(self, rhs: Interval) -> Interval {
-		Interval { low: next_f32_down(self.low + rhs.low), high: next_f32_up(self.high + rhs.high) }
+	fn add(self, rhs: Self) -> Self {
+		Self::new_with_offset(self.low + rhs.low, self.high + rhs.high)
 	}
 }
 
-impl AddAssign<Interval> for Interval {
-	fn add_assign(&mut self, rhs: Interval) {
+impl AddAssign<Self> for Interval {
+	fn add_assign(&mut self, rhs: Self) {
 		*self = *self + rhs;
 	}
 }
 
-impl Sub<Interval> for Interval {
-	type Output = Interval;
+impl Sub<Self> for Interval {
+	type Output = Self;
 
-	fn sub(self, rhs: Interval) -> Interval {
-		Interval { low: next_f32_down(self.low - rhs.high), high: next_f32_up(self.high - rhs.low) }
+	fn sub(self, rhs: Self) -> Self {
+		Self::new_with_offset(self.low - rhs.high, self.high - rhs.low)
 	}
 }
 
-impl SubAssign<Interval> for Interval {
-	fn sub_assign(&mut self, rhs: Interval) {
+impl SubAssign<Self> for Interval {
+	fn sub_assign(&mut self, rhs: Self) {
 		*self = *self - rhs;
 	}
 }
 
-impl Mul<Interval> for Interval {
-	type Output = Interval;
+impl Mul<Self> for Interval {
+	type Output = Self;
 
-	fn mul(self, rhs: Interval) -> Interval {
+	fn mul(self, rhs: Self) -> Self {
 		let results =
 			[self.low * rhs.low, self.high * rhs.low, self.low * rhs.high, self.high * rhs.high];
 		let low = results.into_iter().reduce(|a, b| a.min(b)).unwrap();
 		let high = results.into_iter().reduce(|a, b| a.max(b)).unwrap();
 
-		Interval { low: next_f32_down(low), high: next_f32_up(high) }
+		Self::new_with_offset(low, high)
 	}
 }
 
-impl MulAssign<Interval> for Interval {
-	fn mul_assign(&mut self, rhs: Interval) {
+impl MulAssign<Self> for Interval {
+	fn mul_assign(&mut self, rhs: Self) {
 		*self = *self * rhs;
 	}
 }
 
-impl Div<Interval> for Interval {
-	type Output = Interval;
+impl Div<Self> for Interval {
+	type Output = Self;
 
-	fn div(self, rhs: Interval) -> Interval {
+	fn div(self, rhs: Self) -> Self {
 		if rhs.low <= 0.0 && 0.0 <= rhs.high {
-			return Interval { low: f32::NEG_INFINITY, high: f32::INFINITY };
+			return Self { low: f32::NEG_INFINITY, high: f32::INFINITY };
 		}
 
 		let results =
@@ -370,12 +338,12 @@ impl Div<Interval> for Interval {
 		let low = results.into_iter().reduce(|a, b| a.min(b)).unwrap();
 		let high = results.into_iter().reduce(|a, b| a.max(b)).unwrap();
 
-		Interval { low: next_f32_down(low), high: next_f32_up(high) }
+		Self::new_with_offset(low, high)
 	}
 }
 
-impl DivAssign<Interval> for Interval {
-	fn div_assign(&mut self, rhs: Interval) {
+impl DivAssign<Self> for Interval {
+	fn div_assign(&mut self, rhs: Self) {
 		*self = *self / rhs;
 	}
 }
@@ -396,16 +364,6 @@ impl AbsDiffEq for Interval {
 mod tests {
 	use super::*;
 	use approx::assert_abs_diff_eq;
-
-	#[test]
-	fn test_next_f32() {
-		assert!(next_f32_up(0.0) > 0.0);
-		assert!(next_f32_down(0.0) < 0.0);
-		assert!(next_f32_up(1.0) > 1.0);
-		assert!(next_f32_down(1.0) < 1.0);
-		assert!(next_f32_up(-1.0) > -1.0);
-		assert!(next_f32_down(-1.0) < -1.0);
-	}
 
 	#[test]
 	fn test_interval() {
