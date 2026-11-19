@@ -1,6 +1,9 @@
-use super::vecmath::{Vec2f, Vec3f};
+use super::{
+	ray::{Ray, RayDifferential},
+	vecmath::{Vec2f, Vec3f},
+};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Interaction {
 	/// The interaction point.
 	pub p: Vec3f,
@@ -26,6 +29,23 @@ impl Interaction {
 
 	pub fn is_medium_interaction(&self) -> bool {
 		self.n == Vec3f::default()
+	}
+
+	pub fn offset_ray_origin(&self, d: Vec3f) -> Vec3f {
+		Ray::offset_ray_origin(self.p, self.n, d)
+	}
+
+	/// `p` is the ray's destination
+	pub fn offset_ray_origin_p(&self, p: Vec3f) -> Vec3f {
+		Ray::offset_ray_origin(self.p, self.n, p - self.p)
+	}
+
+	pub fn spawn_ray(&self, d: Vec3f) -> RayDifferential {
+		RayDifferential::new(self.offset_ray_origin(d), d, self.t)
+	}
+
+	pub fn spawn_ray_to(&self, p: Vec3f) -> Ray {
+		Ray::spawn_ray_to(self.p, self.n, self.t, p)
 	}
 }
 

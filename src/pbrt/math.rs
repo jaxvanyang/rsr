@@ -1,4 +1,4 @@
-use super::vecmath::Vec2f;
+use super::vecmath::{Vec2f, Vec3f};
 
 pub use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, PI};
 
@@ -144,6 +144,21 @@ pub fn diff_of_products(a: f32, b: f32, c: f32, d: f32) -> f32 {
 	result + error
 }
 
+#[inline]
+pub fn safe_asin(x: f32) -> f32 {
+	x.clamp(-1.0, 1.0).asin()
+}
+
+#[inline]
+pub fn safe_acos(x: f32) -> f32 {
+	x.clamp(-1.0, 1.0).acos()
+}
+
+#[inline]
+pub fn safe_sqrt(x: f32) -> f32 {
+	x.max(0.0).sqrt()
+}
+
 pub fn sample_uniform_disk_concentric(u: Vec2f) -> Vec2f {
 	let offset = 2. * u - Vec2f::new(1., 1.);
 	// handle degeneracy at the origin
@@ -160,29 +175,57 @@ pub fn sample_uniform_disk_concentric(u: Vec2f) -> Vec2f {
 	r * Vec2f::new(theta.cos(), theta.sin())
 }
 
-#[inline]
-pub fn safe_asin(x: f32) -> f32 {
-	x.clamp(-1.0, 1.0).asin()
+pub fn sample_uniform_sphere(u: Vec2f) -> Vec3f {
+	let z = 1. - 2. * u.x;
+	let r = safe_sqrt(1. - z.powi(2));
+	let phi = 2. * PI * u.y;
+	Vec3f::new(r * phi.cos(), r * phi.sin(), z)
 }
 
-#[inline]
-pub fn safe_acos(x: f32) -> f32 {
-	x.clamp(-1.0, 1.0).acos()
+pub const fn uniform_sphere_pdf() -> f32 {
+	FRAC_PI_4
 }
 
-#[inline]
-pub fn safe_sqrt(x: f32) -> f32 {
-	x.max(0.0).sqrt()
+pub fn invert_uniform_sphere_sample(w: Vec3f) -> Vec2f {
+	let mut phi = w.y.atan2(w.x);
+	if phi < 0. {
+		phi += 2. * PI;
+	}
+	Vec2f::new((1. - w.z) / 2., phi / (2. * PI))
+}
+
+pub fn spherial_direction(sin_theta: f32, cos_theta: f32, phi: f32) -> Vec3f {
+	Vec3f::new(
+		sin_theta.clamp(-1., 1.) * phi.cos(),
+		sin_theta.clamp(-1., 1.) * phi.sin(),
+		cos_theta.clamp(-1., 1.),
+	)
 }
 
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use approx::assert_abs_diff_eq;
 
 	#[test]
 	fn test_exponent() {
 		assert_eq!(get_exponent(2.0), 1);
 		assert_eq!(get_exponent(-2.0), 1);
 		assert_eq!(get_exponent(0.0), -127);
+	}
+
+	#[test]
+	fn test_sample_uniform_sphere() {
+		let u = Vec2f::new(0., 0.);
+		let w = sample_uniform_sphere(u);
+		assert_eq!(invert_uniform_sphere_sample(w), u);
+
+		let u = Vec2f::new(0.5, 0.5);
+		let w = sample_uniform_sphere(u);
+		assert_abs_diff_eq!(invert_uniform_sphere_sample(w), u);
+
+		let u = Vec2f::new(1., 0.);
+		let w = sample_uniform_sphere(u);
+		assert_eq!(invert_uniform_sphere_sample(w), u);
 	}
 }

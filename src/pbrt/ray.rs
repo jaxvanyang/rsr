@@ -1,6 +1,9 @@
 use super::{number::HasNaN, vecmath::Vec3f};
 use std::ops::{Deref, DerefMut};
 
+/// Assumed error bound of point.
+pub const POINT_ERROR: f32 = 1e-5;
+
 #[derive(Debug, Clone)]
 pub struct Ray {
 	/// Origin of the ray
@@ -22,6 +25,48 @@ impl Ray {
 
 	pub fn eval(&self, t: f32) -> Vec3f {
 		self.o + self.d * t
+	}
+
+	pub fn spawn_ray(p: Vec3f, n: Vec3f, time: f32, d: Vec3f) -> Ray {
+		Self::new_with_time(Self::offset_ray_origin(p, n, d), d, time)
+	}
+
+	pub fn spawn_ray_to(p_from: Vec3f, n: Vec3f, time: f32, p_to: Vec3f) -> Ray {
+		Self::spawn_ray(p_from, n, time, p_to - p_from)
+	}
+
+	/// Generate a ray between two points that requires offsets at both endpoints.
+	pub fn spawn_ray_to_offset(
+		p_from: Vec3f,
+		n_from: Vec3f,
+		time: f32,
+		p_to: Vec3f,
+		n_to: Vec3f,
+	) -> Ray {
+		let pf = Self::offset_ray_origin(p_from, n_from, p_to - p_from);
+		let pt = Self::offset_ray_origin(p_to, n_to, pf - p_to);
+		Self::new_with_time(pf, pt - pf, time)
+	}
+
+	pub fn offset_ray_origin(p: Vec3f, n: Vec3f, d: Vec3f) -> Vec3f {
+		let error = Vec3f::sames(POINT_ERROR);
+		// find vector offset to corner of error bounds and compute initial po
+		let t = n.abs().dot(error);
+		let mut offset = t * n;
+		if d.dot(n) < 0. {
+			offset = -offset;
+		}
+		let mut po = p + offset;
+		// round offset point po away from p
+		for i in 0..3 {
+			if offset[i] > 0. {
+				po[i] = po[i].next_up();
+			} else if offset[i] < 0. {
+				po[i] = po[i].next_down();
+			}
+		}
+
+		po
 	}
 }
 
