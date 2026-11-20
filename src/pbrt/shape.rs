@@ -13,8 +13,6 @@ const SIN2_SMALL_ANGLE: f32 = 0.00068523;
 pub trait Shape: Debug {
 	fn bounds(&self) -> Bounds3f;
 	// TODO: fn normal_bounds(&self) -> DirectionCone;
-	fn intersect(&self, ray: &Ray) -> Option<ShapeIntersection>;
-	fn intersect_p(&self, ray: &Ray) -> bool;
 	fn intersect_tmax(&self, ray: &Ray, tmax: f32) -> Option<ShapeIntersection>;
 	fn intersect_p_tmax(&self, ray: &Ray, tmax: f32) -> bool;
 	fn area(&self) -> f32;
@@ -23,6 +21,13 @@ pub trait Shape: Debug {
 	fn sample_ctx(&self, ctx: &ShapeSampleContext, u: Vec2f) -> Option<ShapeSample>;
 	/// `wi` is the incident direction
 	fn pdf_ctx(&self, ctx: &ShapeSampleContext, wi: Vec3f) -> f32;
+
+	fn intersect(&self, ray: &Ray) -> Option<ShapeIntersection> {
+		self.intersect_tmax(ray, f32::INFINITY)
+	}
+	fn intersect_p(&self, ray: &Ray) -> bool {
+		self.intersect_p_tmax(ray, f32::INFINITY)
+	}
 }
 
 #[derive(Debug)]
@@ -255,14 +260,6 @@ impl Shape for Sphere {
 			Vec3f::new(-self.r, -self.r, self.z_min),
 			Vec3f::new(self.r, self.r, self.z_max),
 		))
-	}
-
-	fn intersect(&self, ray: &Ray) -> Option<ShapeIntersection> {
-		self.intersect_tmax(ray, f32::INFINITY)
-	}
-
-	fn intersect_p(&self, ray: &Ray) -> bool {
-		self.intersect_p_tmax(ray, f32::INFINITY)
 	}
 
 	fn intersect_tmax(&self, ray: &Ray, tmax: f32) -> Option<ShapeIntersection> {

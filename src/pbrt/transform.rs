@@ -3,6 +3,7 @@ use super::{
 	interaction::{Interaction, Shading, SurfaceInteraction},
 	math::diff_of_products,
 	number::HasNaN,
+	ray::Ray,
 	vecmath::{Bounds3f, Vec2f, Vec3f},
 };
 use approx::abs_diff_eq;
@@ -697,7 +698,23 @@ impl Transform {
 		Vec3f::new(x, y, z)
 	}
 
-	// TODO: transform ray
+	/// Apply the transform to ray.
+	pub fn map_ray(&self, ray: &Ray) -> Ray {
+		let mut ret = ray.clone();
+		ret.o = self.map_point(ray.o);
+		ret.d = self.map_vector(ray.d);
+
+		ret
+	}
+
+	/// Apply the inverse transform to a ray.
+	pub fn invert_ray(&self, ray: &Ray) -> Ray {
+		let mut ret = ray.clone();
+		ret.o = self.invert_point(ray.o);
+		ret.d = self.invert_vector(ray.d);
+
+		ret
+	}
 
 	/// Apply the transform to a bounding box.
 	pub fn map_bounds(&self, b: &Bounds3f) -> Bounds3f {

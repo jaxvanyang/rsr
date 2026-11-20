@@ -5,6 +5,7 @@ pub mod interaction;
 pub mod math;
 pub mod number;
 pub mod options;
+pub mod primitive;
 pub mod ray;
 pub mod shape;
 pub mod spectrum;

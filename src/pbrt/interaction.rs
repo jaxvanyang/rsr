@@ -114,6 +114,8 @@ impl SurfaceInteraction {
 			dudy: 0.0,
 			dvdy: 0.0,
 		}
+
+		// TODO: SetIntersectionProperties()
 	}
 
 	pub fn set_shading_geometry(
